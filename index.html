@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VRFL ELITE | FINAL MASTER RELEASE</title>
+    <title>VRFL ELITE | PRO MANAGER FINAL</title>
     <style>
         :root { --neon: #00f2ff; --accent: #7000ff; --bg: #0b0e14; --glass: rgba(255, 255, 255, 0.03); --card-bg: #161b22; --yellow: #ffcf00; --red: #ff4d4d; }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; }
         .bg-pattern { position: fixed; inset: 0; z-index: -1; opacity: 0.05; background-image: linear-gradient(var(--neon) 1px, transparent 1px), linear-gradient(90deg, var(--neon) 1px, transparent 1px); background-size: 40px 40px; }
 
-        /* LOADING */
+        /* LOADER */
         #loader { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s; }
-        .loader-logo { width: 110px; height: 110px; border: 3px solid var(--neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 0 25px var(--neon); position: relative; }
-        .loader-logo::after { content: '🏆'; font-size: 50px; }
-        .loader-bar { width: 200px; height: 3px; background: #111; border-radius: 2px; overflow: hidden; }
-        .loader-fill { width: 0%; height: 100%; background: var(--neon); animation: load 2.5s forwards; }
+        .loader-logo { width: 100px; height: 100px; border: 3px solid var(--neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 0 20px var(--neon); }
+        .loader-logo::after { content: '🏆'; font-size: 45px; }
+        .loader-bar { width: 180px; height: 3px; background: #111; border-radius: 2px; overflow: hidden; }
+        .loader-fill { width: 0%; height: 100%; background: var(--neon); animation: load 2s forwards; }
         @keyframes load { to { width: 100%; } }
 
-        /* UI */
+        /* INTERFACE */
         .app { height: 100vh; display: flex; flex-direction: column; opacity: 0; transition: 1s; }
         .header { padding: 15px; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--glass); display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); }
         .content { flex: 1; overflow-y: auto; padding: 15px 15px 100px 15px; }
@@ -25,26 +25,24 @@
         .screen.active { display: block; }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .btn { background: linear-gradient(90deg, var(--accent), #b000ff); border: none; color: #fff; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
-        
+        .btn { background: linear-gradient(90deg, var(--accent), #b000ff); border: none; color: #fff; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+
         .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #0d1117; border-top: 1px solid var(--glass); padding: 12px 0; justify-content: space-around; backdrop-filter: blur(20px); z-index: 100; }
         .nav-item { text-align: center; font-size: 10px; color: #8b949e; opacity: 0.5; }
         .nav-item.active { color: var(--neon); opacity: 1; text-shadow: 0 0 10px var(--neon); }
 
-        /* TABLES */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        /* TABLES & LISTS */
+        table { width: 100%; border-collapse: collapse; }
         th { text-align: left; font-size: 11px; color: #666; padding: 8px; border-bottom: 1px solid #333; }
         td { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 14px; }
-        .logo-sm { width: 28px; height: 28px; border-radius: 6px; vertical-align: middle; margin-right: 10px; background: #000; }
-        
-        .match-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 14px; margin-bottom: 10px; cursor: pointer; }
-        .score-box { font-size: 20px; font-weight: 900; color: var(--neon); letter-spacing: 2px; }
+        .logo-sm { width: 30px; height: 30px; border-radius: 6px; vertical-align: middle; margin-right: 10px; background: #000; }
+        .row-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 14px; margin-bottom: 10px; cursor: pointer; }
+        .score-box { font-size: 18px; font-weight: 900; color: var(--neon); letter-spacing: 2px; }
 
         /* MODAL */
         #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 20000; display: none; flex-direction: column; overflow-y: auto; }
-        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 30px; color: #fff; z-index: 20001; }
-        .yc { width: 10px; height: 14px; background: var(--yellow); display: inline-block; margin: 0 4px; border-radius: 2px; }
-        .rc { width: 10px; height: 14px; background: var(--red); display: inline-block; margin: 0 4px; border-radius: 2px; }
+        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 32px; color: #fff; z-index: 20001; text-shadow: 0 0 10px #000; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -59,43 +57,44 @@
     <div class="loader-bar"><div class="loader-fill"></div></div>
 </div>
 
-<div class="app" id="main-app">
+<div class="app" id="app">
     <div class="header">
         <div style="font-weight: 900; font-size: 18px;"><span style="color:var(--neon)">VRFL</span> ELITE</div>
-        <div id="money-display" style="font-weight:bold; color:var(--yellow); background:rgba(255,207,0,0.1); padding:5px 15px; border-radius:20px;">0 M €</div>
+        <div id="u-money" style="font-weight:bold; color:var(--yellow); background:rgba(255,207,0,0.1); padding:5px 15px; border-radius:20px;">0 M €</div>
     </div>
 
     <div class="content">
         <div id="sc-home" class="screen active">
             <div class="card" style="background: linear-gradient(135deg, #161b22, #0055ff22); border: 1px solid var(--neon);">
                 <div style="display:flex; align-items:center">
-                    <img id="my-club-logo" src="" class="logo-sm" style="width:55px; height:55px">
+                    <img id="my-logo" src="" class="logo-sm" style="width:55px; height:55px">
                     <div>
-                        <h2 id="my-club-name" style="margin:0">Загрузка...</h2>
-                        <span id="season-progress" style="color:var(--neon); font-size:11px; font-weight:bold">ТУР 1 / 12</span>
+                        <h2 id="my-name" style="margin:0">...</h2>
+                        <span id="season-info" style="color:var(--neon); font-size:11px; font-weight:bold">ТУР 1 / 12</span>
                     </div>
                 </div>
             </div>
-            <h4 style="color:#8b949e; margin: 20px 0 10px 5px">СПИСОК ВСЕХ КЛУБОВ</h4>
-            <div id="home-clubs"></div>
+            <h4 style="color:#8b949e; margin: 20px 0 10px 5px">КЛУБЫ ПРЕМЬЕР-ЛИГИ</h4>
+            <div id="home-clubs-list"></div>
         </div>
 
         <div id="sc-league" class="screen">
-            <div style="display:flex; gap:10px; margin-bottom:15px">
-                <button class="btn" style="flex:1" onclick="setLeagueView('table')">ТАБЛИЦА</button>
-                <button class="btn" style="flex:1; background:#161b22" onclick="setLeagueView('cup')">КУБОК</button>
+            <div style="display:flex; gap:8px; margin-bottom:15px">
+                <button class="btn" style="flex:1" onclick="setTab('table')">ТАБЛИЦА</button>
+                <button class="btn" style="flex:1; background:#161b22" onclick="setTab('cup')">КУБОК</button>
+                <button class="btn" style="flex:1; background:#161b22" onclick="setTab('market')">РЫНОК</button>
             </div>
             <div id="league-content"></div>
         </div>
 
         <div id="sc-club" class="screen">
             <div class="card">
-                <h3>Редактор Состава</h3>
-                <input type="text" id="new-player" placeholder="Имя игрока..." style="width:100%; padding:15px; background:#000; border:1px solid #333; color:#fff; border-radius:12px; box-sizing:border-box">
-                <button class="btn" style="margin-top:10px" onclick="addPlayer()">ДОБАВИТЬ В КОМАНДУ</button>
+                <h3>Управление Капитаном</h3>
+                <input type="text" id="cap-input" placeholder="Имя игрока..." style="width:100%; padding:15px; background:#000; border:1px solid #333; color:#fff; border-radius:12px; box-sizing:border-box">
+                <button class="btn" style="margin-top:10px" onclick="addCap()">ОБНОВИТЬ СОСТАВ</button>
             </div>
-            <h4 style="color:#8b949e; margin: 20px 5px 10px 5px">ВАШИ ИГРОКИ (Нажми для статистики)</h4>
-            <div id="my-squad-list"></div>
+            <h4 style="color:#8b949e; margin: 20px 5px 10px 5px">ВАШ СОСТАВ</h4>
+            <div id="my-squad"></div>
         </div>
     </div>
 
@@ -112,45 +111,44 @@
 </div>
 
 <script>
-    let game = {
+    let state = {
         userTeamId: 0,
-        money: 150,
+        money: 200,
         round: 1,
-        maxRounds: 12,
         view: 'table',
         teams: [
-            { id: 0, name: "Aurelian United", logo: "https://i.ibb.co.com/chQPDKjg/IMG-20260315-111459-312.png", pts: 0, w:0, d:0, l:0, goals:0, players: [
-                {n:"Тигран Казарян", r:92, g:0, yc:0, rc:0, h:[]}, {n:"Stepaneko", r:88, g:0, yc:0, rc:0, h:[]}, {n:"Vortexov", r:84, g:0, yc:0, rc:0, h:[]}, {n:"Miron", r:81, g:0, yc:0, rc:0, h:[]}
+            { id: 0, name: "Aurelian United", logo: "https://i.ibb.co.com/chQPDKjg/IMG-20260315-111459-312.png", pts: 0, w:0, d:0, l:0, g:0, players: [
+                {n:"Тигран Казарян", r:92, g:0, yc:0, h:[]}, {n:"Stepaneko", r:88, g:0, yc:0, h:[]}, {n:"Vortexov", r:84, g:0, yc:0, h:[]}, {n:"Miron", r:81, g:0, yc:0, h:[]}
             ]},
-            { id: 1, name: "FC Cardillero", logo: "https://i.ibb.co.com/PsmJjzJt/1773555326089.png", pts: 0, w:0, d:0, l:0, goals:0, players: [
-                {n:"Нелисек", r:91, g:0, yc:0, rc:0, h:[]}, {n:"Atacker", r:89, g:0, yc:0, rc:0, h:[]}, {n:"LeBoomich", r:86, g:0, yc:0, rc:0, h:[]}
+            { id: 1, name: "FC Cardillero", logo: "https://i.ibb.co.com/PsmJjzJt/1773555326089.png", pts: 0, w:0, d:0, l:0, g:0, players: [
+                {n:"Нелисек", r:91, g:0, yc:0, h:[]}, {n:"Atacker", r:89, g:0, yc:0, h:[]}, {n:"LeBoomich", r:86, g:0, yc:0, h:[]}
             ]},
-            { id: 2, name: "Torpedo", logo: "https://i.ibb.co.com/j9Sw1gpB/IMG-20260315-111455-660.png", pts: 0, w:0, d:0, l:0, goals:0, players: [
-                {n:"Фил", r:94, g:0, yc:0, rc:0, h:[]}, {n:"Демпик", r:92, g:0, yc:0, rc:0, h:[]}, {n:"Ангел", r:86, g:0, yc:0, rc:0, h:[]}, {n:"Kasper", r:83, g:0, yc:0, rc:0, h:[]}
+            { id: 2, name: "Torpedo", logo: "https://i.ibb.co.com/j9Sw1gpB/IMG-20260315-111455-660.png", pts: 0, w:0, d:0, l:0, g:0, players: [
+                {n:"Фил", r:94, g:0, yc:0, h:[]}, {n:"Демпик", r:92, g:0, yc:0, h:[]}, {n:"Ангел", r:86, g:0, yc:0, h:[]}, {n:"Kasper", r:83, g:0, yc:0, h:[]}
             ]},
-            { id: 3, name: "FC Potential", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, w:0, d:0, l:0, goals:0, players: [
-                {n:"Niko", r:89, g:0, yc:0, rc:0, h:[]}, {n:"Flozzy Jr", r:84, g:0, yc:0, rc:0, h:[]}, {n:"Iron", r:80, g:0, yc:0, rc:0, h:[]}
+            { id: 3, name: "FC Potential", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, w:0, d:0, l:0, g:0, players: [
+                {n:"Niko", r:89, g:0, yc:0, h:[]}, {n:"Flozzy Jr", r:84, g:0, yc:0, h:[]}, {n:"Iron", r:80, g:0, yc:0, h:[]}
             ]},
-            { id: 4, name: "FC Outsiders", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, w:0, d:0, l:0, goals:0, players: [
-                {n:"Солевой", r:60, g:0, yc:0, rc:0, h:[]}, {n:"Костылин", r:62, g:0, yc:0, rc:0, h:[]}, {n:"Вороговский", r:58, g:0, yc:0, rc:0, h:[]}
+            { id: 4, name: "FC Outsiders", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, w:0, d:0, l:0, g:0, players: [
+                {n:"Солевой", r:60, g:0, yc:0, h:[]}, {n:"Костылин", r:62, g:0, yc:0, h:[]}, {n:"Вороговский", r:58, g:0, yc:0, h:[]}
             ]}
         ],
-        results: []
+        history: []
     };
 
-    function save() { localStorage.setItem('vrfl_final_pro', JSON.stringify(game)); }
+    function save() { localStorage.setItem('vrfl_v3_ultra_market', JSON.stringify(state)); }
 
     window.onload = () => {
-        const saved = localStorage.getItem('vrfl_final_pro');
-        if(saved) game = JSON.parse(saved);
+        const d = localStorage.getItem('vrfl_v3_ultra_market');
+        if(d) state = JSON.parse(d);
         setTimeout(() => {
             document.getElementById('loader').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('main-app').style.opacity = '1';
+                document.getElementById('app').style.opacity = '1';
                 updateUI();
             }, 800);
-        }, 2500);
+        }, 2000);
     };
 
     function nav(id, el) {
@@ -161,11 +159,11 @@
         updateUI();
     }
 
-    function setLeagueView(v) { game.view = v; updateUI(); }
+    function setTab(t) { state.view = t; updateUI(); }
 
-    function simulateRound() {
-        if(game.round > game.maxRounds) return alert("Сезон окончен!");
-        let t = [...game.teams].sort(() => Math.random() - 0.5);
+    function sim() {
+        if(state.round > 12) return alert("Сезон окончен!");
+        let t = [...state.teams].sort(() => Math.random() - 0.5);
         for(let i=0; i<t.length-1; i+=2) {
             let t1 = t[i], t2 = t[i+1];
             let s1 = Math.floor(Math.random()*4), s2 = Math.floor(Math.random()*3);
@@ -173,115 +171,104 @@
             if(s1 > s2) { t1.pts+=3; t1.w++; t2.l++; }
             else if(s1 < s2) { t2.pts+=3; t2.w++; t1.l++; }
             else { t1.pts++; t2.pts++; t1.d++; t2.d++; }
-            t1.goals += s1; t2.goals += s2;
+            t1.g += s1; t2.g += s2;
 
-            let matchStats = { t1: t1.name, t2: t2.name, s1, s2, events: [], players: [] };
+            let matchStats = { t1: t1.name, t2: t2.name, s1, s2, events: [], playerStats: [] };
 
             [t1, t2].forEach((team, idx) => {
                 let goalsToGive = (idx === 0) ? s1 : s2;
                 team.players.forEach(p => {
                     let rating = (Math.random() * 4 + 5.5).toFixed(1);
                     if(goalsToGive > 0 && Math.random() > 0.6) {
-                        p.g++; goalsToGive--; rating = (parseFloat(rating) + 1.5).toFixed(1);
+                        p.g++; goalsToGive--; rating = (parseFloat(rating) + 1.8).toFixed(1);
                         matchStats.events.push({ type: 'goal', player: p.n });
                     }
-                    if(Math.random() > 0.88) {
+                    if(Math.random() > 0.9) {
                         p.yc++; rating = (rating - 0.5).toFixed(1);
                         matchStats.events.push({ type: 'yc', player: p.n });
                     }
                     p.h.push(parseFloat(rating));
-                    matchStats.players.push({ n: p.n, r: rating, team: team.name });
+                    matchStats.playerStats.push({ n: p.n, r: rating, team: team.name });
                 });
             });
-            game.results.unshift(matchStats);
+            state.history.unshift(matchStats);
         }
-        game.round++;
-        save(); updateUI();
+        state.round++; save(); updateUI();
     }
 
     function updateUI() {
-        const my = game.teams[game.userTeamId];
-        document.getElementById('money-display').innerText = game.money + ' M €';
-        document.getElementById('my-club-name').innerText = my.name;
-        document.getElementById('my-club-logo').src = my.logo;
-        document.getElementById('season-progress').innerText = `ТУР ${game.round} / ${game.maxRounds}`;
+        const my = state.teams[state.userTeamId];
+        document.getElementById('u-money').innerText = state.money + ' M €';
+        document.getElementById('my-name').innerText = my.name;
+        document.getElementById('my-logo').src = my.logo;
+        document.getElementById('season-info').innerText = `ТУР ${state.round} / 12`;
 
-        // Главная
-        document.getElementById('home-clubs').innerHTML = game.teams.map(t => `
-            <div class="match-item" onclick="viewClub(${t.id})">
+        document.getElementById('home-clubs-list').innerHTML = state.teams.map(t => `
+            <div class="row-item" onclick="viewClub(${t.id})">
                 <span><img src="${t.logo}" class="logo-sm"><b>${t.name}</b></span>
-                <span style="color:var(--neon); font-size:11px">ИНФО</span>
-            </div>
-        `).join('');
+                <span style="color:var(--neon); font-size:11px">СТАТИСТИКА</span>
+            </div>`).join('');
 
-        // Лига
         let lv = document.getElementById('league-content');
-        if(game.view === 'table') {
+        if(state.view === 'table') {
             let h = '<table><tr><th>КЛУБ</th><th>В</th><th>Н</th><th>П</th><th>О</th></tr>';
-            [...game.teams].sort((a,b)=>b.pts-a.pts).forEach(t => {
+            [...state.teams].sort((a,b)=>b.pts-a.pts).forEach(t => {
                 h += `<tr><td><img src="${t.logo}" class="logo-sm">${t.name}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td><b>${t.pts}</b></td></tr>`;
             });
-            lv.innerHTML = `<div class="card">${h}</table></div><button class="btn" onclick="simulateRound()">ИГРАТЬ ТУР</button>
-                            <h4 style="margin:20px 0 10px 0">ПОСЛЕДНИЕ ИГРЫ</h4>
-                            ${game.results.slice(0, 5).map((m, i) => `
-                                <div class="match-item" onclick="viewMatch(${i})">
-                                    <span>${m.t1}</span><span class="score-box">${m.s1}:${m.s2}</span><span>${m.t2}</span>
-                                </div>
-                            `).join('')}`;
+            lv.innerHTML = `<div class="card">${h}</table></div><button class="btn" onclick="sim()">ИГРАТЬ ТУР</button>
+                            ${state.history.slice(0, 5).map((m, i) => `<div class="row-item" onclick="viewMatch(${i})">
+                                <span>${m.t1}</span><span class="score-box">${m.s1}:${m.s2}</span><span>${m.t2}</span>
+                            </div>`).join('')}`;
+        } else if(state.view === 'market') {
+            lv.innerHTML = state.teams.flatMap(t => t.id !== state.userTeamId ? t.players.map((p, pi) => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center">
+                    <div onclick="viewPlayer(${t.id}, ${pi})"><b>${p.n}</b><br><small>${t.name}</small></div>
+                    <button class="btn" style="width:auto; padding:8px 15px" onclick="buy(${t.id}, ${pi})">${Math.round(p.r/1.5)}M</button>
+                </div>`) : []).join('');
         } else {
-            lv.innerHTML = `<div class="card" style="text-align:center"><h3>PLAY-OFF CUP</h3><p>Турнир начнется после 12 туров</p></div>`;
+            lv.innerHTML = `<div class="card" style="text-align:center"><h3>PLAY-OFF CUP</h3><p>Доступно в конце сезона</p></div>`;
         }
 
-        // Клуб
-        document.getElementById('my-squad-list').innerHTML = my.players.map((p, i) => `
-            <div class="match-item" onclick="viewPlayer(${game.userTeamId}, ${i})">
-                <span>${p.n}</span><b style="color:var(--neon)">OVR ${p.r}</b>
-            </div>
-        `).join('');
+        document.getElementById('my-squad').innerHTML = my.players.map((p, i) => `
+            <div class="row-item" onclick="viewPlayer(${state.userTeamId}, ${i})"><span>${p.n}</span><b>OVR ${p.r}</b></div>`).join('');
     }
 
     function viewMatch(idx) {
-        const m = game.results[idx];
-        let pList = m.players.map(p => `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #222">
-            <span>${p.n} <small>(${p.team})</small></span><b>${p.r}</b>
-        </div>`).join('');
-        
+        const m = state.history[idx];
         openModal(`
             <div style="padding:40px 20px; text-align:center">
                 <h2>${m.t1} ${m.s1}:${m.s2} ${m.t2}</h2>
-                <div class="card" style="text-align:left">
-                    <h4 style="color:var(--neon)">СОБЫТИЯ</h4>
-                    ${m.events.map(e => `<div>${e.type==='goal'?'⚽':'🟨'} ${e.player}</div>`).join('') || 'Тихий матч'}
-                </div>
-                <h4 style="text-align:left">ОЦЕНКИ ИГРОКОВ:</h4>
-                <div class="card" style="text-align:left; font-size:13px">${pList}</div>
-            </div>
-        `);
+                <div class="card" style="text-align:left"><h4 style="color:var(--neon)">СОБЫТИЯ</h4>
+                ${m.events.map(e => `<div>${e.type==='goal'?'⚽':'🟨'} ${e.player}</div>`).join('') || 'Нет событий'}</div>
+                <h4 style="text-align:left">ОЦЕНКИ:</h4>
+                <div class="card" style="text-align:left; font-size:13px">
+                ${m.playerStats.map(p => `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #222">
+                    <span>${p.n} <small>(${p.team})</small></span><b>${p.r}</b></div>`).join('')}</div>
+            </div>`);
     }
 
     function viewPlayer(tid, pid) {
-        const p = game.teams[tid].players[pid];
+        const p = state.teams[tid].players[pid];
         const avg = p.h.length ? (p.h.reduce((a,b)=>a+b,0)/p.h.length).toFixed(1) : '0.0';
         openModal(`
             <div style="padding:50px 20px; text-align:center">
                 <div style="font-size:60px">👤</div>
-                <h2 style="margin:10px 0">${p.n}</h2>
+                <h2>${p.n}</h2>
                 <div style="font-size:24px; color:var(--neon); font-weight:900">OVR ${p.r}</div>
                 <div class="card" style="display:flex; justify-content:space-around; margin-top:20px">
                     <div><b>${p.g}</b><br><small>ГОЛЫ</small></div>
                     <div><b>${avg}</b><br><small>СР. ОЦЕНКА</small></div>
                     <div><b>${p.yc}</b><br><small>ЖК</small></div>
                 </div>
-                <h4 style="text-align:left">ГРАФИК ФОРМЫ:</h4>
+                <h4 style="text-align:left">ФОРМА (10 ИГР):</h4>
                 <div style="display:flex; gap:8px; overflow-x:auto">
                     ${p.h.slice(-10).map(r => `<div class="card" style="padding:10px; min-width:35px; border-color:var(--neon)">${r}</div>`).join('')}
                 </div>
-            </div>
-        `);
+            </div>`);
     }
 
     function viewClub(id) {
-        const t = game.teams[id];
+        const t = state.teams[id];
         openModal(`
             <div style="padding:40px 20px; text-align:center; background:linear-gradient(180deg, #7000ff33, transparent)">
                 <img src="${t.logo}" style="width:90px; height:90px; border-radius:15px">
@@ -289,21 +276,31 @@
             </div>
             <div style="padding:20px">
                 <div class="card" style="display:flex; justify-content:space-around; text-align:center">
-                    <div><b>${t.w}-${t.d}-${t.l}</b><br><small>РЕКОРД</small></div>
-                    <div><b>${t.goals}</b><br><small>ГОЛЫ</small></div>
+                    <div><b>${t.w}-${t.d}-${t.l}</b><br><small>В-Н-П</small></div>
+                    <div><b>${t.g}</b><br><small>ГОЛЫ</small></div>
                     <div><b>${t.pts}</b><br><small>ОЧКИ</small></div>
                 </div>
-                <h4>СОСТАВ КЛУБА:</h4>
-                ${t.players.map((p, i) => `<div class="match-item" onclick="viewPlayer(${id}, ${i})"><span>${p.n}</span><b>${p.r}</b></div>`).join('')}
-            </div>
-        `);
+                <h4>СОСТАВ:</h4>
+                ${t.players.map((p, i) => `<div class="row-item" onclick="viewPlayer(${id}, ${i})"><span>${p.n}</span><b>${p.r}</b></div>`).join('')}
+            </div>`);
     }
 
-    function addPlayer() {
-        let n = document.getElementById('new-player').value;
+    function buy(tid, pi) {
+        let p = state.teams[tid].players[pi];
+        let cost = Math.round(p.r/1.5);
+        if(state.money >= cost) {
+            state.money -= cost;
+            state.teams[state.userTeamId].players.push(p);
+            state.teams[tid].players.splice(pi, 1);
+            save(); updateUI(); alert("Трансфер завершен!");
+        } else alert("Недостаточно средств!");
+    }
+
+    function addCap() {
+        let n = document.getElementById('cap-input').value;
         if(n) {
-            game.teams[game.userTeamId].players.push({n, r: 80, g:0, yc:0, rc:0, h:[]});
-            document.getElementById('new-player').value = '';
+            state.teams[state.userTeamId].players.push({n, r: 82, g:0, yc:0, h:[]});
+            document.getElementById('cap-input').value = '';
             save(); updateUI();
         }
     }
