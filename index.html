@@ -3,40 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VRFL Manager</title>
+    <title>VRFL Premium</title>
     <style>
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        :root { --neon: #0ff; --bg: #0a0a0a; --card-bg: rgba(20, 20, 20, 0.95); }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        
+        /* Фон со стадионом */
         .app-container {
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/hxspt08L/751-11-20260315013231.png');
-            background-size: cover; background-position: center; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://i.ibb.co/hxspt08L/751-11-20260315013231.png');
+            background-size: cover; background-position: center; height: 100vh; display: flex; flex-direction: column;
         }
-        .card {
-            background: rgba(20, 20, 20, 0.9); border: 2px solid #0ff; box-shadow: 0 0 20px #0ff;
-            border-radius: 20px; padding: 30px; width: 80%; text-align: center;
+
+        /* Заголовок */
+        .header { padding: 15px; text-align: center; border-bottom: 1px solid rgba(0, 255, 255, 0.2); font-weight: 900; letter-spacing: 3px; color: var(--neon); }
+
+        /* Контентная часть */
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
+        .screen { display: none; animation: fadeIn 0.3s; }
+        .screen.active { display: block; }
+
+        /* Карточки и Таблицы */
+        .card { background: var(--card-bg); border: 1px solid var(--neon); border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 0 10px rgba(0,255,255,0.1); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { color: var(--neon); text-align: left; padding: 10px; border-bottom: 1px solid #333; }
+        td { padding: 10px; border-bottom: 1px solid #222; }
+
+        /* Счет в матче */
+        .match-score-big { font-size: 4rem; font-weight: 900; text-shadow: 0 0 15px var(--neon); margin: 15px 0; }
+
+        /* Нижнее меню */
+        .nav-bar {
+            background: rgba(10, 10, 10, 0.98); border-top: 1px solid var(--neon);
+            display: flex; justify-content: space-around; padding: 10px 0; position: fixed; bottom: 0; width: 100%;
         }
-        .score { font-size: 5rem; font-weight: bold; margin: 15px 0; text-shadow: 0 0 15px #0ff; }
-        .teams { font-size: 1.2rem; letter-spacing: 2px; color: #0ff; text-transform: uppercase; font-weight: bold; }
-        button {
-            background: #0ff; color: #000; border: none; padding: 18px 30px; font-weight: 900;
-            border-radius: 10px; margin-top: 20px; cursor: pointer; text-transform: uppercase; width: 100%; transition: 0.2s;
-        }
-        button:active { transform: scale(0.95); }
+        .nav-item { color: #555; text-align: center; font-size: 0.65rem; text-transform: uppercase; font-weight: bold; cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--neon); text-shadow: 0 0 5px var(--neon); }
+        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+
+        button { background: var(--neon); color: #000; border: none; padding: 15px; font-weight: 900; border-radius: 8px; width: 100%; text-transform: uppercase; cursor: pointer; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <div class="card">
-            <div class="teams">FC DEDUSHKI vs ROVERS</div>
-            <div class="score" id="match-score">0 : 0</div>
-            <button onclick="simulate()">Симулировать</button>
+        <div class="header">VRFL MANAGER</div>
+        
+        <div class="main-content">
+            <div id="screen-match" class="screen active">
+                <div class="card" style="text-align: center;">
+                    <div style="font-size: 0.8rem; letter-spacing: 2px;">ПРЯМОЙ ЭФИР</div>
+                    <div style="margin-top: 10px; font-weight: bold;">FC DEDUSHKI vs ROVERS</div>
+                    <div class="match-score-big" id="score-val">0 : 0</div>
+                    <button onclick="runSim()">СИМУЛИРОВАТЬ</button>
+                </div>
+            </div>
+
+            <div id="screen-table" class="screen">
+                <div class="card">
+                    <h3 style="margin-top:0; color:var(--neon)">ТУРНИРНАЯ ТАБЛИЦА</h3>
+                    <table>
+                        <tr><th>#</th><th>КЛУБ</th><th>И</th><th>О</th></tr>
+                        <tr><td>1</td><td>FC DEDUSHKI</td><td>0</td><td>0</td></tr>
+                        <tr><td>2</td><td>ROVERS</td><td>0</td><td>0</td></tr>
+                        <tr><td>3</td><td>ЖНЕЦ</td><td>0</td><td>0</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div id="screen-teams" class="screen">
+                <div class="card">
+                    <h3 style="margin-top:0; color:var(--neon)">СПИСОК КОМАНД</h3>
+                    <div style="padding: 5px 0; border-bottom: 1px solid #333;">🛡 FC DEDUSHKI <span style="float:right; color:var(--neon)">92 OVR</span></div>
+                    <div style="padding: 5px 0; border-bottom: 1px solid #333;">⚔️ ЖНЕЦ <span style="float:right; color:var(--neon)">88 OVR</span></div>
+                    <div style="padding: 5px 0;">🎗 ROVERS <span style="float:right; color:var(--neon)">84 OVR</span></div>
+                </div>
+            </div>
+
+            <div id="screen-stats" class="screen">
+                <div class="card">
+                    <h3 style="margin-top:0; color:var(--neon)">БОМБАРДИРЫ</h3>
+                    <p style="font-size: 0.9rem; color: #888;">Статистика будет обновляться после матчей...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="showSc('screen-match', this)"><span class="nav-icon">⚽</span>МАТЧ</div>
+            <div class="nav-item" onclick="showSc('screen-table', this)"><span class="nav-icon">📊</span>ТАБЛИЦА</div>
+            <div class="nav-item" onclick="showSc('screen-teams', this)"><span class="nav-icon">🛡</span>КЛУБЫ</div>
+            <div class="nav-item" onclick="showSc('screen-stats', this)"><span class="nav-icon">👤</span>ИГРОКИ</div>
         </div>
     </div>
+
     <script>
-        function simulate() {
+        function showSc(id, el) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function runSim() {
             const s1 = Math.floor(Math.random() * 5);
             const s2 = Math.floor(Math.random() * 5);
-            document.getElementById('match-score').innerText = s1 + " : " + s2;
-            if (window.navigator.vibrate) window.navigator.vibrate(50);
+            document.getElementById('score-val').innerText = s1 + " : " + s2;
+            if (window.navigator.vibrate) window.navigator.vibrate(60);
         }
     </script>
 </body>
