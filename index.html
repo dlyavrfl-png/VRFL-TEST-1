@@ -3,113 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VRFL Premium</title>
+    <title>VRFL ULTIMATE MANAGER</title>
     <style>
-        :root { --neon: #0ff; --bg: #0a0a0a; --card-bg: rgba(20, 20, 20, 0.95); }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
-        
-        /* Фон со стадионом */
-        .app-container {
-            background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://i.ibb.co/hxspt08L/751-11-20260315013231.png');
-            background-size: cover; background-position: center; height: 100vh; display: flex; flex-direction: column;
-        }
-
-        /* Заголовок */
-        .header { padding: 15px; text-align: center; border-bottom: 1px solid rgba(0, 255, 255, 0.2); font-weight: 900; letter-spacing: 3px; color: var(--neon); }
-
-        /* Контентная часть */
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
+        :root { --neon: #0ff; --bg: #0a0a0a; --card-bg: rgba(20, 20, 20, 0.98); }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
+        .app-container { background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), url('https://i.ibb.co/hxspt08L/751-11-20260315013231.png'); background-size: cover; height: 100vh; display: flex; flex-direction: column; }
+        .header { padding: 15px; text-align: center; border-bottom: 1px solid var(--neon); font-weight: 900; color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px; }
         .screen { display: none; animation: fadeIn 0.3s; }
         .screen.active { display: block; }
-
-        /* Карточки и Таблицы */
-        .card { background: var(--card-bg); border: 1px solid var(--neon); border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 0 10px rgba(0,255,255,0.1); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th { color: var(--neon); text-align: left; padding: 10px; border-bottom: 1px solid #333; }
-        td { padding: 10px; border-bottom: 1px solid #222; }
-
-        /* Счет в матче */
-        .match-score-big { font-size: 4rem; font-weight: 900; text-shadow: 0 0 15px var(--neon); margin: 15px 0; }
-
-        /* Нижнее меню */
-        .nav-bar {
-            background: rgba(10, 10, 10, 0.98); border-top: 1px solid var(--neon);
-            display: flex; justify-content: space-around; padding: 10px 0; position: fixed; bottom: 0; width: 100%;
-        }
-        .nav-item { color: #555; text-align: center; font-size: 0.65rem; text-transform: uppercase; font-weight: bold; cursor: pointer; flex: 1; }
-        .nav-item.active { color: var(--neon); text-shadow: 0 0 5px var(--neon); }
-        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
-
-        button { background: var(--neon); color: #000; border: none; padding: 15px; font-weight: 900; border-radius: 8px; width: 100%; text-transform: uppercase; cursor: pointer; }
-        
+        .card { background: var(--card-bg); border: 1px solid var(--neon); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { color: var(--neon); text-align: left; padding: 8px; border-bottom: 1px solid #333; }
+        td { padding: 8px; border-bottom: 1px solid #222; }
+        .score-big { font-size: 3.5rem; font-weight: 900; margin: 10px 0; text-shadow: 0 0 15px var(--neon); }
+        .nav-bar { background: #000; border-top: 1px solid var(--neon); display: flex; position: fixed; bottom: 0; width: 100%; padding: 10px 0; }
+        .nav-item { flex: 1; text-align: center; font-size: 0.6rem; color: #555; cursor: pointer; }
+        .nav-item.active { color: var(--neon); }
+        button { background: var(--neon); color: #000; border: none; padding: 12px; font-weight: 900; border-radius: 5px; width: 100%; cursor: pointer; }
+        .player-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.9rem; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">VRFL MANAGER</div>
-        
-        <div class="main-content">
-            <div id="screen-match" class="screen active">
-                <div class="card" style="text-align: center;">
-                    <div style="font-size: 0.8rem; letter-spacing: 2px;">ПРЯМОЙ ЭФИР</div>
-                    <div style="margin-top: 10px; font-weight: bold;">FC DEDUSHKI vs ROVERS</div>
-                    <div class="match-score-big" id="score-val">0 : 0</div>
-                    <button onclick="runSim()">СИМУЛИРОВАТЬ</button>
-                </div>
-            </div>
-
-            <div id="screen-table" class="screen">
-                <div class="card">
-                    <h3 style="margin-top:0; color:var(--neon)">ТУРНИРНАЯ ТАБЛИЦА</h3>
-                    <table>
-                        <tr><th>#</th><th>КЛУБ</th><th>И</th><th>О</th></tr>
-                        <tr><td>1</td><td>FC DEDUSHKI</td><td>0</td><td>0</td></tr>
-                        <tr><td>2</td><td>ROVERS</td><td>0</td><td>0</td></tr>
-                        <tr><td>3</td><td>ЖНЕЦ</td><td>0</td><td>0</td></tr>
-                    </table>
-                </div>
-            </div>
-
-            <div id="screen-teams" class="screen">
-                <div class="card">
-                    <h3 style="margin-top:0; color:var(--neon)">СПИСОК КОМАНД</h3>
-                    <div style="padding: 5px 0; border-bottom: 1px solid #333;">🛡 FC DEDUSHKI <span style="float:right; color:var(--neon)">92 OVR</span></div>
-                    <div style="padding: 5px 0; border-bottom: 1px solid #333;">⚔️ ЖНЕЦ <span style="float:right; color:var(--neon)">88 OVR</span></div>
-                    <div style="padding: 5px 0;">🎗 ROVERS <span style="float:right; color:var(--neon)">84 OVR</span></div>
-                </div>
-            </div>
-
-            <div id="screen-stats" class="screen">
-                <div class="card">
-                    <h3 style="margin-top:0; color:var(--neon)">БОМБАРДИРЫ</h3>
-                    <p style="font-size: 0.9rem; color: #888;">Статистика будет обновляться после матчей...</p>
-                </div>
+<div class="app-container">
+    <div class="header">VRFL ULTIMATE</div>
+    <div class="main-content">
+        <div id="sc-match" class="screen active">
+            <div class="card" style="text-align:center">
+                <div id="m-teams" style="font-weight:bold">DEDUSHKI vs ROVERS</div>
+                <div class="score-big" id="m-score">0 : 0</div>
+                <div id="scorers" style="font-size:0.75rem; color:var(--neon); margin-bottom:15px; min-height:20px"></div>
+                <button onclick="playMatch()">ИГРАТЬ МАТЧ</button>
             </div>
         </div>
-
-        <div class="nav-bar">
-            <div class="nav-item active" onclick="showSc('screen-match', this)"><span class="nav-icon">⚽</span>МАТЧ</div>
-            <div class="nav-item" onclick="showSc('screen-table', this)"><span class="nav-icon">📊</span>ТАБЛИЦА</div>
-            <div class="nav-item" onclick="showSc('screen-teams', this)"><span class="nav-icon">🛡</span>КЛУБЫ</div>
-            <div class="nav-item" onclick="showSc('screen-stats', this)"><span class="nav-icon">👤</span>ИГРОКИ</div>
+        <div id="sc-table" class="screen">
+            <div class="card"><h3>ТАБЛИЦА</h3><table id="t-body"></table></div>
+        </div>
+        <div id="sc-market" class="screen">
+            <div class="card">
+                <h3 style="color:var(--neon)">ТРАНСФЕРНЫЙ РЫНОК</h3>
+                <div id="market-list"></div>
+            </div>
+        </div>
+        <div id="sc-stats" class="screen">
+            <div class="card"><h3>БОМБАРДИРЫ</h3><div id="b-list"></div></div>
         </div>
     </div>
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="nav('sc-match', this)">МАТЧ</div>
+        <div class="nav-item" onclick="nav('sc-table', this)">ТАБЛИЦА</div>
+        <div class="nav-item" onclick="nav('sc-market', this)">РЫНОК</div>
+        <div id="nav-stats" class="nav-item" onclick="nav('sc-stats', this)">ИГРОКИ</div>
+    </div>
+</div>
 
-    <script>
-        function showSc(id, el) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-        }
+<script>
+    let db = {
+        teams: [
+            { id: 0, name: "FC DEDUSHKI", ovr: 92, budget: 200, pts: 0, played: 0, players: ["Gulik", "Dizzik", "Vaksekov"] },
+            { id: 1, name: "ЖНЕЦ", ovr: 88, budget: 150, pts: 0, played: 0, players: ["Reaper", "Ghost", "Shadow"] },
+            { id: 2, name: "ROVERS", ovr: 84, budget: 120, pts: 0, played: 0, players: ["Speedy", "Tank", "Ace"] }
+        ],
+        market: [
+            { name: "Mbappe", ovr: 91, price: 180 },
+            { name: "Haaland", ovr: 90, price: 170 },
+            { name: "Neymar", ovr: 88, price: 90 }
+        ],
+        scorers: {}
+    };
 
-        function runSim() {
-            const s1 = Math.floor(Math.random() * 5);
-            const s2 = Math.floor(Math.random() * 5);
-            document.getElementById('score-val').innerText = s1 + " : " + s2;
-            if (window.navigator.vibrate) window.navigator.vibrate(60);
+    function nav(id, el) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        if(id === 'sc-table') renderTable();
+        if(id === 'sc-market') renderMarket();
+        if(id === 'sc-stats') renderStats();
+    }
+
+    function playMatch() {
+        let t1 = db.teams[0], t2 = db.teams[2]; 
+        let s1 = Math.floor(Math.random() * (t1.ovr / 20));
+        let s2 = Math.floor(Math.random() * (t2.ovr / 25));
+        document.getElementById('m-score').innerText = `${s1} : ${s2}`;
+        
+        let goals = [];
+        for(let i=0; i<s1; i++) { 
+            let p = t1.players[Math.floor(Math.random()*3)];
+            db.scorers[p] = (db.scorers[p] || 0) + 1;
+            goals.push(p);
         }
-    </script>
+        document.getElementById('scorers').innerText = goals.join(', ');
+        
+        t1.played++; t2.played++;
+        if(s1 > s2) t1.pts += 3; else if(s1 < s2) t2.pts += 3; else { t1.pts++; t2.pts++; }
+        if(window.navigator.vibrate) window.navigator.vibrate([50, 30, 50]);
+    }
+
+    function renderTable() {
+        let h = '<tr><th>#</th><th>КЛУБ</th><th>И</th><th>О</th></tr>';
+        db.teams.sort((a,b) => b.pts - a.pts).forEach((t, i) => {
+            h += `<tr><td>${i+1}</td><td>${t.name}</td><td>${t.played}</td><td>${t.pts}</td></tr>`;
+        });
+        document.getElementById('t-body').innerHTML = h;
+    }
+
+    function renderMarket() {
+        let h = '';
+        db.market.forEach((p, i) => {
+            h += `<div class="player-row">
+                <span>${p.name} (${p.ovr})</span>
+                <button style="width:auto; padding:5px 10px" onclick="buy(${i})">${p.price}M</button>
+            </div>`;
+        });
+        document.getElementById('market-list').innerHTML = h;
+    }
+
+    function buy(idx) {
+        let p = db.market[idx];
+        if(db.teams[0].budget >= p.price) {
+            db.teams[0].budget -= p.price;
+            db.teams[0].players.push(p.name);
+            db.teams[0].ovr += 1;
+            db.market.splice(idx, 1);
+            alert('Контракт подписан!');
+            renderMarket();
+        } else { alert('Недостаточно бюджета!'); }
+    }
+
+    function renderStats() {
+        let h = '';
+        Object.entries(db.scorers).sort((a,b) => b[1] - a[1]).forEach(s => {
+            h += `<div class="player-row"><span>${s[0]}</span><span style="color:var(--neon)">${s[1]} мячей</span></div>`;
+        });
+        document.getElementById('b-list').innerHTML = h || 'Матчей еще не было';
+    }
+</script>
 </body>
 </html>
+    
