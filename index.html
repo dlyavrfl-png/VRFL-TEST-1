@@ -3,70 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VRFL ELITE | PRO EDITION</title>
+    <title>VRFL ELITE | FINAL STABLE</title>
     <style>
-        :root { --neon: #00f2ff; --accent: #7000ff; --bg: #0b0e14; --glass: rgba(255, 255, 255, 0.03); --card-bg: #161b22; --yellow: #ffcf00; --red: #ff4d4d; }
+        :root { --neon: #00f2ff; --accent: #7000ff; --bg: #0b0e14; --glass: rgba(255, 255, 255, 0.05); --card-bg: #161b22; --yellow: #ffcf00; }
         body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; }
-        .bg-pattern { position: fixed; inset: 0; z-index: -1; opacity: 0.05; background-image: linear-gradient(var(--neon) 1px, transparent 1px), linear-gradient(90deg, var(--neon) 1px, transparent 1px); background-size: 40px 40px; }
-
         .app { height: 100vh; display: flex; flex-direction: column; }
-        .header { padding: 15px; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--glass); display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); }
+        .header { padding: 15px; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--glass); display: flex; align-items: center; justify-content: space-between; }
         .content { flex: 1; overflow-y: auto; padding: 15px 15px 100px 15px; }
-        .screen { display: none; animation: fadeIn 0.4s ease; }
-        .screen.active { display: block; }
-
-        .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .btn { background: linear-gradient(90deg, var(--accent), #b000ff); border: none; color: #fff; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 5px; }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.3s ease; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .btn { background: linear-gradient(90deg, var(--accent), #b000ff); border: none; color: #fff; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; }
         .btn-sec { background: #21262d; border: 1px solid #333; }
-        
-        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #0d1117; border-top: 1px solid var(--glass); padding: 12px 0; justify-content: space-around; backdrop-filter: blur(20px); z-index: 100; }
-        .nav-item { text-align: center; font-size: 10px; color: #8b949e; opacity: 0.5; }
-        .nav-item.active { color: var(--neon); opacity: 1; text-shadow: 0 0 10px var(--neon); }
-
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #0d1117; border-top: 1px solid var(--glass); padding: 10px 0; justify-content: space-around; z-index: 100; }
+        .nav-item { text-align: center; font-size: 10px; color: #8b949e; opacity: 0.6; }
+        .nav-item.active { color: var(--neon); opacity: 1; }
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; font-size: 11px; color: #666; padding: 8px; }
-        td { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 14px; }
-        .logo-sm { width: 30px; height: 30px; border-radius: 6px; vertical-align: middle; margin-right: 10px; }
-        .row-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 14px; margin-bottom: 10px; cursor: pointer; }
-        .score-box { font-size: 18px; font-weight: 900; color: var(--neon); letter-spacing: 2px; }
-
+        th { text-align: left; font-size: 11px; color: #666; padding: 5px; }
+        td { padding: 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 14px; }
+        .logo-sm { width: 25px; height: 25px; border-radius: 4px; vertical-align: middle; margin-right: 8px; }
+        .row-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 8px; cursor: pointer; }
+        .score-box { font-size: 16px; font-weight: 900; color: var(--neon); background: #000; padding: 4px 10px; border-radius: 6px; }
         #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 20000; display: none; flex-direction: column; overflow-y: auto; }
-        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 32px; color: #fff; z-index: 20001; }
-
-        .cup-bracket { display: flex; flex-direction: column; gap: 20px; }
-        .match-tag { font-size: 10px; background: var(--accent); padding: 2px 6px; border-radius: 4px; margin-bottom: 5px; display: inline-block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-close { position: absolute; top: 15px; right: 15px; font-size: 28px; color: #fff; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div class="bg-pattern"></div>
-
 <div class="app">
     <div class="header">
-        <div style="font-weight: 900; font-size: 18px;"><span style="color:var(--neon)">VRFL</span> ELITE</div>
-        <div id="u-money" style="font-weight:bold; color:var(--yellow);">0 M €</div>
+        <div style="font-weight: 900;"><span style="color:var(--neon)">VRFL</span> ELITE</div>
+        <div id="u-money" style="font-weight:bold; color:var(--yellow);">250 M €</div>
     </div>
 
     <div class="content">
         <div id="sc-home" class="screen active">
             <div class="card" style="border: 1px solid var(--neon);">
                 <div style="display:flex; align-items:center">
-                    <img id="my-logo" src="" class="logo-sm" style="width:50px; height:50px">
+                    <img id="my-logo" src="" class="logo-sm" style="width:40px; height:40px">
                     <div>
-                        <h2 id="my-name" style="margin:0">...</h2>
-                        <span id="season-info" style="color:var(--neon); font-size:11px; font-weight:bold">ТУР 1 / 12</span>
+                        <h3 id="my-name" style="margin:0">...</h3>
+                        <span id="season-info" style="color:var(--neon); font-size:10px;">ТУР 1 / 12</span>
                     </div>
                 </div>
             </div>
-            <button id="btn-reset" class="btn" style="background:var(--yellow); color:#000; display:none; margin-bottom:15px" onclick="resetSeason()">НОВЫЙ СЕЗОН (СБРОС ТАБЛИЦЫ)</button>
-            <h4 style="color:#8b949e; margin: 10px 5px">КЛУБЫ ПРЕМЬЕР-ЛИГИ</h4>
+            <button id="btn-reset" class="btn" style="background:var(--yellow); color:#000; display:none; margin-bottom:10px" onclick="resetSeason()">НАЧАТЬ НОВЫЙ СЕЗОН</button>
+            <h4 style="color:#8b949e; margin: 10px 0">ВСЕ КЛУБЫ</h4>
             <div id="home-clubs"></div>
         </div>
 
         <div id="sc-league" class="screen">
-            <div style="display:flex; gap:8px; margin-bottom:15px">
+            <div style="display:flex; gap:5px; margin-bottom:15px">
                 <button class="btn" id="t-tab" onclick="setTab('table')">ТАБЛИЦА</button>
                 <button class="btn btn-sec" id="c-tab" onclick="setTab('cup')">КУБОК</button>
                 <button class="btn btn-sec" id="m-tab" onclick="setTab('market')">РЫНОК</button>
@@ -76,11 +64,10 @@
 
         <div id="sc-club" class="screen">
             <div class="card">
-                <h3>Трансферы состава</h3>
-                <input type="text" id="p-name" placeholder="Имя игрока..." style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff; border-radius:8px; outline:none">
+                <h3>Трансферы</h3>
+                <input type="text" id="p-name" placeholder="Имя игрока..." style="width:100%; padding:10px; background:#000; border:1px solid #333; color:#fff; border-radius:8px; margin-bottom:10px; outline:none">
                 <button class="btn" onclick="addPlayer()">ДОБАВИТЬ В КЛУБ</button>
             </div>
-            <h4 style="color:#8b949e; margin: 10px 5px">ВАШИ ИГРОКИ</h4>
             <div id="my-squad"></div>
         </div>
     </div>
@@ -94,27 +81,27 @@
 
 <div id="modal">
     <div class="modal-close" onclick="closeModal()">✕</div>
-    <div id="modal-body" style="padding-top:40px"></div>
+    <div id="modal-body" style="padding:40px 15px"></div>
 </div>
 
 <script>
     let db = {
-        userTeamId: 0, money: 250, round: 1, maxRounds: 12, view: 'table',
+        userTeamId: 0, money: 250, round: 1, view: 'table',
         teams: [
-            { id: 0, name: "Aurelian United", logo: "https://i.ibb.co.com/chQPDKjg/IMG-20260315-111459-312.png", pts: 0, w:0, d:0, l:0, g:0, players: [{n:"Тигран Казарян", r:92, g:0, h:[]}, {n:"Stepaneko", r:88, g:0, h:[]}, {n:"Vortexov", r:84, g:0, h:[]}] },
-            { id: 1, name: "FC Cardillero", logo: "https://i.ibb.co.com/PsmJjzJt/1773555326089.png", pts: 0, w:0, d:0, l:0, g:0, players: [{n:"Нелисек", r:91, g:0, h:[]}, {n:"Atacker", r:89, g:0, h:[]}] },
+            { id: 0, name: "Aurelian United", logo: "https://i.ibb.co.com/chQPDKjg/IMG-20260315-111459-312.png", pts: 0, w:0, d:0, l:0, g:0, players: [{n:"Тигран Казарян", r:92, g:0, h:[]}, {n:"Stepaneko", r:88, g:0, h:[]}] },
+            { id: 1, name: "FC Cardillero", logo: "https://i.ibb.co.com/PsmJjzJt/1773555326089.png", pts: 0, w:0, d:0, l:0, g:0, players: [{n:"Нелисек", r:91, g:0, h:[]}, {n:"LeBoomich", r:86, g:0, h:[]}] },
             { id: 2, name: "Torpedo", logo: "https://i.ibb.co.com/j9Sw1gpB/IMG-20260315-111455-660.png", pts: 0, w:0, d:0, l:0, g:0, players: [{n:"Фил", r:94, g:0, h:[]}, {n:"Демпик", r:92, g:0, h:[]}] },
             { id: 3, name: "FC Potential", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, w:0, d:0, l:0, g:0, players: [{n:"Niko", r:89, g:0, h:[]}] },
             { id: 4, name: "FC Outsiders", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, w:0, d:0, l:0, g:0, players: [{n:"Костылин", r:62, g:0, h:[]}] }
         ],
         results: [],
-        cup: { semi: [], final: null }
+        cup: null
     };
 
-    function save() { localStorage.setItem('vrfl_ultra_v4', JSON.stringify(db)); }
-    
+    function save() { localStorage.setItem('vrfl_v5_final', JSON.stringify(db)); }
+
     window.onload = () => {
-        const data = localStorage.getItem('vrfl_ultra_v4');
+        const data = localStorage.getItem('vrfl_v5_final');
         if(data) db = JSON.parse(data);
         updateUI();
     };
@@ -134,34 +121,41 @@
         updateUI();
     }
 
-    // Алгоритм Round Robin (Круговая система)
-    function simulateLeagueRound() {
-        if(db.round > db.maxRounds) return;
-        
-        let teams = [...db.teams];
-        if(teams.length % 2 !== 0) teams.push({ id: -1, name: "BYE" }); // Заглушка для нечетного числа
+    // Жесткое расписание для 5 команд (Round Robin)
+    const schedule = [
+        [[0, 1], [2, 3]], // Тур 1 (4 отдых)
+        [[4, 0], [1, 2]], // Тур 2 (3 отдых)
+        [[3, 4], [0, 2]], // Тур 3 (1 отдых)
+        [[1, 3], [2, 4]], // Тур 4 (0 отдых)
+        [[0, 3], [1, 4]], // Тур 5 (2 отдых)
+        [[1, 0], [3, 2]], // Тур 6 (повтор цикла)
+        [[0, 4], [2, 1]], // Тур 7
+        [[4, 3], [2, 0]], // Тур 8
+        [[3, 1], [4, 2]], // Тур 9
+        [[3, 0], [4, 1]], // Тур 10
+        [[0, 1], [2, 3]], // Тур 11
+        [[4, 0], [1, 2]]  // Тур 12
+    ];
 
-        let n = teams.length;
-        let rotationIndex = (db.round - 1) % (n - 1);
+    function simulateRound() {
+        if(db.round > 12) return;
         
-        for (let i = 0; i < n / 2; i++) {
-            let t1 = teams[(rotationIndex + i) % (n - 1)];
-            let t2 = (i === 0) ? teams[n - 1] : teams[(rotationIndex + n - 1 - i) % (n - 1)];
-
-            if (t1.id !== -1 && t2.id !== -1) {
-                runMatch(t1, t2);
-            }
-        }
+        const currentMatches = schedule[db.round - 1];
+        currentMatches.forEach(pair => {
+            const t1 = db.teams[pair[0]];
+            const t2 = db.teams[pair[1]];
+            runMatch(t1, t2);
+        });
 
         db.round++;
-        if(db.round > db.maxRounds) generateCup();
+        if(db.round > 12) generateCup();
         save(); updateUI();
     }
 
     function runMatch(t1, t2, isCup = false) {
         let s1 = Math.floor(Math.random() * 4), s2 = Math.floor(Math.random() * 4);
-        
-        // В лиге меняем очки
+        if(isCup && s1 === s2) Math.random() > 0.5 ? s1++ : s2++; // Победитель в кубке
+
         if(!isCup) {
             if(s1 > s2) { t1.pts+=3; t1.w++; t2.l++; }
             else if(s1 < s2) { t2.pts+=3; t2.w++; t1.l++; }
@@ -169,38 +163,30 @@
             t1.g += s1; t2.g += s2;
         }
 
-        let events = [];
-        let pStats = [];
-
+        let ev = []; let ps = [];
         [t1, t2].forEach((team, idx) => {
-            let score = (idx === 0) ? s1 : s2;
+            let goals = (idx === 0) ? s1 : s2;
             team.players.forEach(p => {
                 let r = (Math.random() * 3 + 6).toFixed(1);
-                if(score > 0 && Math.random() > 0.5) { 
-                    p.g++; score--; r = (parseFloat(r) + 2).toFixed(1); 
-                    events.push(`⚽ ${p.n}`);
-                }
+                if(goals > 0 && Math.random() > 0.4) { p.g++; goals--; r = (parseFloat(r)+2).toFixed(1); ev.push(`⚽ ${p.n}`); }
                 p.h.push(parseFloat(r));
-                pStats.push({ n: p.n, r, team: team.name });
+                ps.push({n:p.n, r, t:team.name});
             });
         });
 
-        let match = { t1: t1.name, t2: t2.name, s1, s2, events, pStats, id: Date.now() + Math.random() };
+        const match = { t1:t1.name, t2:t2.name, s1, s2, ev, ps, id:Date.now()+Math.random() };
         if(!isCup) db.results.unshift(match);
         return match;
     }
 
     function generateCup() {
-        let top4 = [...db.teams].sort((a,b) => b.pts - a.pts).slice(0, 4);
-        db.cup.semi = [
-            runMatch(top4[0], top4[3], true),
-            runMatch(top4[1], top4[2], true)
-        ];
-        // Финалисты (кто забил больше или рандом при ничьей)
-        let f1 = (db.cup.semi[0].s1 >= db.cup.semi[0].s2) ? top4[0] : top4[3];
-        let f2 = (db.cup.semi[1].s1 >= db.cup.semi[1].s2) ? top4[1] : top4[2];
-        db.cup.final = runMatch(f1, f2, true);
-        save();
+        const top = [...db.teams].sort((a,b)=>b.pts - a.pts).slice(0, 4);
+        const s1 = runMatch(top[0], top[3], true);
+        const s2 = runMatch(top[1], top[2], true);
+        const f1 = s1.s1 > s1.s2 ? top[0] : top[3];
+        const f2 = s2.s1 > s2.s2 ? top[1] : top[2];
+        const final = runMatch(f1, f2, true);
+        db.cup = { s1, s2, final };
     }
 
     function updateUI() {
@@ -208,156 +194,81 @@
         document.getElementById('u-money').innerText = db.money + ' M €';
         document.getElementById('my-name').innerText = my.name;
         document.getElementById('my-logo').src = my.logo;
-        document.getElementById('season-info').innerText = db.round > db.maxRounds ? "СЕЗОН ЗАВЕРШЕН" : `ТУР ${db.round} / 12`;
-        document.getElementById('btn-reset').style.display = db.round > db.maxRounds ? 'block' : 'none';
+        document.getElementById('season-info').innerText = db.round > 12 ? "СЕЗОН ЗАВЕРШЕН" : `ТУР ${db.round} / 12`;
+        document.getElementById('btn-reset').style.display = db.round > 12 ? 'block' : 'none';
 
         document.getElementById('home-clubs').innerHTML = db.teams.map(t => `
             <div class="row-item" onclick="viewClub(${t.id})">
                 <span><img src="${t.logo}" class="logo-sm"><b>${t.name}</b></span>
-                <span style="color:var(--neon); font-size:11px">ИНФО</span>
+                <span style="color:var(--neon); font-size:10px">ОЧКИ: ${t.pts}</span>
             </div>`).join('');
 
-        let content = document.getElementById('league-content');
+        let lv = document.getElementById('league-content');
         if(db.view === 'table') {
-            let tableHtml = '<table><tr><th>КЛУБ</th><th>В</th><th>Н</th><th>П</th><th>О</th></tr>';
-            [...db.teams].sort((a,b) => b.pts - a.pts).forEach(t => {
-                tableHtml += `<tr><td><img src="${t.logo}" class="logo-sm">${t.name}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td><b>${t.pts}</b></td></tr>`;
-            });
-            content.innerHTML = `<div class="card">${tableHtml}</table></div>
-                ${db.round <= db.maxRounds ? `<button class="btn" onclick="simulateLeagueRound()">ИГРАТЬ ТУР ${db.round}</button>` : ''}
-                <h4 style="margin:15px 5px">ПОСЛЕДНИЕ МАТЧИ</h4>
-                ${db.results.slice(0, 6).map(m => `
-                <div class="row-item" onclick="openMatchDetails('${m.id}')">
-                    <span style="width:35%">${m.t1}</span>
-                    <span class="score-box">${m.s1}:${m.s2}</span>
-                    <span style="width:35%; text-align:right">${m.t2}</span>
+            let h = '<table><tr><th>КЛУБ</th><th>В</th><th>Н</th><th>П</th><th>О</th></tr>';
+            [...db.teams].sort((a,b)=>b.pts-a.pts).forEach(t => h += `<tr><td><img src="${t.logo}" class="logo-sm">${t.name}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td><b>${t.pts}</b></td></tr>`);
+            lv.innerHTML = `<div class="card">${h}</table></div>
+                ${db.round <= 12 ? `<button class="btn" onclick="simulateRound()">ИГРАТЬ ТУР ${db.round}</button>` : ''}
+                ${db.results.slice(0, 5).map(m => `
+                <div class="row-item" onclick="viewM('${m.id}')">
+                    <span>${m.t1}</span><span class="score-box">${m.s1}:${m.s2}</span><span>${m.t2}</span>
                 </div>`).join('')}`;
         } else if(db.view === 'cup') {
-            if(!db.cup.final) {
-                content.innerHTML = `<div class="card" style="text-align:center; padding:40px">
-                    <h3>🏆 КУБОК VRFL</h3>
-                    <p style="color:#666">Сетка плей-офф сформируется автоматически после 12 туров.</p>
-                </div>`;
-            } else {
-                content.innerHTML = `
-                <div class="cup-bracket">
-                    <div class="card">
-                        <span class="match-tag">ФИНАЛ</span>
-                        <div class="row-item" onclick="showMatchDirectly('final')">
-                            <span>${db.cup.final.t1}</span><span class="score-box">${db.cup.final.s1}:${db.cup.final.s2}</span><span>${db.cup.final.t2}</span>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <span class="match-tag">ПОЛУФИНАЛЫ</span>
-                        ${db.cup.semi.map((m, i) => `
-                        <div class="row-item" onclick="showMatchDirectly('semi', ${i})">
-                            <span>${m.t1}</span><span class="score-box">${m.s1}:${m.s2}</span><span>${m.t2}</span>
-                        </div>`).join('')}
-                    </div>
-                </div>`;
-            }
+            if(!db.cup) lv.innerHTML = `<div class="card" style="text-align:center"><h3>🏆 КУБОК</h3><p>Доступен после 12 туров</p></div>`;
+            else lv.innerHTML = `
+                <h4 style="color:var(--neon)">ФИНАЛ</h4>
+                <div class="row-item" onclick="showMatchData('final')"><span>${db.cup.final.t1}</span><span class="score-box">${db.cup.final.s1}:${db.cup.final.s2}</span><span>${db.cup.final.t2}</span></div>
+                <h4 style="margin-top:20px">ПОЛУФИНАЛЫ</h4>
+                <div class="row-item" onclick="showMatchData('s1')"><span>${db.cup.s1.t1}</span><span class="score-box">${db.cup.s1.s1}:${db.cup.s1.s2}</span><span>${db.cup.s1.t2}</span></div>
+                <div class="row-item" onclick="showMatchData('s2')"><span>${db.cup.s2.t1}</span><span class="score-box">${db.cup.s2.s1}:${db.cup.s2.s2}</span><span>${db.cup.s2.t2}</span></div>`;
         } else {
-            content.innerHTML = db.teams.flatMap(t => t.id !== db.userTeamId ? t.players.map((p, pi) => `
+            lv.innerHTML = db.teams.flatMap(t => t.id !== db.userTeamId ? t.players.map((p, pi) => `
                 <div class="card" style="display:flex; justify-content:space-between; align-items:center">
-                    <div><b>${p.n}</b><br><small>${t.name} (OVR ${p.r})</small></div>
-                    <button class="btn" style="width:auto; padding:8px 15px; margin:0" onclick="buy(${t.id}, ${pi})">${Math.round(p.r/1.5)}M</button>
+                    <div><b>${p.n}</b><br><small>${t.name}</small></div>
+                    <button class="btn" style="width:auto; padding:5px 10px" onclick="buy(${t.id}, ${pi})">${Math.round(p.r/1.5)}M</button>
                 </div>`) : []).join('');
         }
-
         document.getElementById('my-squad').innerHTML = my.players.map((p, i) => `
-            <div class="row-item" onclick="viewPlayer(${db.userTeamId}, ${i})"><span>${p.n}</span><b>OVR ${p.r}</b></div>`).join('');
+            <div class="row-item" onclick="viewPlayer(${db.userTeamId}, ${i})"><span>${p.n}</span><b>${p.r}</b></div>`).join('');
     }
 
-    function openMatchDetails(mid) {
-        const m = db.results.find(x => x.id == mid);
-        if(!m) return;
-        renderMatchModal(m);
-    }
+    function viewM(id) { const m = db.results.find(x => x.id == id); if(m) renderM(m); }
+    function showMatchData(k) { renderM(db.cup[k]); }
 
-    function showMatchDirectly(type, idx = 0) {
-        const m = type === 'final' ? db.cup.final : db.cup.semi[idx];
-        renderMatchModal(m);
-    }
-
-    function renderMatchModal(m) {
-        openModal(`
-            <div style="text-align:center; padding:20px">
-                <div style="font-size:12px; color:var(--neon); margin-bottom:10px">ОТЧЕТ О МАТЧЕ</div>
-                <h2 style="margin:0">${m.t1} ${m.s1}:${m.s2} ${m.t2}</h2>
-                <div class="card" style="margin-top:20px; text-align:left">
-                    <h4 style="margin:0 0 10px 0; color:var(--neon)">СОБЫТИЯ</h4>
-                    ${m.events.map(e => `<div>${e}</div>`).join('') || 'Без голов'}
-                </div>
-                <h4 style="text-align:left; margin-left:5px">ОЦЕНКИ ИГРОКОВ:</h4>
-                <div class="card" style="text-align:left; font-size:13px">
-                    ${m.pStats.map(ps => `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #222">
-                        <span>${ps.n} <small style="color:#666">(${ps.team})</small></span><b>${ps.r}</b>
-                    </div>`).join('')}
-                </div>
-            </div>`);
+    function renderM(m) {
+        openModal(`<div style="text-align:center"><h2>${m.t1} ${m.s1}:${m.s2} ${m.t2}</h2>
+            <div class="card" style="text-align:left"><h4>СОБЫТИЯ</h4>${m.ev.join('<br>') || 'Нет событий'}</div>
+            <div class="card" style="text-align:left; font-size:12px"><h4>ОЦЕНКИ</h4>
+            ${m.ps.map(p => `<div style="display:flex; justify-content:space-between"><span>${p.n}</span><b>${p.r}</b></div>`).join('')}</div></div>`);
     }
 
     function viewPlayer(tid, pid) {
         const p = db.teams[tid].players[pid];
-        const avg = p.h.length ? (p.h.reduce((a,b)=>a+b,0)/p.h.length).toFixed(1) : '0.0';
-        openModal(`
-            <div style="text-align:center; padding:20px">
-                <div style="font-size:50px">👤</div>
-                <h2>${p.n}</h2>
-                <div style="font-size:24px; color:var(--neon); font-weight:900">OVR ${p.r}</div>
-                <div class="card" style="display:flex; justify-content:space-around; margin-top:20px">
-                    <div><b>${p.g}</b><br><small>ГОЛЫ</small></div>
-                    <div><b>${avg}</b><br><small>СР. ОЦЕНКА</small></div>
-                </div>
-                <h4 style="text-align:left">ИСТОРИЯ ФОРМЫ:</h4>
-                <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px">
-                    ${p.h.slice(-10).map(r => `<div class="card" style="padding:10px; min-width:30px; border-color:var(--neon)">${r}</div>`).join('')}
-                </div>
-            </div>`);
+        openModal(`<div style="text-align:center"><h2>${p.n}</h2><h1 style="color:var(--neon)">${p.r}</h1>
+            <div class="card" style="display:flex; justify-content:space-around"><div><b>${p.g}</b><br>ГОЛЫ</div></div></div>`);
     }
 
     function viewClub(id) {
         const t = db.teams[id];
-        openModal(`
-            <div style="padding:20px">
-                <div style="text-align:center">
-                    <img src="${t.logo}" style="width:80px; height:80px; border-radius:12px">
-                    <h2>${t.name}</h2>
-                </div>
-                <div class="card" style="display:flex; justify-content:space-around; text-align:center">
-                    <div><b>${t.w}-${t.d}-${t.l}</b><br><small>В-Н-П</small></div>
-                    <div><b>${t.g}</b><br><small>ГОЛЫ</small></div>
-                    <div><b>${t.pts}</b><br><small>ОЧКИ</small></div>
-                </div>
-                <h4>СОСТАВ:</h4>
-                ${t.players.map((p, i) => `<div class="row-item" onclick="viewPlayer(${id}, ${i})"><span>${p.n}</span><b>${p.r}</b></div>`).join('')}
-            </div>`);
+        openModal(`<div style="text-align:center"><img src="${t.logo}" style="width:70px"><br><h2>${t.name}</h2>
+            <div class="card">Очки: ${t.pts} | В-Н-П: ${t.w}-${t.d}-${t.l}</div>
+            ${t.players.map(p => `<div class="row-item"><span>${p.n}</span><b>${p.r}</b></div>`).join('')}</div>`);
     }
 
     function buy(tid, pi) {
-        let p = db.teams[tid].players[pi];
-        let cost = Math.round(p.r/1.5);
-        if(db.money >= cost) {
-            db.money -= cost;
-            db.teams[db.userTeamId].players.push(p);
-            db.teams[tid].players.splice(pi, 1);
-            save(); updateUI();
-        } else alert("Недостаточно средств!");
+        const p = db.teams[tid].players[pi]; const cost = Math.round(p.r/1.5);
+        if(db.money >= cost) { db.money -= cost; db.teams[db.userTeamId].players.push(p); db.teams[tid].players.splice(pi, 1); save(); updateUI(); }
     }
 
     function addPlayer() {
-        let n = document.getElementById('p-name').value;
-        if(n) {
-            db.teams[db.userTeamId].players.push({ n, r: 80, g: 0, h: [] });
-            document.getElementById('p-name').value = '';
-            save(); updateUI();
-        }
+        const n = document.getElementById('p-name').value;
+        if(n) { db.teams[db.userTeamId].players.push({n, r: 80, g:0, h:[]}); save(); updateUI(); }
     }
 
     function resetSeason() {
-        db.round = 1; db.results = []; db.cup = { semi: [], final: null };
+        db.round = 1; db.results = []; db.cup = null;
         db.teams.forEach(t => { t.pts=0; t.w=0; t.d=0; t.l=0; t.g=0; t.players.forEach(p => {p.g=0; p.h=[];}); });
-        save(); updateUI(); alert("Таблица сброшена. Вперед за кубком!");
+        save(); updateUI();
     }
 
     function openModal(html) { document.getElementById('modal-body').innerHTML = html; document.getElementById('modal').style.display = 'flex'; }
