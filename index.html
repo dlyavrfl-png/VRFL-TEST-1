@@ -4,127 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VRFL ELITE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #05060a;
-            color: white;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        .header {
-            background-color: #0a0b10;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #1a1b20;
-        }
-
-        .balance { color: #ffd700; font-weight: 800; }
-
-        .main-content {
-            height: calc(100vh - 140px);
-            overflow-y: auto;
-            padding: 15px;
-        }
-
+        body { background: #05060a; color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        .header { padding: 15px; background: #0a0b10; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a1b20; }
+        .main-content { height: calc(100vh - 130px); overflow-y: auto; padding: 15px; scrollbar-width: none; }
         .screen { display: none; }
         .active { display: block; }
+        .card { background: #0d111a; border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid #1c222d; }
+        .btn-blue { background: #0055ff; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; }
+        
+        /* Таблица */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td { padding: 12px 5px; border-bottom: 1px solid #161b22; font-size: 14px; }
+        .team-row { display: flex; align-items: center; gap: 10px; }
+        .logo-small { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; }
 
-        .card {
-            background: #0d111a;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #1c222d;
-        }
-
-        .btn-blue {
-            background: #0055ff;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            width: 100%;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        /* Таблица с логотипами */
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; color: #4e5761; font-size: 12px; padding-bottom: 10px; }
-        td { padding: 10px 5px; border-bottom: 1px solid #161b22; font-size: 14px; }
-        .team-cell { display: flex; align-items: center; gap: 10px; }
-        .team-logo-mini { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; }
-
-        /* Навигация как на старых скринах */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            display: flex;
-            background: #0a0b10;
-            border-top: 1px solid #1a1b20;
-            padding: 15px 0;
-        }
-
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            font-size: 11px;
-            color: #4e5761;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
+        /* Нижнее меню */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; display: flex; background: #0a0b10; border-top: 1px solid #1a1b20; padding: 12px 0; }
+        .nav-item { flex: 1; text-align: center; font-size: 10px; color: #4e5761; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .nav-item.active { color: #0055ff; }
-
-        .ovr-badge {
-            background: #00d2ff;
-            color: black;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 800;
-            font-size: 12px;
-        }
+        
+        .ovr-badge { background: #00d2ff; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: 900; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div style="font-weight: 800; letter-spacing: 1px;">VRFL ELITE</div>
-    <div class="balance" id="money-display">100.000.000 €</div>
+    <div style="font-weight: 900; letter-spacing: 1px;">VRFL ELITE</div>
+    <div id="money" style="color:#ffd700; font-weight:900">100.000.000 €</div>
 </div>
 
 <div class="main-content">
     <div id="sc-home" class="screen active">
+        <div class="card" id="home-club-card"></div>
+        <h3 style="font-size: 14px; color: #4e5761;">ДОСТУПНЫЕ ТУРНИРЫ</h3>
         <div class="card">
-            <h3 style="margin-top:0">Мой клуб</h3>
-            <div id="my-club-info" style="display:flex; align-items:center; gap:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-weight:800;">PREMIER LEAGUE</div>
+                    <div style="font-size:11px; color:#00ff88;">АКТИВЕН</div>
                 </div>
+                <button class="btn-blue" style="width:auto; padding:8px 15px;" onclick="nav('sc-league')">ИГРАТЬ</button>
+            </div>
         </div>
-        <div class="card">
-            <h4 style="margin:0">Текущий турнир</h4>
-            <p style="color:#4e5761; font-size:13px">Premier League - Тур 1</p>
-            <button class="btn-blue" onclick="nav('sc-league')">Открыть таблицу</button>
+        <div class="card" style="opacity: 0.5;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-weight:800;">ELITE CUP</div>
+                    <div style="font-size:11px; color:#ff4444;">ЗАКРЫТ</div>
+                </div>
+                <div style="font-size:10px;">НУЖЕН 5 УРОВЕНЬ</div>
+            </div>
         </div>
     </div>
 
     <div id="sc-league" class="screen">
         <div class="card">
-            <h3 style="margin-top:0">Турнирная таблица</h3>
-            <div id="league-table-container"></div>
-            <button class="btn-blue" onclick="simulateRound()">Симулировать тур</button>
+            <h3 style="margin:0 0 15px 0;">ТУРНИРНАЯ ТАБЛИЦА</h3>
+            <div id="table-box"></div>
+            <button class="btn-blue" style="margin-top:15px;" onclick="sim()">СЛЕДУЮЩИЙ ТУР</button>
         </div>
     </div>
 
     <div id="sc-profile" class="screen">
-        <div id="profile-data"></div>
+        <div id="profile-box"></div>
     </div>
 </div>
 
@@ -135,96 +79,80 @@
 </div>
 
 <script>
-    let game = {
-        userTeamId: 0,
-        money: 100000000,
+    const db = {
+        userTeam: 4, // По умолчанию FC Outsiders
         teams: [
             { id: 0, name: "Aurelian United", logo: "https://i.ibb.co.com/chQPDKjg/IMG-20260315-111459-312.png", pts: 0, players: [{n:"Тигран Казарян", r:90}, {n:"Stepaneko", r:90}, {n:"Лев Буфон", r:80}, {n:"Vortexov", r:80}, {n:"FeniOne", r:75}, {n:"Ардлин Дор", r:75}, {n:"Симакин Дж", r:65}, {n:"Фил Дж", r:60}, {n:"Харе", r:50}, {n:"Skay Krow", r:50}] },
             { id: 1, name: "FC Cardillero", logo: "https://i.ibb.co.com/PsmJjzJt/1773555326089.png", pts: 0, players: [{n:"Нелисек", r:90}, {n:"Atacker", r:90}, {n:"LeBoomich", r:90}, {n:"Reise flix", r:80}, {n:"Krujochek", r:80}, {n:"Maldini", r:80}, {n:"Нерфа", r:80}, {n:"Валерьяно", r:80}, {n:"Шкипер jr.", r:80}, {n:"LeBoomich jr", r:80}] },
             { id: 2, name: "Torpedo", logo: "https://i.ibb.co.com/j9Sw1gpB/IMG-20260315-111455-660.png", pts: 0, players: [{n:"Фил", r:95}, {n:"Демпик", r:90}, {n:"Флориан Макс", r:90}, {n:"Ангел", r:80}, {n:"Нико Дж", r:80}, {n:"Кестони", r:80}, {n:"Полуновских", r:80}, {n:"Тео Шип", r:80}, {n:"Беавер", r:80}, {n:"Коляныш", r:80}] },
-            { id: 3, name: "FC Potential", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, players: [{n:"Niko", r:90}, {n:"Flozzy Jr", r:80}, {n:"iron", r:80}, {n:"Egorinho", r:70}, {n:"Леонардо морети", r:70}, {n:"fill Jr", r:60}, {n:"Douglas musiala", r:60}, {n:"martinee", r:50}, {n:"Кевин Кирк", r:50}, {n:"wanson", r:50}] },
-            { id: 4, name: "FC Outsiders", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, players: [{n:"Солевой", r:50}, {n:"Серджио", r:50}, {n:"Перез", r:50}, {n:"Вильнюс", r:50}, {n:"Пабло", r:50}, {n:"Костылин", r:50}, {n:"Флориан", r:50}, {n:"Вороговский", r:50}, {n:"Максимилиан", r:50}, {n:"Джереми", r:50}] }
+            { id: 3, name: "FC Potential", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, players: [{n:"Niko", r:90}, {n:"Flozzy Jr", r:80}, {n:"iron", r:80}, {n:"Egorinho", r:70}, {n:"Леонардо морети", r:70}, {n:"martinee", r:50}, {n:"fill Jr", r:60}, {n:"Douglas musiala", r:60}, {n:"Кевин Кирк", r:50}, {n:"wanson", r:50}] },
+            { id: 4, name: "FC Outsiders", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, players: [{n:"Солевой", r:50}, {n:"Серджио", r:50}, {n:"Перез", r:50}, {n:"Максимилиан", r:50}, {n:"Джереми", r:50}, {n:"Сельчук", r:50}, {n:"Костылин", r:50}, {n:"Пабло", r:50}, {n:"Флориан", r:50}, {n:"Вороговский", r:50}, {n:"Вильнюс", r:50}] }
         ]
     };
 
-    function nav(screenId, el) {
+    function nav(id, el) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
+        document.getElementById(id).classList.add('active');
         if(el) {
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             el.classList.add('active');
         }
-        render();
+        update();
     }
 
-    function getOvr(team) {
-        return Math.round(team.players.reduce((sum, p) => sum + p.r, 0) / team.players.length);
-    }
-
-    function render() {
-        // Рендер Главной
-        const myTeam = game.teams[game.userTeamId];
-        document.getElementById('my-club-info').innerHTML = `
-            <img src="${myTeam.logo}" style="width:60px; height:60px; border-radius:10px;">
-            <div>
-                <div style="font-weight:800; font-size:18px;">${myTeam.name}</div>
-                <div style="color:#00d2ff; font-size:12px; font-weight:600;">OVR: ${getOvr(myTeam)}</div>
+    function update() {
+        const my = db.teams[db.userTeam];
+        const ovr = Math.round(my.players.reduce((s,p)=>s+p.r,0)/my.players.length);
+        
+        // Главная
+        document.getElementById('home-club-card').innerHTML = `
+            <div style="display:flex; align-items:center; gap:15px;">
+                <img src="${my.logo}" style="width:50px; border-radius:8px;">
+                <div>
+                    <div style="font-weight:900; font-size:18px;">${my.name}</div>
+                    <div class="ovr-badge">OVR: ${ovr}</div>
+                </div>
             </div>
         `;
 
-        // Рендер Таблицы
-        let tableHtml = `<table><tr><th>М</th><th>КЛУБ</th><th>О</th></tr>`;
-        [...game.teams].sort((a,b) => b.pts - a.pts).forEach((t, i) => {
-            tableHtml += `
-                <tr>
-                    <td>${i+1}</td>
-                    <td>
-                        <div class="team-cell">
-                            <img src="${t.logo}" class="team-logo-mini">
-                            <span>${t.name}</span>
-                        </div>
-                    </td>
-                    <td><b>${t.pts}</b></td>
-                </tr>`;
+        // Таблица
+        let tHtml = `<table>`;
+        [...db.teams].sort((a,b)=>b.pts-a.pts).forEach((t, i) => {
+            tHtml += `<tr>
+                <td style="width:20px; color:#4e5761;">${i+1}</td>
+                <td>
+                    <div class="team-row">
+                        <img src="${t.logo}" class="logo-small">
+                        <span style="font-weight:700;">${t.name}</span>
+                    </div>
+                </td>
+                <td style="text-align:right; font-weight:900;">${t.pts}</td>
+            </tr>`;
         });
-        tableHtml += `</table>`;
-        document.getElementById('league-table-container').innerHTML = tableHtml;
+        document.getElementById('table-box').innerHTML = tHtml + `</table>`;
 
-        // Рендер Профиля
-        let playersHtml = myTeam.players.map(p => `
-            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #161b22;">
-                <span>${p.n}</span>
-                <span class="ovr-badge">${p.r}</span>
+        // Профиль
+        let pList = my.players.map(p => `
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #161b22;">
+                <span>${p.n}</span> <span class="ovr-badge">${p.r}</span>
             </div>
         `).join('');
-        document.getElementById('profile-data').innerHTML = `
+        document.getElementById('profile-box').innerHTML = `
             <div class="card" style="text-align:center;">
-                <img src="${myTeam.logo}" style="width:80px; margin-bottom:10px;">
-                <h2 style="margin:0">${myTeam.name}</h2>
-                <button class="btn-blue" style="background:#441111; margin-top:20px;" onclick="resetGame()">Сбросить данные</button>
+                <img src="${my.logo}" style="width:70px; margin-bottom:10px;">
+                <h2 style="margin:0;">${my.name}</h2>
+                <p style="color:#4e5761; font-size:12px;">Основной состав</p>
             </div>
-            <div class="card">
-                <h4 style="margin-top:0">Состав команды</h4>
-                ${playersHtml}
-            </div>
+            <div class="card">${pList}</div>
         `;
     }
 
-    function simulateRound() {
-        game.teams.forEach(t => {
-            t.pts += Math.floor(Math.random() * 4);
-        });
-        render();
+    function sim() {
+        db.teams.forEach(t => t.pts += Math.floor(Math.random()*4));
+        update();
     }
 
-    function resetGame() {
-        if(confirm("Вы уверены?")) {
-            game.teams.forEach(t => t.pts = 0);
-            render();
-        }
-    }
-
-    window.onload = render;
+    window.onload = update;
 </script>
 
 </body>
