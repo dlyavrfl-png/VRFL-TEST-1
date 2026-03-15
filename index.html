@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VRFL ELITE | OFFICIAL ROSTERS</title>
+    <title>VRFL ELITE | REALISTIC LOGIC</title>
     <style>
         :root { --neon: #00f2ff; --accent: #7000ff; --bg: #0b0e14; --glass: rgba(255, 255, 255, 0.05); --card-bg: #161b22; --yellow: #ffcf00; }
         body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; }
@@ -21,7 +21,7 @@
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; font-size: 11px; color: #666; padding: 5px; }
         td { padding: 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 14px; }
-        .logo-sm { width: 25px; height: 25px; border-radius: 4px; vertical-align: middle; margin-right: 8px; background: #000; }
+        .logo-sm { width: 25px; height: 25px; border-radius: 4px; vertical-align: middle; margin-right: 8px; }
         .row-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 8px; cursor: pointer; }
         .score-box { font-size: 16px; font-weight: 900; color: var(--neon); background: #000; padding: 4px 10px; border-radius: 6px; }
         #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 20000; display: none; flex-direction: column; overflow-y: auto; }
@@ -48,7 +48,7 @@
                     </div>
                 </div>
             </div>
-            <button id="btn-reset" class="btn" style="background:var(--yellow); color:#000; display:none; margin-bottom:10px" onclick="resetSeason()">НАЧАТЬ НОВЫЙ СЕЗОН</button>
+            <button id="btn-reset" class="btn" style="background:var(--yellow); color:#000; display:none; margin-bottom:10px" onclick="resetSeason()">НОВЫЙ СЕЗОН</button>
             <div id="home-clubs"></div>
         </div>
 
@@ -62,7 +62,6 @@
         </div>
 
         <div id="sc-club" class="screen">
-            <h4 style="color:#8b949e; margin: 0 0 10px 5px">ВАШ СОСТАВ</h4>
             <div id="my-squad"></div>
         </div>
     </div>
@@ -84,38 +83,47 @@
         userTeamId: 0, money: 250, round: 1, view: 'table',
         teams: [
             { id: 0, name: "Aurelian United", logo: "https://i.ibb.co.com/chQPDKjg/IMG-20260315-111459-312.png", pts: 0, w:0, d:0, l:0, g:0, players: [
-                {n:"Лев Буфон", r:80, g:0, h:[], p:"ВРТ"}, {n:"FeniOne", r:75, g:0, h:[], p:"ЦЗ"}, {n:"Харе", r:50, g:0, h:[], p:"ЦЗ"}, {n:"Симакин Дж", r:65, g:0, h:[], p:"ЦЗ"},
-                {n:"Фил Дж", r:60, g:0, h:[], p:"ЛЦП"}, {n:"Skay Krow", r:50, g:0, h:[], p:"ПЦП"}, {n:"Ардлин Дор", r:75, g:0, h:[], p:"ЛВ"},
-                {n:"Тигран Казарян", r:90, g:0, h:[], p:"НАП"}, {n:"Stepaneko", r:90, g:0, h:[], p:"НАП"}, {n:"Vortexov", r:80, g:0, h:[], p:"ПВ"}
+                {n:"Лев Буфон", r:80, g:0, a:0, h:[], p:"ВРТ"}, {n:"FeniOne", r:75, g:0, a:0, h:[], p:"ЦЗ"}, {n:"Харе", r:50, g:0, a:0, h:[], p:"ЦЗ"}, {n:"Симакин Дж", r:65, g:0, a:0, h:[], p:"ЦЗ"},
+                {n:"Фил Дж", r:60, g:0, a:0, h:[], p:"ЛЦП"}, {n:"Skay Krow", r:50, g:0, a:0, h:[], p:"ПЦП"}, {n:"Ардлин Дор", r:75, g:0, a:0, h:[], p:"ЛВ"},
+                {n:"Тигран Казарян", r:90, g:0, a:0, h:[], p:"НАП"}, {n:"Stepaneko", r:90, g:0, a:0, h:[], p:"НАП"}, {n:"Vortexov", r:80, g:0, a:0, h:[], p:"ПВ"}
             ]},
             { id: 1, name: "Fc Cardillero", logo: "https://i.ibb.co.com/PsmJjzJt/1773555326089.png", pts: 0, w:0, d:0, l:0, g:0, players: [
-                {n:"Reise flix", r:80, g:0, h:[], p:"ВРТ"}, {n:"Krujochek", r:80, g:0, h:[], p:"ПЗ"}, {n:"Maldini", r:80, g:0, h:[], p:"ЦЗ"}, {n:"Нерфа", r:80, g:0, h:[], p:"ЦЗ"},
-                {n:"Валерьяно", r:80, g:0, h:[], p:"ЛЗ"}, {n:"Шкипер jr.", r:80, g:0, h:[], p:"ЦП"}, {n:"LeBoomich jr", r:80, g:0, h:[], p:"ЦП"},
-                {n:"Нелисек", r:90, g:0, h:[], p:"ЦАП"}, {n:"Vasantinho", r:80, g:0, h:[], p:"ПВ"}, {n:"Atacker", r:90, g:0, h:[], p:"ЛВ"}, {n:"LeBoomich", r:90, g:0, h:[], p:"НАП"}
+                {n:"Reise flix", r:80, g:0, a:0, h:[], p:"ВРТ"}, {n:"Krujochek", r:80, g:0, a:0, h:[], p:"ПЗ"}, {n:"Maldini", r:80, g:0, a:0, h:[], p:"ЦЗ"}, {n:"Нерфа", r:80, g:0, a:0, h:[], p:"ЦЗ"},
+                {n:"Валерьяно", r:80, g:0, a:0, h:[], p:"ЛЗ"}, {n:"Шкипер jr.", r:80, g:0, a:0, h:[], p:"ЦП"}, {n:"LeBoomich jr", r:80, g:0, a:0, h:[], p:"ЦП"},
+                {n:"Нелисек", r:90, g:0, a:0, h:[], p:"ЦАП"}, {n:"Vasantinho", r:80, g:0, a:0, h:[], p:"ПВ"}, {n:"Atacker", r:90, g:0, a:0, h:[], p:"ЛВ"}, {n:"LeBoomich", r:90, g:0, a:0, h:[], p:"НАП"}
             ]},
             { id: 2, name: "Torpedo", logo: "https://i.ibb.co.com/r2g3f2Y6/1773561875719.png", pts: 0, w:0, d:0, l:0, g:0, players: [
-                {n:"Ангел", r:80, g:0, h:[], p:"ВРТ"}, {n:"Нико Дж", r:80, g:0, h:[], p:"ЛЗ"}, {n:"Кестони", r:80, g:0, h:[], p:"ЦЗ"}, {n:"Полуновских", r:80, g:0, h:[], p:"ЦЗ"},
-                {n:"Тео Шип", r:80, g:0, h:[], p:"ПЗ"}, {n:"Беавер", r:80, g:0, h:[], p:"ЦП"}, {n:"Коляныш", r:80, g:0, h:[], p:"ЦП"},
-                {n:"Демпик", r:90, g:0, h:[], p:"ЦАП"}, {n:"Бургер ДЖ", r:80, g:0, h:[], p:"ПВ"}, {n:"Флориан Макс", r:90, g:0, h:[], p:"НАП"}, {n:"Фил", r:95, g:0, h:[], p:"ЛВ"}
+                {n:"Ангел", r:80, g:0, a:0, h:[], p:"ВРТ"}, {n:"Нико Дж", r:80, g:0, a:0, h:[], p:"ЛЗ"}, {n:"Кестони", r:80, g:0, a:0, h:[], p:"ЦЗ"}, {n:"Полуновских", r:80, g:0, a:0, h:[], p:"ЦЗ"},
+                {n:"Тео Шип", r:80, g:0, a:0, h:[], p:"ПЗ"}, {n:"Беавер", r:80, g:0, a:0, h:[], p:"ЦП"}, {n:"Коляныш", r:80, g:0, a:0, h:[], p:"ЦП"},
+                {n:"Демпик", r:90, g:0, a:0, h:[], p:"ЦАП"}, {n:"Бургер ДЖ", r:80, g:0, a:0, h:[], p:"ПВ"}, {n:"Флориан Макс", r:90, g:0, a:0, h:[], p:"НАП"}, {n:"Фил", r:95, g:0, a:0, h:[], p:"ЛВ"}
             ]},
             { id: 3, name: "Fc Potential", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, w:0, d:0, l:0, g:0, players: [
-                {n:"martinee", r:50, g:0, h:[], p:"ВРТ"}, {n:"Кевин Кирк", r:50, g:0, h:[], p:"ПЗ"}, {n:"креналдо", r:50, g:0, h:[], p:"ЦЗ"}, {n:"Flozzy Jr", r:80, g:0, h:[], p:"ЦЗ"},
-                {n:"iron", r:80, g:0, h:[], p:"ЦЗ"}, {n:"wanson", r:50, g:0, h:[], p:"ЛЗ"}, {n:"fill Jr", r:60, g:0, h:[], p:"ЦП"},
-                {n:"Niko", r:90, g:0, h:[], p:"ЦП"}, {n:"Egorinho", r:70, g:0, h:[], p:"ЛП"}, {n:"Douglas musiala", r:60, g:0, h:[], p:"ПП"}, {n:"Леонардо морети", r:70, g:0, h:[], p:"НАП"}
+                {n:"martinee", r:50, g:0, a:0, h:[], p:"ВРТ"}, {n:"Кевин Кирк", r:50, g:0, a:0, h:[], p:"ПЗ"}, {n:"креналдо", r:50, g:0, a:0, h:[], p:"ЦЗ"}, {n:"Flozzy Jr", r:80, g:0, a:0, h:[], p:"ЦЗ"},
+                {n:"iron", r:80, g:0, a:0, h:[], p:"ЦЗ"}, {n:"wanson", r:50, g:0, a:0, h:[], p:"ЛЗ"}, {n:"fill Jr", r:60, g:0, a:0, h:[], p:"ЦП"},
+                {n:"Niko", r:90, g:0, a:0, h:[], p:"ЦП"}, {n:"Egorinho", r:70, g:0, a:0, h:[], p:"ЛП"}, {n:"Douglas musiala", r:60, g:0, a:0, h:[], p:"ПП"}, {n:"Леонардо морети", r:70, g:0, a:0, h:[], p:"НАП"}
             ]},
             { id: 4, name: "Fc Outsiders", logo: "https://i.ibb.co.com/xKbvhDsM/1773561900834.png", pts: 0, w:0, d:0, l:0, g:0, players: [
-                {n:"Солевой", r:60, g:0, h:[], p:"ВРТ"}, {n:"Серджио", r:60, g:0, h:[], p:"ЦЗ"}, {n:"ЦзПерез", r:60, g:0, h:[], p:"ЦЗ"}, {n:"Максимилиан", r:60, g:0, h:[], p:"ПЗ"},
-                {n:"Джереми", r:60, g:0, h:[], p:"ЛЗ"}, {n:"сельчук", r:60, g:0, h:[], p:"ЦП"}, {n:"костылин", r:60, g:0, h:[], p:"ЦП"},
-                {n:"Пабло", r:60, g:0, h:[], p:"ЦАП"}, {n:"Флориан", r:60, g:0, h:[], p:"ЛВ"}, {n:"Вороговский", r:60, g:0, h:[], p:"ПВ"}, {n:"Вильнюс", r:60, g:0, h:[], p:"НАП"}
+                {n:"Солевой", r:60, g:0, a:0, h:[], p:"ВРТ"}, {n:"Серджио", r:60, g:0, a:0, h:[], p:"ЦЗ"}, {n:"ЦзПерез", r:60, g:0, a:0, h:[], p:"ЦЗ"}, {n:"Максимилиан", r:60, g:0, a:0, h:[], p:"ПЗ"},
+                {n:"Джереми", r:60, g:0, a:0, h:[], p:"ЛЗ"}, {n:"сельчук", r:60, g:0, a:0, h:[], p:"ЦП"}, {n:"костылин", r:60, g:0, a:0, h:[], p:"ЦП"},
+                {n:"Пабло", r:60, g:0, a:0, h:[], p:"ЦАП"}, {n:"Флориан", r:60, g:0, a:0, h:[], p:"ЛВ"}, {n:"Вороговский", r:60, g:0, a:0, h:[], p:"ПВ"}, {n:"Вильнюс", r:60, g:0, a:0, h:[], p:"НАП"}
             ]}
         ],
         results: [], cup: null
     };
 
-    function save() { localStorage.setItem('vrfl_v5_final_rosters', JSON.stringify(db)); }
+    // Веса позиций для голов и ассистов
+    const POS_WEIGHTS = {
+        'ВРТ': { g: 0.01, a: 0.05 },
+        'ЦЗ': { g: 0.1, a: 0.1 }, 'ЛЗ': { g: 0.2, a: 0.4 }, 'ПЗ': { g: 0.2, a: 0.4 },
+        'ЦП': { g: 0.4, a: 0.7 }, 'ЛЦП': { g: 0.4, a: 0.7 }, 'ПЦП': { g: 0.4, a: 0.7 },
+        'ЦАП': { g: 0.7, a: 0.9 }, 'ЛП': { g: 0.6, a: 0.8 }, 'ПП': { g: 0.6, a: 0.8 },
+        'ЛВ': { g: 0.9, a: 0.6 }, 'ПВ': { g: 0.9, a: 0.6 }, 'НАП': { g: 1.0, a: 0.3 }
+    };
+
+    function save() { localStorage.setItem('vrfl_v5_pro_logic', JSON.stringify(db)); }
     
     window.onload = () => {
-        const data = localStorage.getItem('vrfl_v5_final_rosters');
+        const data = localStorage.getItem('vrfl_v5_pro_logic');
         if(data) db = JSON.parse(data);
         updateUI();
     };
@@ -148,6 +156,15 @@
         save(); updateUI();
     }
 
+    function pickPlayer(players, type) {
+        let pool = [];
+        players.forEach(p => {
+            let weight = (POS_WEIGHTS[p.p] ? POS_WEIGHTS[p.p][type] : 0.5) * (p.r / 50);
+            for(let i=0; i < weight * 10; i++) pool.push(p);
+        });
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
     function runMatch(t1, t2, isCup = false) {
         let s1 = Math.floor(Math.random() * 4), s2 = Math.floor(Math.random() * 4);
         if(isCup && s1 === s2) Math.random() > 0.5 ? s1++ : s2++;
@@ -155,16 +172,24 @@
             if(s1 > s2) { t1.pts+=3; t1.w++; t2.l++; } else if(s1 < s2) { t2.pts+=3; t2.w++; t1.l++; } else { t1.pts++; t2.pts++; t1.d++; t2.d++; }
             t1.g += s1; t2.g += s2;
         }
+        
         let ev = [], ps = [];
         [t1, t2].forEach((team, idx) => {
             let goals = (idx === 0) ? s1 : s2;
+            for(let i=0; i<goals; i++) {
+                let scorer = pickPlayer(team.players, 'g');
+                let assistant = pickPlayer(team.players.filter(p => p !== scorer), 'a');
+                scorer.g++;
+                if(assistant && Math.random() > 0.3) { assistant.a++; ev.push(`⚽ ${scorer.n} (${assistant.n})`); }
+                else { ev.push(`⚽ ${scorer.n}`); }
+            }
             team.players.forEach(p => {
-                let r = (Math.random() * 3 + 6).toFixed(1);
-                if(goals > 0 && Math.random() > 0.4) { p.g++; goals--; r = (parseFloat(r)+2).toFixed(1); ev.push(`⚽ ${p.n}`); }
+                let r = (Math.random() * 2 + 6).toFixed(1);
                 p.h.push(parseFloat(r));
                 ps.push({n:p.n, r, t:team.name});
             });
         });
+
         const match = { t1:t1.name, t2:t2.name, s1, s2, ev, ps, id:Date.now()+Math.random() };
         if(!isCup) db.results.unshift(match);
         return match;
@@ -210,7 +235,7 @@
     function viewM(id) { const m = db.results.find(x => x.id == id); if(m) renderM(m); }
     function showCupMatch(k) { renderM(db.cup[k]); }
     function renderM(m) {
-        openModal(`<div style="text-align:center"><h2>${m.t1} ${m.s1}:${m.s2} ${m.t2}</h2><div class="card" style="text-align:left"><h4>СОБЫТИЯ</h4>${m.ev.join('<br>') || 'Нет событий'}</div>
+        openModal(`<div style="text-align:center"><h2>${m.t1} ${m.s1}:${m.s2} ${m.t2}</h2><div class="card" style="text-align:left"><h4>СОБЫТИЯ</h4>${m.ev.join('<br>') || 'Нет голов'}</div>
             <div class="card" style="text-align:left; font-size:12px"><h4>ОЦЕНКИ</h4>${m.ps.map(p => `<div style="display:flex; justify-content:space-between"><span>${p.n}</span><b>${p.r}</b></div>`).join('')}</div></div>`);
     }
 
@@ -218,8 +243,12 @@
         const p = db.teams[tid].players[pid];
         const avg = p.h.length ? (p.h.reduce((a,b)=>a+b,0)/p.h.length).toFixed(1) : '0.0';
         openModal(`<div style="text-align:center"><h2>${p.n}</h2><div style="font-size:12px; color:var(--neon)">ПОЗИЦИЯ: ${p.p}</div><h1 style="color:var(--neon)">${p.r}</h1>
-            <div class="card" style="display:flex; justify-content:space-around"><div><b>${p.g}</b><br>ГОЛЫ</div><div><b>${avg}</b><br>СР. ОЦЕНКА</div></div>
-            <h4 style="text-align:left">ФОРМА:</h4><div style="display:flex; gap:5px; overflow-x:auto">${p.h.slice(-10).map(v => `<div class="card" style="padding:5px; min-width:25px">${v}</div>`).join('')}</div></div>`);
+            <div class="card" style="display:flex; justify-content:space-around">
+                <div><b>${p.g}</b><br>ГОЛЫ</div>
+                <div><b>${p.a || 0}</b><br>ПАСЫ</div>
+                <div><b>${avg}</b><br>СР. ОЦ</div>
+            </div>
+            <h4 style="text-align:left">ПОСЛЕДНИЕ ОЦЕНКИ:</h4><div style="display:flex; gap:5px; overflow-x:auto">${p.h.slice(-10).map(v => `<div class="card" style="padding:5px; min-width:25px">${v}</div>`).join('')}</div></div>`);
     }
 
     function viewClub(id) {
@@ -235,7 +264,7 @@
 
     function resetSeason() {
         db.round = 1; db.results = []; db.cup = null;
-        db.teams.forEach(t => { t.pts=0; t.w=0; t.d=0; t.l=0; t.g=0; t.players.forEach(p => {p.g=0; p.h=[];}); });
+        db.teams.forEach(t => { t.pts=0; t.w=0; t.d=0; t.l=0; t.g=0; t.players.forEach(p => {p.g=0; p.a=0; p.h=[];}); });
         save(); updateUI();
     }
 
