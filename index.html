@@ -3,137 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VRFL ELITE PRO</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <title>VRFL ELITE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00d2ff; --accent: #0055ff; --bg: #05060a; --card: #0d111a; --glass: rgba(255, 255, 255, 0.05); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; }
-        .bg-pattern { position: fixed; inset: 0; z-index: -1; opacity: 0.1; background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='%230055ff'/%3E%3C/svg%3E"); }
-        .header { padding: 15px; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass); display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index:100; }
-        .header div:first-child { font-family: 'Orbitron', sans-serif; color: var(--neon); letter-spacing: 2px; font-size: 16px; }
-        .main-content { height: calc(100vh - 130px); overflow-y: auto; padding: 15px; scrollbar-width: none; padding-bottom: 80px; }
-        .screen { display: none; animation: fadeIn 0.4s ease; }
-        .screen.active { display: block; }
-        .card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
-        .btn { font-family: 'Orbitron', sans-serif; background: var(--accent); color: #fff; border: none; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; font-size: 11px; }
-        .btn-sm { background: var(--glass); border: 1px solid var(--neon); color: var(--neon); padding: 8px 12px; border-radius: 8px; font-size: 10px; cursor: pointer; font-weight: bold; }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; display: flex; background: #080a10; border-top: 1px solid var(--glass); padding: 12px 0; justify-content: space-around; z-index: 100; }
-        .nav-item { text-align: center; font-size: 9px; color: #4e5761; font-weight: 900; cursor: pointer; text-transform: uppercase; }
-        .nav-item.active { color: var(--neon); }
-        #modal-club { position: fixed; inset: 0; background: rgba(5,6,10,0.98); z-index: 1000; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
-        .ovr-badge { background: var(--neon); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: 900; font-size: 11px; }
+        body {
+            background-color: #05060a;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #0a0b10;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1a1b20;
+        }
+
+        .balance { color: #ffd700; font-weight: 800; }
+
+        .main-content {
+            height: calc(100vh - 140px);
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        .card {
+            background: #0d111a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #1c222d;
+        }
+
+        .btn-blue {
+            background: #0055ff;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Таблица с логотипами */
         table { width: 100%; border-collapse: collapse; }
-        td { padding: 12px 0; border-bottom: 1px solid var(--glass); font-size: 13px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        th { text-align: left; color: #4e5761; font-size: 12px; padding-bottom: 10px; }
+        td { padding: 10px 5px; border-bottom: 1px solid #161b22; font-size: 14px; }
+        .team-cell { display: flex; align-items: center; gap: 10px; }
+        .team-logo-mini { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; }
+
+        /* Навигация как на старых скринах */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            background: #0a0b10;
+            border-top: 1px solid #1a1b20;
+            padding: 15px 0;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            font-size: 11px;
+            color: #4e5761;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .nav-item.active { color: #0055ff; }
+
+        .ovr-badge {
+            background: #00d2ff;
+            color: black;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
-<div class="bg-pattern"></div>
-<div id="setup-screen" style="display: none; position: fixed; inset: 0; background: var(--bg); z-index: 2000; padding: 30px; flex-direction: column;">
-    <h1 style="font-family:'Orbitron'; color:var(--neon); text-align: center;">VRFL ELITE</h1>
-    <div id="setup-clubs" style="flex-grow:1; overflow-y:auto; margin: 20px 0;"></div>
-    <input type="text" id="user-name" placeholder="ВАШЕ ИМЯ" style="padding:15px; border-radius:12px; background:#111; border:1px solid #333; color:#fff; margin-bottom:15px; width:100%;">
-    <button class="btn" onclick="finishSetup()">НАЧАТЬ СЕЗОН</button>
+
+<div class="header">
+    <div style="font-weight: 800; letter-spacing: 1px;">VRFL ELITE</div>
+    <div class="balance" id="money-display">100.000.000 €</div>
 </div>
-<div class="header"><div>VRFL ELITE</div><div id="money-display" style="color:#ffd700; font-weight:900">0 €</div></div>
+
 <div class="main-content">
     <div id="sc-home" class="screen active">
-        <div class="card" style="border-left: 4px solid var(--neon);">
-            <div style="font-size:10px; color:var(--neon); font-weight:800;">SEASON 1</div>
-            <h2 id="round-info" style="margin:5px 0; font-family:'Orbitron'">ТУР 1 / 12</h2>
+        <div class="card">
+            <h3 style="margin-top:0">Мой клуб</h3>
+            <div id="my-club-info" style="display:flex; align-items:center; gap:15px;">
+                </div>
         </div>
-        <div id="playoff-preview" class="card" style="text-align:center; color:#555;">Плей-офф после 12 тура</div>
+        <div class="card">
+            <h4 style="margin:0">Текущий турнир</h4>
+            <p style="color:#4e5761; font-size:13px">Premier League - Тур 1</p>
+            <button class="btn-blue" onclick="nav('sc-league')">Открыть таблицу</button>
+        </div>
     </div>
+
     <div id="sc-league" class="screen">
-        <div style="display:flex; gap:8px; margin-bottom:15px;">
-            <div class="btn-sm" onclick="renderLeague('table')">ТАБЛИЦА</div>
-            <div class="btn-sm" onclick="renderLeague('clubs')">КЛУБЫ</div>
-            <div id="tm-btn" class="btn-sm" onclick="renderLeague('market')">ТРАНСФЕРЫ</div>
+        <div class="card">
+            <h3 style="margin-top:0">Турнирная таблица</h3>
+            <div id="league-table-container"></div>
+            <button class="btn-blue" onclick="simulateRound()">Симулировать тур</button>
         </div>
-        <div id="league-view"></div>
     </div>
-    <div id="sc-profile" class="screen"><div id="profile-content"></div></div>
+
+    <div id="sc-profile" class="screen">
+        <div id="profile-data"></div>
+    </div>
 </div>
-<div id="modal-club"><button class="btn-sm" onclick="closeClub()" style="margin-bottom:20px;">← НАЗАД</button><div id="club-detail-content"></div></div>
+
 <div class="nav-bar">
-    <div class="nav-item active" onclick="nav('sc-home', this)">ГЛАВНАЯ</div>
-    <div class="nav-item" onclick="nav('sc-league', this)">ЛИГА</div>
-    <div class="nav-item" onclick="nav('sc-profile', this)">ПРОФИЛЬ</div>
+    <div class="nav-item active" onclick="nav('sc-home', this)">Главная</div>
+    <div class="nav-item" onclick="nav('sc-league', this)">Лига</div>
+    <div class="nav-item" onclick="nav('sc-profile', this)">Профиль</div>
 </div>
+
 <script>
-let db = {
-    userClubId: 0, userName: "Player", round: 1, isPlayoff: false,
-    teams: [
-        { id: 0, name: "Aurelian United", logo: "https://i.ibb.co.com/chQPDKjg/IMG-20260315-111459-312.png", pts: 0, w:0, d:0, l:0, budget: 150, players: [{n:"Лев Буфон", r:80}, {n:"FeniOne", r:75}, {n:"Тигран Казарян", r:90}, {n:"Stepaneko", r:90}, {n:"Vortexov", r:80}, {n:"Симакин Дж", r:65}, {n:"Ардлин Дор", r:75}, {n:"Фил Дж", r:60}, {n:"Харе", r:50}, {n:"Skay Krow", r:50}]},
-        { id: 1, name: "FC Cardillero", logo: "https://i.ibb.co.com/PsmJjzJt/1773555326089.png", pts: 0, w:0, d:0, l:0, budget: 180, players: [{n:"Reise flix", r:80}, {n:"Krujochek", r:80}, {n:"Нелисек", r:90}, {n:"Atacker", r:90}, {n:"LeBoomich", r:90}, {n:"Maldini", r:80}, {n:"Нерфа", r:80}, {n:"Валерьяно", r:80}, {n:"Шкипер jr.", r:80}, {n:"LeBoomich jr", r:80}]},
-        { id: 2, name: "Torpedo", logo: "https://i.ibb.co.com/j9Sw1gpB/IMG-20260315-111455-660.png", pts: 0, w:0, d:0, l:0, budget: 160, players: [{n:"Ангел", r:80}, {n:"Фил", r:95}, {n:"Демпик", r:90}, {n:"Флориан Макс", r:90}, {n:"Нико Дж", r:80}, {n:"Кестони", r:80}, {n:"Полуновских", r:80}, {n:"Тео Шип", r:80}, {n:"Беавер", r:80}, {n:"Коляныш", r:80}]},
-        { id: 3, name: "FC Potential", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, w:0, d:0, l:0, budget: 130, players: [{n:"Niko", r:90}, {n:"Flozzy Jr", r:80}, {n:"iron", r:80}, {n:"Egorinho", r:70}, {n:"Леонардо морети", r:70}, {n:"martinee", r:50}, {n:"fill Jr", r:60}, {n:"Douglas musiala", r:60}, {n:"Кевин Кирк", r:50}, {n:"wanson", r:50}]},
-        { id: 4, name: "FC Outsiders", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, w:0, d:0, l:0, budget: 110, players: [{n:"Солевой", r:50}, {n:"Серджио", r:50}, {n:"Перез", r:50}, {n:"Вильнюс", r:50}, {n:"Пабло", r:50}, {n:"Костылин", r:50}, {n:"Флориан", r:50}, {n:"Вороговский", r:50}, {n:"Максимилиан", r:50}, {n:"Джереми", r:50}]}
-    ],
-    market: [{n:"Kylian Mbappe", r:92, p:180}, {n:"Erling Haaland", r:91, p:175}, {n:"Vini Jr", r:89, p:150}]
-};
-function save() { localStorage.setItem('vrfl_final_v2', JSON.stringify(db)); }
-function load() {
-    let s = localStorage.getItem('vrfl_final_v2');
-    if(s) { db = JSON.parse(s); updateUI(); } 
-    else { document.getElementById('setup-screen').style.display = 'flex'; renderSetup(); }
-}
-function renderSetup() {
-    let h = ''; db.teams.forEach(t => h += `<div class="card" onclick="selectClub(${t.id}, this)"><b>${t.name}</b></div>`);
-    document.getElementById('setup-clubs').innerHTML = h;
-}
-function selectClub(id, el) { 
-    selectedId = id; document.querySelectorAll('#setup-clubs .card').forEach(c => c.style.borderColor = 'rgba(255,255,255,0.05)');
-    el.style.borderColor = 'var(--neon)';
-}
-function finishSetup() { db.userClubId = selectedId; db.userName = document.getElementById('user-name').value || "Legend"; document.getElementById('setup-screen').style.display='none'; save(); updateUI(); }
-function nav(id, el) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
-    if(id === 'sc-league') renderLeague('table');
-}
-function renderLeague(mode) {
-    const v = document.getElementById('league-view');
-    const tmOpen = (db.round === 1 || db.round >= 5) && !db.isPlayoff;
-    document.getElementById('tm-btn').style.opacity = tmOpen ? "1" : "0.3";
-    if(mode === 'table') {
-        let h = '<table><tr><th>#</th><th>КЛУБ</th><th>В-Н-П</th><th>О</th></tr>';
-        [...db.teams].sort((a,b)=>b.pts-a.pts).forEach((t, i) => h += `<tr onclick="openClub(${t.id})"><td>${i+1}</td><td>${t.name}</td><td>${t.w}-${t.d}-${t.l}</td><td>${t.pts}</td></tr>`);
-        v.innerHTML = `<div class="card">${h}</table></div><button class="btn" onclick="simRound()">СИМУЛИРОВАТЬ ТУР</button>`;
-    } else if(mode === 'clubs') {
-        let h = ''; db.teams.forEach(t => h += `<div class="card" onclick="openClub(${t.id})">${t.name} <span class="ovr-badge">${getOvr(t)}</span></div>`);
-        v.innerHTML = h;
-    } else if(mode === 'market') {
-        if(!tmOpen) { v.innerHTML = `<div class="card">РЫНОК ЗАКРЫТ (Откроется в 5 туре)</div>`; return; }
-        let h = ''; db.market.forEach((p, i) => h += `<div class="card">${p.n} [${p.r}] <button class="btn-sm" onclick="buy(${i})">${p.p}M</button></div>`);
-        v.innerHTML = h;
+    let game = {
+        userTeamId: 0,
+        money: 100000000,
+        teams: [
+            { id: 0, name: "Aurelian United", logo: "https://i.ibb.co.com/chQPDKjg/IMG-20260315-111459-312.png", pts: 0, players: [{n:"Тигран Казарян", r:90}, {n:"Stepaneko", r:90}, {n:"Лев Буфон", r:80}, {n:"Vortexov", r:80}, {n:"FeniOne", r:75}, {n:"Ардлин Дор", r:75}, {n:"Симакин Дж", r:65}, {n:"Фил Дж", r:60}, {n:"Харе", r:50}, {n:"Skay Krow", r:50}] },
+            { id: 1, name: "FC Cardillero", logo: "https://i.ibb.co.com/PsmJjzJt/1773555326089.png", pts: 0, players: [{n:"Нелисек", r:90}, {n:"Atacker", r:90}, {n:"LeBoomich", r:90}, {n:"Reise flix", r:80}, {n:"Krujochek", r:80}, {n:"Maldini", r:80}, {n:"Нерфа", r:80}, {n:"Валерьяно", r:80}, {n:"Шкипер jr.", r:80}, {n:"LeBoomich jr", r:80}] },
+            { id: 2, name: "Torpedo", logo: "https://i.ibb.co.com/j9Sw1gpB/IMG-20260315-111455-660.png", pts: 0, players: [{n:"Фил", r:95}, {n:"Демпик", r:90}, {n:"Флориан Макс", r:90}, {n:"Ангел", r:80}, {n:"Нико Дж", r:80}, {n:"Кестони", r:80}, {n:"Полуновских", r:80}, {n:"Тео Шип", r:80}, {n:"Беавер", r:80}, {n:"Коляныш", r:80}] },
+            { id: 3, name: "FC Potential", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, players: [{n:"Niko", r:90}, {n:"Flozzy Jr", r:80}, {n:"iron", r:80}, {n:"Egorinho", r:70}, {n:"Леонардо морети", r:70}, {n:"fill Jr", r:60}, {n:"Douglas musiala", r:60}, {n:"martinee", r:50}, {n:"Кевин Кирк", r:50}, {n:"wanson", r:50}] },
+            { id: 4, name: "FC Outsiders", logo: "https://i.ibb.co.com/svY6k9Yw/1773555376296.png", pts: 0, players: [{n:"Солевой", r:50}, {n:"Серджио", r:50}, {n:"Перез", r:50}, {n:"Вильнюс", r:50}, {n:"Пабло", r:50}, {n:"Костылин", r:50}, {n:"Флориан", r:50}, {n:"Вороговский", r:50}, {n:"Максимилиан", r:50}, {n:"Джереми", r:50}] }
+        ]
+    };
+
+    function nav(screenId, el) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        if(el) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+        render();
     }
-}
-function getOvr(t) { return Math.round(t.players.reduce((a,b)=>a+b.r,0)/t.players.length); }
-function buy(i) {
-    let p = db.market[i]; let my = db.teams[db.userClubId];
-    if(my.budget >= p.p) { my.budget -= p.p; my.players.push({n:p.n, r:p.r}); db.market.splice(i,1); save(); renderLeague('market'); updateUI(); }
-}
-function simRound() {
-    if(db.round > 12) return;
-    db.teams.forEach(t => { let r = Math.random(); if(r > 0.5) { t.pts+=3; t.w++; } else if(r > 0.3) { t.pts+=1; t.d++; } else { t.l++; } });
-    db.round++; if(db.round > 12) db.isPlayoff = true; save(); renderLeague('table'); updateUI();
-}
-function openClub(id) {
-    const t = db.teams[id]; document.getElementById('modal-club').style.display = 'flex';
-    let pl = t.players.map(p => `<div>${p.n} <span class="ovr-badge">${p.r}</span></div>`).join('<hr style="opacity:0.05">');
-    document.getElementById('club-detail-content').innerHTML = `<div style="text-align:center"><img src="${t.logo}" width="60"><h2>${t.name}</h2></div><div class="card">${pl}</div>`;
-}
-function closeClub() { document.getElementById('modal-club').style.display = 'none'; }
-function updateUI() {
-    const my = db.teams[db.userClubId]; document.getElementById('money-display').innerText = my.budget + ' M €';
-    document.getElementById('round-info').innerText = db.round <= 12 ? `ТУР ${db.round} / 12` : "ФИНАЛЫ";
-    document.getElementById('profile-content').innerHTML = `<div class="card" style="text-align:center"><img src="${my.logo}" width="80"><h2>${db.userName}</h2><p>${my.name}</p><button class="btn" style="background:#411" onclick="localStorage.clear();location.reload()">СБРОС</button></div>`;
-}
-window.onload = load;
+
+    function getOvr(team) {
+        return Math.round(team.players.reduce((sum, p) => sum + p.r, 0) / team.players.length);
+    }
+
+    function render() {
+        // Рендер Главной
+        const myTeam = game.teams[game.userTeamId];
+        document.getElementById('my-club-info').innerHTML = `
+            <img src="${myTeam.logo}" style="width:60px; height:60px; border-radius:10px;">
+            <div>
+                <div style="font-weight:800; font-size:18px;">${myTeam.name}</div>
+                <div style="color:#00d2ff; font-size:12px; font-weight:600;">OVR: ${getOvr(myTeam)}</div>
+            </div>
+        `;
+
+        // Рендер Таблицы
+        let tableHtml = `<table><tr><th>М</th><th>КЛУБ</th><th>О</th></tr>`;
+        [...game.teams].sort((a,b) => b.pts - a.pts).forEach((t, i) => {
+            tableHtml += `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>
+                        <div class="team-cell">
+                            <img src="${t.logo}" class="team-logo-mini">
+                            <span>${t.name}</span>
+                        </div>
+                    </td>
+                    <td><b>${t.pts}</b></td>
+                </tr>`;
+        });
+        tableHtml += `</table>`;
+        document.getElementById('league-table-container').innerHTML = tableHtml;
+
+        // Рендер Профиля
+        let playersHtml = myTeam.players.map(p => `
+            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #161b22;">
+                <span>${p.n}</span>
+                <span class="ovr-badge">${p.r}</span>
+            </div>
+        `).join('');
+        document.getElementById('profile-data').innerHTML = `
+            <div class="card" style="text-align:center;">
+                <img src="${myTeam.logo}" style="width:80px; margin-bottom:10px;">
+                <h2 style="margin:0">${myTeam.name}</h2>
+                <button class="btn-blue" style="background:#441111; margin-top:20px;" onclick="resetGame()">Сбросить данные</button>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Состав команды</h4>
+                ${playersHtml}
+            </div>
+        `;
+    }
+
+    function simulateRound() {
+        game.teams.forEach(t => {
+            t.pts += Math.floor(Math.random() * 4);
+        });
+        render();
+    }
+
+    function resetGame() {
+        if(confirm("Вы уверены?")) {
+            game.teams.forEach(t => t.pts = 0);
+            render();
+        }
+    }
+
+    window.onload = render;
 </script>
+
 </body>
 </html>
