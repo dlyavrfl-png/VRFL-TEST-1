@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VRFL Manager</title>
+    <style>
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        .app-container {
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/hxspt08L/751-11-20260315013231.png');
+            background-size: cover; background-position: center; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .card {
+            background: rgba(20, 20, 20, 0.9); border: 2px solid #0ff; box-shadow: 0 0 20px #0ff;
+            border-radius: 20px; padding: 30px; width: 80%; text-align: center;
+        }
+        .score { font-size: 5rem; font-weight: bold; margin: 15px 0; text-shadow: 0 0 15px #0ff; }
+        .teams { font-size: 1.2rem; letter-spacing: 2px; color: #0ff; text-transform: uppercase; font-weight: bold; }
+        button {
+            background: #0ff; color: #000; border: none; padding: 18px 30px; font-weight: 900;
+            border-radius: 10px; margin-top: 20px; cursor: pointer; text-transform: uppercase; width: 100%; transition: 0.2s;
+        }
+        button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="card">
+            <div class="teams">FC DEDUSHKI vs ROVERS</div>
+            <div class="score" id="match-score">0 : 0</div>
+            <button onclick="simulate()">Симулировать</button>
+        </div>
+    </div>
+    <script>
+        function simulate() {
+            const s1 = Math.floor(Math.random() * 5);
+            const s2 = Math.floor(Math.random() * 5);
+            document.getElementById('match-score').innerText = s1 + " : " + s2;
+            if (window.navigator.vibrate) window.navigator.vibrate(50);
+        }
+    </script>
+</body>
+</html>
