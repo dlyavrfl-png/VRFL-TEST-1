@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VRFL ELITE | REALISTIC LOGIC</title>
+    <title>VRFL ELITE | PRIVATE SESSION</title>
     <style>
         :root { --neon: #00f2ff; --accent: #7000ff; --bg: #0b0e14; --glass: rgba(255, 255, 255, 0.05); --card-bg: #161b22; --yellow: #ffcf00; }
         body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; }
@@ -48,6 +48,10 @@
                     </div>
                 </div>
             </div>
+            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <button class="btn btn-sec" style="font-size: 10px;" onclick="exportData()">💾 КОПИРОВАТЬ СЕЙВ</button>
+                <button class="btn btn-sec" style="font-size: 10px;" onclick="importData()">📂 ЗАГРУЗИТЬ</button>
+            </div>
             <button id="btn-reset" class="btn" style="background:var(--yellow); color:#000; display:none; margin-bottom:10px" onclick="resetSeason()">НОВЫЙ СЕЗОН</button>
             <div id="home-clubs"></div>
         </div>
@@ -79,6 +83,10 @@
 </div>
 
 <script>
+    // Генерация уникального ID для браузера, чтобы друг не видел твои данные
+    const sessionID = localStorage.getItem('vrfl_user_id') || Math.random().toString(36).substring(7);
+    localStorage.setItem('vrfl_user_id', sessionID);
+
     let db = {
         userTeamId: 0, money: 250, round: 1, view: 'table',
         teams: [
@@ -111,21 +119,21 @@
         results: [], cup: null
     };
 
-    // Веса позиций для голов и ассистов
-    const POS_WEIGHTS = {
-        'ВРТ': { g: 0.01, a: 0.05 },
-        'ЦЗ': { g: 0.1, a: 0.1 }, 'ЛЗ': { g: 0.2, a: 0.4 }, 'ПЗ': { g: 0.2, a: 0.4 },
-        'ЦП': { g: 0.4, a: 0.7 }, 'ЛЦП': { g: 0.4, a: 0.7 }, 'ПЦП': { g: 0.4, a: 0.7 },
-        'ЦАП': { g: 0.7, a: 0.9 }, 'ЛП': { g: 0.6, a: 0.8 }, 'ПП': { g: 0.6, a: 0.8 },
-        'ЛВ': { g: 0.9, a: 0.6 }, 'ПВ': { g: 0.9, a: 0.6 }, 'НАП': { g: 1.0, a: 0.3 }
-    };
+    const storageKey = `vrfl_v5_save_${sessionID}`;
 
-    function save() { localStorage.setItem('vrfl_v5_pro_logic', JSON.stringify(db)); }
+    function save() { localStorage.setItem(storageKey, JSON.stringify(db)); }
     
     window.onload = () => {
-        const data = localStorage.getItem('vrfl_v5_pro_logic');
+        const data = localStorage.getItem(storageKey);
         if(data) db = JSON.parse(data);
         updateUI();
+    };
+
+    // Веса позиций
+    const POS_WEIGHTS = {
+        'ВРТ': { g: 0.01, a: 0.05 }, 'ЦЗ': { g: 0.1, a: 0.1 }, 'ЛЗ': { g: 0.2, a: 0.4 }, 'ПЗ': { g: 0.2, a: 0.4 },
+        'ЦП': { g: 0.4, a: 0.7 }, 'ЛЦП': { g: 0.4, a: 0.7 }, 'ПЦП': { g: 0.4, a: 0.7 }, 'ЦАП': { g: 0.7, a: 0.9 },
+        'ЛП': { g: 0.6, a: 0.8 }, 'ПП': { g: 0.6, a: 0.8 }, 'ЛВ': { g: 0.9, a: 0.6 }, 'ПВ': { g: 0.9, a: 0.6 }, 'НАП': { g: 1.0, a: 0.3 }
     };
 
     function nav(id, el) {
@@ -147,14 +155,6 @@
         [[0, 1], [2, 3]], [[4, 0], [1, 2]], [[3, 4], [0, 2]], [[1, 3], [2, 4]], [[0, 3], [1, 4]], [[1, 0], [3, 2]],
         [[0, 4], [2, 1]], [[4, 3], [2, 0]], [[3, 1], [4, 2]], [[3, 0], [4, 1]], [[0, 1], [2, 3]], [[4, 0], [1, 2]]
     ];
-
-    function simulateRound() {
-        if(db.round > 12) return;
-        schedule[db.round - 1].forEach(pair => runMatch(db.teams[pair[0]], db.teams[pair[1]]));
-        db.round++;
-        if(db.round > 12) generateCup();
-        save(); updateUI();
-    }
 
     function pickPlayer(players, type) {
         let pool = [];
@@ -229,7 +229,22 @@
         } else {
             lv.innerHTML = db.teams.flatMap(t => t.id !== db.userTeamId ? t.players.map((p, pi) => `<div class="card" style="display:flex; justify-content:space-between; align-items:center"><div><b>${p.n}</b> (${p.p})<br><small>${t.name} • OVR ${p.r}</small></div><button class="btn" style="width:auto; padding:5px 10px" onclick="buy(${t.id}, ${pi})">${Math.round(p.r/1.5)}M</button></div>`) : []).join('');
         }
-        document.getElementById('my-squad').innerHTML = my.players.map((p, i) => `<div class="row-item" onclick="viewPlayer(${db.userTeamId}, ${i})"><span><b>${p.p}</b> ${p.n}</span><b>${p.r}</b></div>`).join('');
+        document.getElementById('my-squad').innerHTML = my.players.map((p, i) => `<div class="row-item" onclick="viewPlayer(${db.userTeamId}, i)"><span><b>${p.p}</b> ${p.n}</span><b>${p.r}</b></div>`).join('');
+    }
+
+    // Системные функции
+    function exportData() {
+        const str = btoa(JSON.stringify(db));
+        navigator.clipboard.writeText(str);
+        alert("Код сохранения скопирован в буфер обмена!");
+    }
+
+    function importData() {
+        const str = prompt("Вставь код сохранения:");
+        if(str) {
+            try { db = JSON.parse(atob(str)); save(); location.reload(); }
+            catch(e) { alert("Ошибка кода!"); }
+        }
     }
 
     function viewM(id) { const m = db.results.find(x => x.id == id); if(m) renderM(m); }
@@ -242,18 +257,13 @@
     function viewPlayer(tid, pid) {
         const p = db.teams[tid].players[pid];
         const avg = p.h.length ? (p.h.reduce((a,b)=>a+b,0)/p.h.length).toFixed(1) : '0.0';
-        openModal(`<div style="text-align:center"><h2>${p.n}</h2><div style="font-size:12px; color:var(--neon)">ПОЗИЦИЯ: ${p.p}</div><h1 style="color:var(--neon)">${p.r}</h1>
-            <div class="card" style="display:flex; justify-content:space-around">
-                <div><b>${p.g}</b><br>ГОЛЫ</div>
-                <div><b>${p.a || 0}</b><br>ПАСЫ</div>
-                <div><b>${avg}</b><br>СР. ОЦ</div>
-            </div>
-            <h4 style="text-align:left">ПОСЛЕДНИЕ ОЦЕНКИ:</h4><div style="display:flex; gap:5px; overflow-x:auto">${p.h.slice(-10).map(v => `<div class="card" style="padding:5px; min-width:25px">${v}</div>`).join('')}</div></div>`);
+        openModal(`<div style="text-align:center"><h2>${p.n}</h2><div style="font-size:12px; color:var(--neon)">${p.p} | OVR ${p.r}</div>
+            <div class="card" style="display:flex; justify-content:space-around"><div><b>${p.g}</b><br>ГОЛЫ</div><div><b>${p.a || 0}</b><br>ПАСЫ</div><div><b>${avg}</b><br>СР. ОЦ</div></div></div>`);
     }
 
     function viewClub(id) {
         const t = db.teams[id];
-        openModal(`<div style="text-align:center"><img src="${t.logo}" style="width:70px"><br><h2>${t.name}</h2><div class="card">Очки: ${t.pts} | В-Н-П: ${t.w}-${t.d}-${t.l}</div>
+        openModal(`<div style="text-align:center"><img src="${t.logo}" style="width:70px"><br><h2>${t.name}</h2><div class="card">Очки: ${t.pts}</div>
             ${t.players.map((p, i) => `<div class="row-item" onclick="viewPlayer(${id}, ${i})"><span><b>${p.p}</b> ${p.n}</span><b>${p.r}</b></div>`).join('')}</div>`);
     }
 
