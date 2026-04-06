@@ -3,84 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SofaClone Ultimate - Meridian Greenwich</title>
+    <title>SofaClone Ultimate v3.0 - Greenwich & Lions</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sofa-blue: #374df5;
-            --sofa-bg: #f2f5f7;
-            --rating-top: #187bcd; /* 9.0+ */
-            --rating-high: #1a9d54; /* 7.0+ */
-            --rating-mid: #f08022; /* 6.0+ */
+            --sofa-blue: #374DF5;
+            --sofa-bg: #F2F5F7;
+            --sofa-text-main: #121226;
+            --sofa-text-muted: #8D929A;
+            
+            /* Рейтинги со скриншотов */
+            --sofa-rtg-9: #187BCD; /* 9.0+ */
+            --sofa-rtg-7: #1A9D54; /* 7.0+ */
+            --sofa-rtg-6: #F08022; /* 6.0+ */
+            --sofa-rtg-4: #D9534F; /* <6.0 */
         }
         body { background: var(--sofa-bg); font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .rating-box { border-radius: 4px; color: white; font-weight: 900; width: 32px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-        .active-tab { border-bottom: 3px solid var(--sofa-blue); color: var(--sofa-blue) !important; }
+        
+        /* Классы для плашек рейтингов */
+        .rtg-box { border-radius: 4px; color: white; font-weight: 900; width: 32px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        
+        /* Класс для активной вкладки */
+        .active-tab { border-bottom: 3px solid var(--sofa-blue); color: var(--sofa-blue) !important; font-weight: 700; }
+        
+        /* Стандартные UI-элементы */
         .hidden { display: none !important; }
-        .card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+        .u-bold { font-weight: 700; text-transform: uppercase; font-size: 10px; color: var(--sofa-text-muted); }
     </style>
 </head>
 <body class="pb-20">
 
     <div id="role-screen" class="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center p-6">
-        <div class="text-white text-3xl font-black mb-8 text-center">SOFACLONE<br><span class="text-blue-500 text-sm tracking-widest uppercase">Select Server</span></div>
+        <div class="text-white text-3xl font-black mb-8 text-center tracking-tight">SOFACLONE<br><span class="text-blue-500 text-sm tracking-widest uppercase font-medium">Ultimate v3.0</span></div>
         <div class="w-full space-y-4 max-w-xs">
             <button onclick="selectRole('admin')" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-900/40">АДМИНИСТРАТОР</button>
-            <button onclick="selectRole('assistant')" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold">АССИСТЕНТ</button>
             <button onclick="selectRole('viewer')" class="w-full bg-gray-700 text-white py-4 rounded-xl font-bold">НАБЛЮДАТЕЛЬ</button>
         </div>
-        <p class="text-gray-500 text-xs mt-10">Meridian Greenwich Official App v2.0</p>
+        <p class="text-gray-500 text-xs mt-10">Select Server and Press 'Enter'</p>
     </div>
 
     <div id="main-app" class="hidden">
-        <div class="bg-white p-4 pt-8 flex justify-between items-center border-b">
-            <div class="flex flex-col items-center w-1/3">
-                <div class="w-14 h-14 bg-blue-700 rounded-full flex items-center justify-center text-white font-bold text-xl mb-2 shadow-inner">MG</div>
-                <span class="text-[11px] font-black text-center leading-tight uppercase">Meridian<br>Greenwich</span>
-            </div>
-            <div class="text-center">
-                <div id="status-badge" class="text-red-600 text-[10px] font-black mb-1 px-2 py-0.5 border border-red-200 rounded inline-block">LIVE</div>
-                <div id="main-score" class="text-5xl font-black text-slate-800 tracking-tighter">0 - 0</div>
-            </div>
-            <div class="flex flex-col items-center w-1/3">
-                <div class="w-14 h-14 bg-red-900 rounded-full flex items-center justify-center text-white font-bold text-xl mb-2 shadow-inner">FD</div>
-                <span class="text-[11px] font-black text-center leading-tight uppercase">FC<br>Dedushki</span>
+        
+        <div class="bg-white p-4 pt-8 border-b">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col items-center w-1/3">
+                    <div class="w-14 h-14 bg-blue-700 rounded-full flex items-center justify-center text-white font-black text-2xl shadow-inner mb-2">MG</div>
+                    <span class="text-[11px] font-black text-center leading-tight uppercase text-slate-800">Meridian<br>Greenwich</span>
+                </div>
+                <div class="text-center">
+                    <div id="status-badge" class="text-red-600 text-[10px] font-black mb-1 px-2 py-0.5 border border-red-200 rounded inline-block">LIVE</div>
+                    <div id="main-score" class="text-5xl font-black text-slate-800 tracking-tighter">0 - 0</div>
+                    <div class="text-[10px] text-gray-500 font-medium">04.04.2026 • 16:45</div>
+                </div>
+                <div class="flex flex-col items-center w-1/3">
+                    <div class="w-14 h-14 bg-emerald-700 rounded-full flex items-center justify-center text-white font-black text-2xl shadow-inner mb-2">LY</div>
+                    <span class="text-[11px] font-black text-center leading-tight uppercase text-slate-800">Lions</span>
+                </div>
             </div>
         </div>
 
-        <div class="flex bg-white sticky top-0 z-20 border-b overflow-x-auto">
-            <button onclick="showTab('match')" id="btn-match" class="flex-1 min-w-[80px] py-3 text-xs font-black text-gray-400 active-tab">МАТЧ</button>
-            <button onclick="showTab('lineup')" id="btn-lineup" class="flex-1 min-w-[80px] py-3 text-xs font-black text-gray-400">СОСТАВ</button>
-            <button onclick="showTab('table')" id="btn-table" class="flex-1 min-w-[80px] py-3 text-xs font-black text-gray-400">ТАБЛИЦА</button>
-            <button onclick="showTab('admin')" id="btn-admin-tab" class="flex-1 min-w-[80px] py-3 text-xs font-black text-red-500 hidden">АДМИН</button>
+        <div class="flex bg-white sticky top-0 z-20 border-b overflow-x-auto whitespace-nowrap">
+            <button onclick="showTab('match')" id="btn-match" class="flex-1 px-4 py-3 text-xs font-black text-gray-400 active-tab">ДЕТАЛИ</button>
+            <button onclick="showTab('lineup')" id="btn-lineup" class="flex-1 px-4 py-3 text-xs font-black text-gray-400">СОСТАВ</button>
+            <button onclick="showTab('table')" id="btn-table" class="flex-1 px-4 py-3 text-xs font-black text-gray-400">ТАБЛИЦА</button>
+            <button onclick="showTab('admin')" id="btn-admin-tab" class="flex-1 px-4 py-3 text-xs font-black text-red-500 hidden">АДМИН</button>
         </div>
 
         <div id="tab-match" class="p-3 space-y-3">
             <div class="card p-4">
-                <h3 class="text-xs font-black text-gray-400 mb-4 uppercase tracking-wider">События матча</h3>
-                <div id="events-list" class="space-y-4">
-                    <p class="text-xs text-center text-gray-400 italic">Матч начался</p>
+                <h3 class="u-bold mb-4">События матча</h3>
+                <div id="events-list" class="space-y-3">
+                    <p class="text-[11px] text-center text-gray-400 font-medium">Матч начался</p>
                 </div>
             </div>
         </div>
 
         <div id="tab-lineup" class="hidden p-3 space-y-3">
-            <div class="card overflow-hidden">
+            <div class="card">
                 <div class="bg-gray-50 p-2 text-[10px] font-black text-gray-400 uppercase border-b">Meridian Greenwich</div>
-                <div id="lineup-list" class="divide-y divide-gray-100">
+                <div id="home-lineup-list" class="divide-y divide-gray-100">
+                    </div>
+            </div>
+            <div class="card mt-3">
+                <div class="bg-gray-50 p-2 text-[10px] font-black text-gray-400 uppercase border-b">Lions</div>
+                <div id="away-lineup-list" class="divide-y divide-gray-100">
                     </div>
             </div>
         </div>
 
         <div id="tab-table" class="hidden p-3">
-            <div class="card overflow-hidden">
+            <div class="card">
                 <table class="w-full text-[13px]">
                     <thead class="bg-gray-50 text-gray-400 font-bold">
-                        <tr>
+                        <tr class="u-bold">
                             <th class="p-3 text-left w-8">#</th>
                             <th class="p-3 text-left">КОМАНДА</th>
-                            <th class="p-3 text-center">И</th>
-                            <th class="p-3 text-center text-blue-600">О</th>
+                            <th class="p-3 text-center w-10">И</th>
+                            <th class="p-3 text-center text-blue-600 w-10">О</th>
                         </tr>
                     </thead>
                     <tbody id="league-table"></tbody>
@@ -88,75 +109,99 @@
             </div>
             
             <div class="card mt-4 p-4">
-                <h3 class="text-xs font-black text-gray-400 mb-3 uppercase">Топ бомбардиров</h3>
+                <h3 class="u-bold mb-3">Топ бомбардиров</h3>
                 <div id="scorers-list" class="space-y-2"></div>
             </div>
         </div>
 
         <div id="tab-admin" class="hidden p-3 space-y-4">
             <div class="bg-red-50 border-2 border-red-100 rounded-xl p-5">
-                <h2 class="text-red-700 font-black text-center mb-4 uppercase text-sm">Управление матчем</h2>
+                <h2 class="text-red-700 font-black text-center mb-4 uppercase text-sm">Панель создателя</h2>
                 
-                <div id="admin-score-section" class="space-y-3 mb-6">
+                <div class="space-y-3 mb-6">
+                    <label class="u-bold text-red-400">Счёт матча</label>
                     <div class="flex gap-3">
-                        <input id="in-h-score" type="number" class="w-1/2 p-3 border rounded-lg font-bold" placeholder="MG Score">
-                        <input id="in-a-score" type="number" class="w-1/2 p-3 border rounded-lg font-bold" placeholder="FD Score">
+                        <input id="in-h-score" type="number" class="w-1/2 p-3 border rounded-lg font-bold" placeholder="Greenwich Score">
+                        <input id="in-a-score" type="number" class="w-1/2 p-3 border rounded-lg font-bold" placeholder="Lions Score">
                     </div>
                 </div>
 
                 <div class="space-y-3">
-                    <label class="text-[10px] font-black uppercase text-red-400">Редактировать игрока</label>
+                    <label class="u-bold text-red-400">Редактировать действия игрока (в матче)</label>
                     <select id="sel-player" class="w-full p-3 border rounded-lg font-bold"></select>
                     <div class="flex gap-3">
                         <input id="in-rtg" type="number" step="0.1" class="w-1/2 p-3 border rounded-lg" placeholder="Оценка">
-                        <input id="in-gls" type="number" class="w-1/2 p-3 border rounded-lg" placeholder="Голы">
+                        <input id="in-gls" type="number" class="w-1/2 p-3 border rounded-lg" placeholder="Голы (⚽)">
+                    </div>
+                    <div class="flex gap-3">
+                        <input id="in-asst" type="number" class="w-1/2 p-3 border rounded-lg" placeholder="Ассисты (🅰️)">
+                        <input id="in-yc" type="number" class="w-1/2 p-3 border rounded-lg" placeholder="ЖК (🟨)">
                     </div>
                 </div>
 
-                <button onclick="updateMasterData()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-6 shadow-lg">СОХРАНИТЬ ДАННЫЕ</button>
-                <div id="admin-only-tools" class="mt-4 pt-4 border-t border-red-200 hidden">
-                    <button onclick="resetAllData()" class="w-full text-red-800 text-[10px] uppercase font-bold underline">Сброс базы данных</button>
-                </div>
+                <button onclick="updateMasterData()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-6 shadow-lg active:scale-95 transition">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
             </div>
         </div>
     </div>
 
+    <div id="dev-button" class="fixed bottom-2 right-2 z-30 hidden">
+        <button onclick="resetAllData()" class="text-[9px] bg-red-900 text-red-200 px-2 py-1 rounded">Reset DB</button>
+    </div>
+
     <script>
-        // --- ДАННЫЕ И ЛОГИКА ---
+        // --- ДАННЫЕ И ТЕСТОВЫЕ КОМАНДЫ (из запроса) ---
+        const ALL_PLAYERS = {
+            'Meridian Greenwich': [
+                { id: 0, name: "Нико", number: 1, rating: 7.0, goals: 0, assists: 0, yc: 0 },
+                { id: 1, name: "Нико Джр", number: 9, rating: 7.0, goals: 0, assists: 0, yc: 0 },
+                { id: 2, name: "Фил", number: 10, rating: 7.0, goals: 0, assists: 0, yc: 0 }
+            ],
+            'Lions': [
+                { id: 3, name: "Дофамин", number: 4, rating: 7.0, goals: 0, assists: 0, yc: 0 },
+                { id: 4, name: "Дофамин Джр", number: 8, rating: 7.0, goals: 0, assists: 0, yc: 0 },
+                { id: 5, name: "Фил Джр", number: 19, rating: 7.0, goals: 0, assists: 0, yc: 0 }
+            ],
+            'Dragons': [
+                { id: 6, name: "ЛеБумыч", number: 23, rating: 7.0, goals: 0, assists: 0, yc: 0 },
+                { id: 7, name: "ЛеБумыч Джр", number: 6, rating: 7.0, goals: 0, assists: 0, yc: 0 },
+                { id: 8, name: "Фил Средний", number: 3, rating: 7.0, goals: 0, assists: 0, yc: 0 }
+            ],
+            'Phoenix': [
+                { id: 9, name: "Атакер", number: 7, rating: 7.0, goals: 0, assists: 0, yc: 0 },
+                { id: 10, name: "Атакер Джр", number: 11, rating: 7.0, goals: 0, assists: 0, yc: 0 },
+                { id: 11, name: "Фил Младше Среднего", number: 2, rating: 7.0, goals: 0, assists: 0, yc: 0 }
+            ]
+        };
+
         const DEFAULT_APP_DATA = {
-            score: "0 - 0",
-            players: [
-                { id: 0, name: "Acsor", number: 1, rating: 7.0, goals: 0 },
-                { id: 1, name: "Mels", number: 9, rating: 7.0, goals: 0 },
-                { id: 2, name: "Niko", number: 10, rating: 7.0, goals: 0 },
-                { id: 3, name: "Kelf", number: 19, rating: 7.0, goals: 0 },
-                { id: 4, name: "Alex", number: 4, rating: 7.0, goals: 0 }
-            ],
+            match: {
+                homeTeam: 'Meridian Greenwich',
+                awayTeam: 'Lions',
+                homeScore: 0,
+                awayScore: 0,
+                events: []
+            },
             standings: [
-                { name: "Meridian Greenwich", played: 1, points: 3 },
-                { name: "FC Dedushki", played: 1, points: 0 },
-                { name: "Arbuz FC", played: 0, points: 0 }
-            ],
-            assistants: ["Admin_Greenwich", "Pica_Helper"]
+                { name: "Dragons", played: 1, points: 3 },
+                { name: "Phoenix", played: 1, points: 3 },
+                { name: "Meridian Greenwich", played: 0, points: 0 },
+                { name: "Lions", played: 0, points: 0 }
+            ]
         };
 
         let currentRole = 'viewer';
-        let data = JSON.parse(localStorage.getItem('sofa_v2_data')) || DEFAULT_APP_DATA;
+        let data = JSON.parse(localStorage.getItem('sofa_v3_data')) || DEFAULT_APP_DATA;
+
+        // --- ЛОГИКА ---
 
         function selectRole(role) {
             if(role === 'admin') {
-                let pass = prompt("Введите пароль админа (по умолчанию 1234):");
-                if(pass !== "1234") return alert("Доступ закрыт!");
+                let pass = prompt("Введите пароль админа:");
+                if(pass !== "1234") return alert("Доступ закрыт!"); // Пароль по умолчанию
                 document.getElementById('btn-admin-tab').classList.remove('hidden');
-                document.getElementById('admin-only-tools').classList.remove('hidden');
+                document.getElementById('dev-button').classList.remove('hidden');
             } 
-            if(role === 'assistant') {
-                let pass = prompt("Пароль ассистента (по умолчанию 0000):");
-                if(pass !== "0000") return alert("Неверно!");
-                document.getElementById('btn-admin-tab').classList.remove('hidden');
-                document.getElementById('admin-score-section').classList.add('hidden'); // Ассистент не меняет счет
-            }
-
+            
             currentRole = role;
             document.getElementById('role-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
@@ -173,77 +218,145 @@
             document.getElementById('btn-' + tab + (tab === 'admin' ? '-tab' : '')).classList.add('active-tab');
         }
 
+        function renderPlayerRow(player) {
+            // Выбор цвета оценки (image_5.png)
+            let color = 'var(--sofa-rtg-4)';
+            if (player.rating >= 9.0) color = 'var(--sofa-rtg-9)';
+            else if (player.rating >= 7.0) color = 'var(--sofa-rtg-7)';
+            else if (player.rating >= 6.0) color = 'var(--sofa-rtg-6)';
+
+            // Действия игрока (иконки)
+            let actionsHTML = '';
+            if (player.goals > 0) actionsHTML += `<span>⚽ ${player.goals}</span>`;
+            if (player.assists > 0) actionsHTML += `<span>🅰️ ${player.assists}</span>`;
+            if (player.yc > 0) actionsHTML += `<span>🟨 ${player.yc}</span>`;
+
+            return `
+                <div class="flex justify-between items-center p-3">
+                    <div class="flex items-center gap-3">
+                        <div class="rtg-box" style="background:${color}">${player.rating.toFixed(1)}</div>
+                        <div>
+                            <span class="font-bold text-slate-800 text-sm">${player.name}</span>
+                            <div class="text-[10px] text-gray-400 font-medium">#${player.number}</div>
+                        </div>
+                    </div>
+                    <div class="text-[11px] font-bold text-slate-600 flex gap-1.5 items-center">
+                        ${actionsHTML}
+                    </div>
+                </div>
+            `;
+        }
+
         function render() {
             // Score & Header
-            document.getElementById('main-score').innerText = data.score;
+            document.getElementById('main-score').innerText = `${data.match.homeScore} - ${data.match.awayScore}`;
             
-            // Lineup
-            const lList = document.getElementById('lineup-list');
-            lList.innerHTML = '';
-            data.players.forEach(p => {
-                let color = p.rating >= 9 ? 'var(--rating-top)' : (p.rating >= 7 ? 'var(--rating-high)' : 'var(--rating-mid)');
-                lList.innerHTML += `
-                    <div class="flex justify-between items-center p-3">
-                        <div class="flex items-center gap-4">
-                            <span class="text-[10px] font-bold text-gray-400 w-4">${p.number}</span>
-                            <span class="font-bold text-gray-800 text-sm">${p.name} ${'⚽'.repeat(p.goals)}</span>
+            // events
+            const eList = document.getElementById('events-list');
+            if (data.match.events.length === 0) {
+                eList.innerHTML = '<p class="text-[11px] text-center text-gray-400 font-medium italic">Ожидание событий...</p>';
+            } else {
+                eList.innerHTML = [...data.match.events].reverse().map(e => `
+                    <div class="flex items-center gap-2 border-l-2 border-emerald-300 pl-3">
+                        <div class="text-xs font-black text-slate-800 tracking-tighter w-6">⚽</div>
+                        <div class="text-xs text-slate-600 font-medium">
+                            ${e.player.name} забивает гол (${data.match.homeTeam}). ${e.asst ? `Ассист: ${e.asst.name}` : ''}
                         </div>
-                        <div class="rating-box" style="background:${color}">${p.rating.toFixed(1)}</div>
                     </div>
-                `;
-            });
+                `).join('');
+            }
 
-            // Table
+            // Lineups (Home & Away)
+            document.getElementById('home-lineup-list').innerHTML = ALL_PLAYERS[data.match.homeTeam].map(renderPlayerRow).join('');
+            document.getElementById('away-lineup-list').innerHTML = ALL_PLAYERS[data.match.awayTeam].map(renderPlayerRow).join('');
+
+            // Standings Table
             const tBody = document.getElementById('league-table');
-            tBody.innerHTML = '';
-            [...data.standings].sort((a,b) => b.points - a.points).forEach((t, i) => {
-                tBody.innerHTML += `
-                    <tr class="border-b border-gray-50">
-                        <td class="p-3 font-bold text-gray-300 text-xs">${i+1}</td>
-                        <td class="p-3 font-black text-slate-700">${t.name}</td>
-                        <td class="p-3 text-center">${t.played}</td>
-                        <td class="p-3 text-center font-black text-blue-600">${t.points}</td>
-                    </tr>
-                `;
-            });
+            tBody.innerHTML = [...data.standings].sort((a,b) => b.points - a.points).map((t, i) => `
+                <tr class="border-b border-gray-50">
+                    <td class="p-3 font-bold text-gray-300 text-xs">${i+1}</td>
+                    <td class="p-3 font-black text-slate-700">${t.name}</td>
+                    <td class="p-3 text-center">${t.played}</td>
+                    <td class="p-3 text-center font-black text-blue-600">${t.points}</td>
+                </tr>
+            `).join('');
 
-            // Scorers
-            const sList = document.getElementById('scorers-list');
-            sList.innerHTML = data.players.filter(p => p.goals > 0).sort((a,b) => b.goals - a.goals).map(p => `
+            // Scorers List
+            const allMatchPlayers = [...ALL_PLAYERS[data.match.homeTeam], ...ALL_PLAYERS[data.match.awayTeam]];
+            document.getElementById('scorers-list').innerHTML = allMatchPlayers.filter(p => p.goals > 0).sort((a,b) => b.goals - a.goals).map(p => `
                 <div class="flex justify-between text-sm">
-                    <span class="font-medium">${p.name}</span>
-                    <span class="font-bold">${p.goals}</span>
+                    <span class="font-medium text-slate-700">${p.name} <span class="text-xs text-gray-400 ml-1">(#${p.number})</span></span>
+                    <span class="font-bold text-slate-800 text-xs">⚽ ${p.goals}</span>
                 </div>
             `).join('');
 
-            // Admin Dropdown
-            const sel = document.getElementById('sel-player');
-            sel.innerHTML = data.players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            // Populating the Admin Player Selection (BOTH TEAMS)
+            if (currentRole === 'admin') {
+                const sel = document.getElementById('sel-player');
+                sel.innerHTML = `<optgroup label="${data.match.homeTeam}">` + ALL_PLAYERS[data.match.homeTeam].map(p => `<option value="${p.id}">${p.name} (#${p.number})</option>`).join('') + `</optgroup>` +
+                               `<optgroup label="${data.match.awayTeam}">` + ALL_PLAYERS[data.match.awayTeam].map(p => `<option value="${p.id}">${p.name} (#${p.number})</option>`).join('') + `</optgroup>`;
+            }
 
-            localStorage.setItem('sofa_v2_data', JSON.stringify(data));
+            localStorage.setItem('sofa_v3_data', JSON.stringify(data));
         }
 
+        // Helper to find player by ID across all teams
+        function getPlayerById(pid) {
+            pid = parseInt(pid);
+            for (let teamName in ALL_PLAYERS) {
+                let player = ALL_PLAYERS[teamName].find(p => p.id === pid);
+                if (player) return { ...player, teamName };
+            }
+            return null;
+        }
+
+        // Admin Save
         function updateMasterData() {
             const hs = document.getElementById('in-h-score').value;
             const as = document.getElementById('in-a-score').value;
-            if(hs !== "" && as !== "" && currentRole === 'admin') {
-                data.score = `${hs} - ${as}`;
-            }
+            if(hs !== "") data.match.homeScore = parseInt(hs);
+            if(as !== "") data.match.awayScore = parseInt(as);
 
             const pId = document.getElementById('sel-player').value;
             const rtg = document.getElementById('in-rtg').value;
             const gls = document.getElementById('in-gls').value;
+            const asst = document.getElementById('in-asst').value;
+            const yc = document.getElementById('in-yc').value;
 
-            if(rtg !== "") data.players[pId].rating = parseFloat(rtg);
-            if(gls !== "") data.players[pId].goals = parseInt(gls);
+            // Finding the actual player object (because ALL_PLAYERS is a structure)
+            for (let teamName in ALL_PLAYERS) {
+                let playerIndex = ALL_PLAYERS[teamName].findIndex(p => p.id === parseInt(pId));
+                if (playerIndex !== -1) {
+                    let player = ALL_PLAYERS[teamName][playerIndex];
+                    let oldGoals = player.goals;
+                    
+                    if(rtg !== "") player.rating = parseFloat(rtg);
+                    if(gls !== "") player.goals = parseInt(gls);
+                    if(asst !== "") player.assists = parseInt(asst);
+                    if(yc !== "") player.yc = parseInt(yc);
+
+                    // Auto-creating a goal event if goals increased
+                    if (parseInt(gls) > oldGoals) {
+                        data.match.events.push({
+                            type: 'goal',
+                            player: { name: player.name },
+                            team: teamName,
+                            // Simplistic assistant finder for this team
+                            asst: ALL_PLAYERS[teamName].find(p => p.assists > player.assists) 
+                        });
+                    }
+                    break; // stop loop
+                }
+            }
 
             render();
-            alert("Данные засинхронены!");
+            alert("Все действия игроков сохранены!");
         }
 
         function resetAllData() {
-            if(confirm("ПОЛНЫЙ СБРОС? Все игроки и счёт вернутся к нулю.")) {
-                localStorage.removeItem('sofa_v2_data');
+            if(confirm("ПОЛНЫЙ СБРОС? Данные вернутся к стандарту.")) {
+                localStorage.removeItem('sofa_v2_data'); // prev version reset
+                localStorage.removeItem('sofa_v3_data');
                 location.reload();
             }
         }
@@ -251,4 +364,5 @@
         render();
     </script>
 </body>
-</html>
+                    </html>
+        
