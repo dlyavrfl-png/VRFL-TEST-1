@@ -3,393 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SofaScore Ultimate v5.0</title>
+    <title>SofaScore Ultra v6.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root { --sofa-blue: #374DF5; --sofa-bg: #F2F5F7; --pitch-green: #4C9142; }
-        body { background: var(--sofa-bg); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        body { background: var(--sofa-bg); font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; }
+        
+        /* АНИМАЦИЯ ЗАГРУЗКИ */
+        #splash { position: fixed; inset: 0; background: var(--sofa-blue); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
+        .loader-ring { width: 80px; height: 80px; border: 5px solid rgba(255,255,255,0.1); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .active-tab { border-bottom: 3px solid white; color: white !important; }
-        .bottom-nav-active { color: var(--sofa-blue) !important; }
+        .nav-item-active { color: var(--sofa-blue) !important; font-weight: 800; }
         
-        /* Стили поля */
-        .pitch { 
-            background: #4C9142; 
-            background-image: linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            position: relative; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3);
-        }
-        .player-node { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); transition: all 0.2s; }
-        .player-photo { width: 36px; height: 36px; border-radius: 50%; border: 2px solid white; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; background-size: cover; }
-        .p-rating { background: #1A9D54; color: white; font-size: 9px; font-weight: 900; padding: 1px 4px; border-radius: 4px; margin-top: -10px; z-index: 10; border: 1px solid rgba(0,0,0,0.1); }
-        .p-name { font-size: 9px; color: white; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); margin-top: 2px; text-align: center; width: 60px; }
+        /* Поле */
+        .pitch { background: #4C9142; background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 40px 40px; border-radius: 12px; position: relative; border: 2px solid rgba(255,255,255,0.2); }
+        .player-node { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 10; }
+        .p-circle { width: 34px; height: 34px; border-radius: 50%; border: 2px solid white; background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; background-size: cover; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .p-rating { background: #1A9D54; color: white; font-size: 8px; font-weight: 900; padding: 1px 4px; border-radius: 4px; margin-top: -10px; z-index: 20; border: 1px solid rgba(0,0,0,0.1); }
         
-        /* Модальное окно */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 20px; overflow: hidden; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; padding: 15px; }
     </style>
 </head>
 <body class="pb-24">
 
-    <div id="app-header" class="bg-[#374DF5] p-3 pt-8 text-white">
-        <div class="flex justify-between items-center">
-            <span class="font-black tracking-tighter text-xl">SOFASCORE <span class="font-light text-blue-200">IFCL</span></span>
-            <div onclick="requestAdmin()" id="admin-lock" class="opacity-30"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C9.243 2 7 4.243 7 7v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm4 10.723V20h-2v-2.277a1.993 1.993 0 01.567-3.677A2.001 2.001 0 0113 17.723z"/></svg></div>
+    <div id="splash">
+        <div class="loader-ring mb-4"></div>
+        <h1 class="text-white font-black tracking-tighter text-2xl italic">SOFASCORE IFCL</h1>
+        <p class="text-blue-200 text-[10px] uppercase font-bold tracking-widest mt-2">Professional Edition 2026</p>
+    </div>
+
+    <div id="main-header" class="bg-[#374DF5] p-4 pt-10 text-white flex justify-between items-center">
+        <h1 class="font-black text-xl italic tracking-tighter">SOFASCORE</h1>
+        <div class="flex gap-4">
+            <button onclick="requestAdmin()"><svg class="w-6 h-6 opacity-50" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></button>
         </div>
     </div>
 
-    <div id="content-area">
-        <div id="tab-matches-view" class="p-3 space-y-3">
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div class="bg-gray-50 p-3 flex justify-between border-b">
-                    <span class="text-[10px] font-black text-gray-400 uppercase">International Friendly</span>
-                </div>
-                <div id="match-list"></div>
+    <div id="view-matches" class="p-3 space-y-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="bg-gray-50/50 p-3 flex items-center justify-between border-b">
+                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">International Friendly Cup</span>
             </div>
-        </div>
-
-        <div id="tab-standings-view" class="p-3 hidden">
-            <div class="bg-white rounded-xl shadow-sm p-4">
-                <h2 class="font-black text-sm uppercase mb-4">Турнирная таблица</h2>
-                <div id="standings-table-cont"></div>
-            </div>
-        </div>
-
-        <div id="tab-scorers-view" class="p-3 hidden">
-            <div class="bg-white rounded-xl shadow-sm p-4">
-                <h2 class="font-black text-sm uppercase mb-4">Лучшие бомбардиры</h2>
-                <div id="top-scorers-list" class="divide-y"></div>
-            </div>
+            <div id="match-list-container"></div>
         </div>
     </div>
 
-    <div id="match-page" class="fixed inset-0 bg-[#F2F5F7] z-40 hidden overflow-y-auto">
-        <div class="bg-[#1A1A1A] p-5 pt-10 text-white">
-            <div class="flex justify-between items-center text-[10px] font-bold text-gray-500 mb-6">
-                <button onclick="closeMatch()"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
-                <span id="m-hdr-date">07.04.2026</span>
+    <div id="view-standings" class="p-3 hidden">
+        <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <h2 class="font-black text-sm uppercase mb-4 flex items-center gap-2"><span class="w-1 h-4 bg-blue-600"></span>Таблица LIVE</h2>
+            <table class="w-full text-left text-[11px]">
+                <thead class="text-gray-400 border-b">
+                    <tr><th class="pb-2">#</th><th class="pb-2">КЛУБ</th><th class="pb-2">И</th><th class="pb-2">Г</th><th class="pb-2">О</th></tr>
+                </thead>
+                <tbody id="standings-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="view-scorers" class="p-3 hidden">
+        <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <h2 class="font-black text-sm uppercase mb-4">Топ Бомбардиров</h2>
+            <div id="scorers-list" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <div id="view-clubs" class="p-3 hidden">
+        <div id="clubs-list" class="space-y-4"></div>
+    </div>
+
+    <div id="match-page" class="fixed inset-0 bg-[#F2F5F7] z-[1500] hidden overflow-y-auto">
+        <div class="bg-[#1A1A1A] p-5 pt-12 text-white">
+            <div class="flex justify-between items-center mb-8">
+                <button onclick="closeMatch()"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
+                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Детали матча</div>
                 <div class="w-6"></div>
             </div>
-            
-            <div class="flex justify-around items-center mb-6">
+            <div class="flex justify-around items-center mb-8">
                 <div class="text-center w-1/3">
-                    <div id="m-home-logo" onclick="changeLogo('home')" class="w-16 h-16 mx-auto bg-white rounded-full mb-2 bg-cover bg-center border-4 border-white/10"></div>
-                    <div id="m-home-name" class="text-xs font-black uppercase"></div>
+                    <div id="m-home-logo" onclick="changeLogo('home')" class="w-16 h-16 mx-auto bg-white rounded-full bg-cover border-4 border-white/5 mb-2"></div>
+                    <div id="m-home-name" class="text-[10px] font-black uppercase"></div>
                 </div>
                 <div class="text-center w-1/3">
-                    <div id="m-score" class="text-5xl font-black tracking-tighter">0 - 0</div>
-                    <div id="m-status" class="text-[10px] uppercase font-black text-red-500 mt-2">LIVE</div>
+                    <div id="m-score" class="text-5xl font-black italic tracking-tighter">0-0</div>
+                    <div id="m-status" class="text-[9px] font-black uppercase bg-red-600 px-2 py-0.5 rounded inline-block mt-2">LIVE</div>
                 </div>
                 <div class="text-center w-1/3">
-                    <div id="m-away-logo" onclick="changeLogo('away')" class="w-16 h-16 mx-auto bg-white rounded-full mb-2 bg-cover bg-center border-4 border-white/10"></div>
-                    <div id="m-away-name" class="text-xs font-black uppercase"></div>
+                    <div id="m-away-logo" onclick="changeLogo('away')" class="w-16 h-16 mx-auto bg-white rounded-full bg-cover border-4 border-white/5 mb-2"></div>
+                    <div id="m-away-name" class="text-[10px] font-black uppercase"></div>
                 </div>
             </div>
-
-            <div class="flex justify-between border-t border-white/10 mt-6 overflow-x-auto text-[11px] font-black uppercase">
-                <button onclick="setMatchSubTab('det')" id="msub-det" class="p-3 active-tab">Детали</button>
-                <button onclick="setMatchSubTab('line')" id="msub-line" class="p-3 text-gray-500">Ст. составы</button>
-                <button onclick="setMatchSubTab('stats')" id="msub-stats" class="p-3 text-gray-500">Статистика</button>
-                <button onclick="setMatchSubTab('adm')" id="msub-adm" class="p-3 text-red-500 hidden">Админ</button>
+            <div class="flex justify-between border-t border-white/10 text-[10px] font-black uppercase overflow-x-auto">
+                <button onclick="mTab('det')" id="mt-det" class="p-4 active-tab">Детали</button>
+                <button onclick="mTab('line')" id="mt-line" class="p-4 text-gray-500">Составы</button>
+                <button onclick="mTab('stat')" id="mt-stat" class="p-4 text-gray-500">Статистика</button>
+                <button onclick="mTab('adm')" id="mt-adm" class="p-4 text-red-500 hidden">Админ</button>
             </div>
         </div>
 
-        <div id="match-content" class="p-3">
-            <div id="mview-det" class="space-y-3">
-                <div class="bg-white rounded-xl p-4 shadow-sm">
-                    <h3 class="text-[10px] font-black text-gray-400 uppercase mb-4">События</h3>
-                    <div id="m-timeline" class="space-y-4"></div>
-                </div>
-            </div>
-            <div id="mview-line" class="hidden space-y-3">
-                <div class="pitch w-full h-[450px] shadow-2xl">
-                    <div class="absolute inset-0 border-b border-white/20 top-1/2"></div>
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-white/20 rounded-full"></div>
+        <div class="p-3" id="match-content">
+            <div id="mview-det" class="bg-white rounded-xl p-5 shadow-sm space-y-4"></div>
+            <div id="mview-line" class="hidden">
+                <div class="pitch w-full h-[480px] shadow-2xl mb-4">
                     <div id="pitch-players"></div>
                 </div>
             </div>
-            <div id="mview-stats" class="hidden bg-white rounded-xl p-6 space-y-6 shadow-sm">
-                <div id="stats-bars"></div>
-            </div>
+            <div id="mview-stat" class="hidden bg-white rounded-xl p-6 shadow-sm space-y-6"></div>
             <div id="mview-adm" class="hidden bg-red-50 p-5 rounded-xl border-2 border-red-100 space-y-4">
-                <div class="flex gap-2">
-                    <input id="adm-score-h" type="number" class="w-1/2 p-3 border rounded-lg font-black" placeholder="Дома">
-                    <input id="adm-score-a" type="number" class="w-1/2 p-3 border rounded-lg font-black" placeholder="Гости">
+                <div class="grid grid-cols-2 gap-2">
+                    <input id="as-h" type="number" class="p-3 border rounded font-black text-center" placeholder="Дома">
+                    <input id="as-a" type="number" class="p-3 border rounded font-black text-center" placeholder="Гости">
                 </div>
                 <div class="flex gap-2">
-                    <input id="adm-event-min" type="number" class="w-1/4 p-3 border rounded-lg" placeholder="Мин.">
-                    <input id="adm-event-txt" type="text" class="w-3/4 p-3 border rounded-lg" placeholder="Событие (гол, финт...)">
+                    <input id="ae-m" type="number" class="w-1/4 p-3 border rounded" placeholder="Мин.">
+                    <input id="ae-t" type="text" class="w-3/4 p-3 border rounded" placeholder="Событие...">
                 </div>
-                <button onclick="addMatchEvent()" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold">ОПУБЛИКОВАТЬ</button>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black uppercase text-red-400 tracking-widest">Владение мячом (%)</label>
-                    <input id="adm-stat-poss" type="range" class="w-full" min="0" max="100">
+                <button onclick="saveAdminMatch()" class="w-full bg-blue-600 text-white p-4 rounded-xl font-bold uppercase text-xs">Обновить данные</button>
+                <div class="space-y-4 pt-4 border-t border-red-200">
+                    <div><label class="text-[9px] font-bold uppercase">Владение (%)</label><input id="as-poss" type="range" class="w-full"></div>
+                    <div><label class="text-[9px] font-bold uppercase">xG (Дома/Гости)</label>
+                        <div class="flex gap-2"><input id="as-xgh" step="0.1" type="number" class="w-1/2 p-2 border rounded"><input id="as-xga" step="0.1" type="number" class="w-1/2 p-2 border rounded"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="player-modal" class="modal">
-        <div class="modal-content">
+        <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden">
             <div id="pm-header" class="p-6 bg-[#1A1A1A] text-white flex items-center gap-4">
-                <div id="pm-photo" class="w-16 h-16 rounded-full bg-gray-300 bg-cover bg-center border-2 border-white"></div>
-                <div>
-                    <h2 id="pm-name" class="font-black text-xl leading-tight"></h2>
-                    <span id="pm-team" class="text-[10px] uppercase text-gray-400 font-bold tracking-widest"></span>
-                </div>
+                <div class="w-16 h-16 rounded-full bg-gray-200 bg-cover border-2 border-white" id="pm-photo"></div>
+                <div><h3 id="pm-name" class="font-black text-xl"></h3><p id="pm-team" class="text-xs text-gray-500 font-bold uppercase"></p></div>
             </div>
-            <div class="p-6 space-y-4" id="pm-stats-view">
-                <div class="grid grid-cols-2 gap-4 text-center">
-                    <div class="bg-gray-50 p-3 rounded-lg"><div class="text-[10px] text-gray-400 font-bold uppercase">Оценка</div><div id="pm-stat-rtg" class="font-black text-lg text-emerald-600">7.0</div></div>
-                    <div class="bg-gray-50 p-3 rounded-lg"><div class="text-[10px] text-gray-400 font-bold uppercase">Голы</div><div id="pm-stat-gls" class="font-black text-lg">0</div></div>
-                    <div class="bg-gray-50 p-3 rounded-lg"><div class="text-[10px] text-gray-400 font-bold uppercase">Ассисты</div><div id="pm-stat-ast" class="font-black text-lg">0</div></div>
-                    <div class="bg-gray-50 p-3 rounded-lg"><div class="text-[10px] text-gray-400 font-bold uppercase">Отборы</div><div id="pm-stat-tck" class="font-black text-lg">0</div></div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-2xl text-center"><p class="text-[9px] text-gray-400 font-bold uppercase">Рейтинг</p><p id="p-stat-r" class="font-black text-xl text-emerald-600"></p></div>
+                    <div class="bg-gray-50 p-4 rounded-2xl text-center"><p class="text-[9px] text-gray-400 font-bold uppercase">Голы</p><p id="p-stat-g" class="font-black text-xl"></p></div>
                 </div>
-                <div id="pm-admin-controls" class="hidden pt-4 border-t space-y-3">
-                    <input id="adm-p-rtg" type="number" step="0.1" class="w-full p-2 border rounded text-sm" placeholder="Новая оценка">
+                <div id="pm-adm" class="hidden space-y-2 pt-4 border-t">
+                    <input id="ai-r" type="number" step="0.1" class="w-full p-3 border rounded text-sm" placeholder="Рейтинг">
                     <div class="flex gap-2">
-                        <input id="adm-p-gls" type="number" class="w-1/2 p-2 border rounded text-sm" placeholder="Голы">
-                        <input id="adm-p-ast" type="number" class="w-1/2 p-2 border rounded text-sm" placeholder="Ассисты">
+                        <input id="ai-g" type="number" class="w-1/2 p-3 border rounded text-sm" placeholder="Голы">
+                        <input id="ai-a" type="number" class="w-1/2 p-3 border rounded text-sm" placeholder="Ассисты">
                     </div>
-                    <button onclick="savePlayerChanges()" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold uppercase text-xs">Сохранить игрока</button>
+                    <button onclick="savePlayerData()" class="w-full bg-red-600 text-white p-3 rounded-xl font-bold uppercase text-xs">Сохранить</button>
                 </div>
-                <button onclick="closePlayerModal()" class="w-full bg-gray-100 p-2 rounded font-bold text-xs">ЗАКРЫТЬ</button>
+                <button onclick="document.getElementById('player-modal').style.display='none'" class="w-full bg-gray-100 p-3 rounded-xl font-bold text-xs uppercase">Закрыть</button>
             </div>
         </div>
     </div>
 
-    <input type="file" id="logo-input" class="hidden" accept="image/*">
-
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-3 z-50">
-        <div onclick="switchMainTab('matches')" class="flex flex-col items-center gap-1">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
-            <span class="text-[8px] font-black uppercase">Матчи</span>
-        </div>
-        <div onclick="switchMainTab('standings')" class="flex flex-col items-center gap-1 opacity-50">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
-            <span class="text-[8px] font-black uppercase">Таблица</span>
-        </div>
-        <div onclick="switchMainTab('scorers')" class="flex flex-col items-center gap-1 opacity-50">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
-            <span class="text-[8px] font-black uppercase">Бомбардиры</span>
-        </div>
-        <div class="flex flex-col items-center gap-1 opacity-50">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-            <span class="text-[8px] font-black uppercase">Турниры</span>
-        </div>
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-4 z-[1000] shadow-2xl">
+        <button onclick="nav('matches')" id="nv-matches" class="flex flex-col items-center gap-1 nav-item-active"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg><span class="text-[8px] uppercase font-black">Матчи</span></button>
+        <button onclick="nav('standings')" id="nv-standings" class="flex flex-col items-center gap-1 text-gray-400"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg><span class="text-[8px] uppercase font-black">Таблица</span></button>
+        <button onclick="nav('scorers')" id="nv-scorers" class="flex flex-col items-center gap-1 text-gray-400"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg><span class="text-[8px] uppercase font-black">Топ</span></button>
+        <button onclick="nav('clubs')" id="nv-clubs" class="flex flex-col items-center gap-1 text-gray-400"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="text-[8px] uppercase font-black">Клубы</span></button>
     </div>
+
+    <input type="file" id="img-input" class="hidden" accept="image/*">
 
     <script>
-        // --- БАЗА ДАННЫХ ---
-        let state = JSON.parse(localStorage.getItem('sofa_v5_state')) || {
+        let state = JSON.parse(localStorage.getItem('sofa_v6_data')) || {
+            isAdmin: false,
             teams: {
-                'Greenwich': { logo: '', players: [
-                    {id: 0, name: 'Niko', r: 8.5, g: 0, a: 0, t: 0, pos: {t: '15%', l: '50%'}},
-                    {id: 1, name: 'Niko Jr', r: 7.2, g: 0, a: 0, t: 0, pos: {t: '30%', l: '30%'}},
-                    {id: 2, name: 'Phil', r: 6.9, g: 0, a: 0, t: 0, pos: {t: '30%', l: '70%'}}
+                'Meridian Greenwich': { logo: '', stadium: 'London Stadium', capacity: '20,000', players: [
+                    {id: 1, name: 'Niko', r: 8.5, g: 2, a: 1, pos: {t: '15%', l: '50%'}},
+                    {id: 2, name: 'Acsor', r: 7.2, g: 0, a: 0, pos: {t: '30%', l: '30%'}}
                 ]},
-                'Lions': { logo: '', players: [
-                    {id: 3, name: 'Dofamin', r: 7.0, g: 0, a: 0, t: 0, pos: {t: '85%', l: '50%'}},
-                    {id: 4, name: 'Dofamin Jr', r: 6.8, g: 0, a: 0, t: 0, pos: {t: '70%', l: '30%'}},
-                    {id: 5, name: 'Phil Jr', r: 6.5, g: 0, a: 0, t: 0, pos: {t: '70%', l: '70%'}}
-                ]}
+                'Lions': { logo: '', stadium: 'Lion Arena', capacity: '15,000', players: [
+                    {id: 3, name: 'Dofamin', r: 7.0, g: 1, a: 0, pos: {t: '85%', l: '50%'}}
+                ]},
+                'Dragons': { logo: '', stadium: 'Dragon Nest', capacity: '18,000', players: [{id: 4, name: 'LeBumych', r: 8.1, g: 3, a: 0, pos: {t: '70%', l: '50%'}}]},
+                'Phoenix': { logo: '', stadium: 'Fire Dome', capacity: '12,000', players: [{id: 5, name: 'Attacker', r: 7.5, g: 0, a: 0, pos: {t: '50%', l: '50%'}}]}
             },
             matches: [
-                {id: 1, home: 'Greenwich', away: 'Lions', hScore: 0, aScore: 0, status: 'LIVE', events: [], stats: {poss: 50, xgh: 0.1, xga: 0.1}}
-            ],
-            isAdmin: false
+                {id: 1, home: 'Meridian Greenwich', away: 'Lions', hScore: 2, aScore: 1, status: 'LIVE', events: [{min: 12, txt: 'Niko забивает с пенальти!'}], stats: {poss: 55, xgh: 1.2, xga: 0.8, shots: 10, target: 4}},
+                {id: 2, home: 'Lions', away: 'Dragons', hScore: 0, aScore: 0, status: 'Ожидание', events: [], stats: {poss: 50, xgh: 0, xga: 0, shots: 0, target: 0}},
+                {id: 3, home: 'Meridian Greenwich', away: 'Phoenix', hScore: 0, aScore: 0, status: 'Ожидание', events: [], stats: {poss: 50, xgh: 0, xga: 0, shots: 0, target: 0}}
+            ]
         };
 
-        let activeMatchId = null;
-        let activePlayerId = null;
+        // --- ИНИЦИАЛИЗАЦИЯ ---
+        setTimeout(() => { document.getElementById('splash').style.opacity = '0'; setTimeout(() => document.getElementById('splash').remove(), 800); }, 2000);
 
-        // --- ЛОГИКА НАВИГАЦИИ ---
-        function switchMainTab(tab) {
-            ['matches', 'standings', 'scorers'].forEach(t => document.getElementById(`tab-${t}-view`).classList.add('hidden'));
-            document.getElementById(`tab-${tab}-view`).classList.remove('hidden');
-            renderMatches();
-            if(tab === 'standings') renderStandings();
-            if(tab === 'scorers') renderScorers();
-        }
+        function save() { localStorage.setItem('sofa_v6_data', JSON.stringify(state)); }
 
-        function openMatch(id) {
-            activeMatchId = id;
-            document.getElementById('match-page').classList.remove('hidden');
-            setMatchSubTab('det');
-            renderMatchInfo();
-        }
-
-        function closeMatch() {
-            document.getElementById('match-page').classList.add('hidden');
-            activeMatchId = null;
-        }
-
-        function setMatchSubTab(tab) {
-            ['det', 'line', 'stats', 'adm'].forEach(t => {
-                document.getElementById(`mview-${t}`).classList.add('hidden');
-                document.getElementById(`msub-${t}`).classList.remove('active-tab');
-                document.getElementById(`msub-${t}`).classList.add('text-gray-500');
+        // --- НАВИГАЦИЯ ---
+        function nav(v) {
+            ['matches', 'standings', 'scorers', 'clubs'].forEach(x => {
+                document.getElementById('view-'+x).classList.add('hidden');
+                document.getElementById('nv-'+x).classList.remove('nav-item-active');
+                document.getElementById('nv-'+x).classList.add('text-gray-400');
             });
-            document.getElementById(`mview-${tab}`).classList.remove('hidden');
-            document.getElementById(`msub-${tab}`).classList.add('active-tab');
-            document.getElementById(`msub-${tab}`).classList.remove('text-gray-500');
+            document.getElementById('view-'+v).classList.remove('hidden');
+            document.getElementById('nv-'+v).classList.add('nav-item-active');
+            if(v === 'matches') renderMatches();
+            if(v === 'standings') renderStandings();
+            if(v === 'scorers') renderScorers();
+            if(v === 'clubs') renderClubs();
+        }
+
+        // --- МАТЧИ ---
+        function renderMatches() {
+            const container = document.getElementById('match-list-container');
+            container.innerHTML = state.matches.map(m => `
+                <div onclick="openMatch(${m.id})" class="p-4 border-b active:bg-gray-50 flex justify-between items-center">
+                    <div class="w-12 flex flex-col"><span class="text-[10px] font-bold text-gray-400">16:45</span><span class="text-[9px] font-black ${m.status === 'LIVE' ? 'text-red-500' : ''}">${m.status}</span></div>
+                    <div class="flex-1 space-y-1">
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full border bg-cover" style="background-image:url('${state.teams[m.home].logo}')"></div><span class="text-xs font-bold text-slate-800">${m.home}</span></div>
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full border bg-cover" style="background-image:url('${state.teams[m.away].logo}')"></div><span class="text-xs font-bold text-slate-800">${m.away}</span></div>
+                    </div>
+                    <div class="flex flex-col items-end font-black text-sm text-slate-900"><span>${m.hScore}</span><span>${m.aScore}</span></div>
+                </div>
+            `).join('');
+        }
+
+        let activeMid = null;
+        function openMatch(id) {
+            activeMid = id;
+            document.getElementById('match-page').classList.remove('hidden');
+            mTab('det');
+        }
+
+        function closeMatch() { document.getElementById('match-page').classList.add('hidden'); activeMid = null; }
+
+        function mTab(t) {
+            ['det', 'line', 'stat', 'adm'].forEach(x => {
+                document.getElementById('mview-'+x).classList.add('hidden');
+                document.getElementById('mt-'+x).classList.remove('active-tab');
+                document.getElementById('mt-'+x).classList.add('text-gray-500');
+            });
+            document.getElementById('mview-'+t).classList.remove('hidden');
+            document.getElementById('mt-'+t).classList.add('active-tab');
+            document.getElementById('mt-'+t).classList.remove('text-gray-500');
             renderMatchInfo();
         }
 
-        // --- РЕНДЕРИНГ ---
-        function renderMatches() {
-            const container = document.getElementById('match-list');
-            container.innerHTML = state.matches.map(m => `
-                <div onclick="openMatch(${m.id})" class="p-4 border-b flex justify-between items-center active:bg-gray-50">
-                    <div class="text-[10px] font-bold text-gray-400 w-12 flex flex-col">
-                        <span>16:45</span><span class="${m.status === 'LIVE' ? 'text-red-500' : ''}">${m.status}</span>
+        function renderMatchInfo() {
+            const m = state.matches.find(x => x.id === activeMid);
+            document.getElementById('m-home-name').innerText = m.home;
+            document.getElementById('m-away-name').innerText = m.away;
+            document.getElementById('m-score').innerText = `${m.hScore}-${m.aScore}`;
+            document.getElementById('m-home-logo').style.backgroundImage = `url('${state.teams[m.home].logo}')`;
+            document.getElementById('m-away-logo').style.backgroundImage = `url('${state.teams[m.away].logo}')`;
+            if(state.isAdmin) document.getElementById('mt-adm').classList.remove('hidden');
+
+            // Timeline
+            document.getElementById('mview-det').innerHTML = m.events.length ? m.events.map(e => `
+                <div class="flex gap-4 items-start"><span class="font-black text-xs w-6">${e.min}'</span><span class="text-xs text-slate-600">${e.txt}</span></div>
+            `).join('') : '<p class="text-xs text-gray-400 italic text-center">Ожидание событий...</p>';
+
+            // Stats
+            document.getElementById('mview-stat').innerHTML = `
+                <div class="space-y-4">
+                    ${statBar("Владение", m.stats.poss)}
+                    <div class="flex justify-between font-black text-[10px] uppercase"><span>${m.stats.xgh}</span><span>Ожидаемые голы (xG)</span><span>${m.stats.xga}</span></div>
+                </div>
+            `;
+
+            // Pitch
+            const pArea = document.getElementById('pitch-players');
+            pArea.innerHTML = '';
+            [...state.teams[m.home].players, ...state.teams[m.away].players].forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'player-node';
+                div.style.top = p.pos.t; div.style.left = p.pos.l;
+                div.onclick = () => openPlayer(p.id);
+                div.innerHTML = `<div class="p-circle"></div><div class="p-rating">${p.r.toFixed(1)}</div><span class="text-[8px] font-black text-white mt-1 drop-shadow-md">${p.name}</span>`;
+                pArea.appendChild(div);
+            });
+        }
+
+        function statBar(label, val) {
+            return `
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[10px] font-black uppercase"><span class="text-emerald-500">${val}%</span><span>${label}</span><span class="text-blue-500">${100-val}%</span></div>
+                    <div class="h-1.5 w-full bg-gray-100 rounded-full flex overflow-hidden"><div style="width:${val}%" class="bg-emerald-500"></div><div style="width:${100-val}%" class="bg-blue-500"></div></div>
+                </div>
+            `;
+        }
+
+        // --- ТАБЛИЦА (AUTO-LOGIC) ---
+        function renderStandings() {
+            let table = {};
+            for(let t in state.teams) table[t] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+            
+            state.matches.forEach(m => {
+                if(m.status === 'LIVE' || m.status === 'Завершен') {
+                    table[m.home].p++; table[m.away].p++;
+                    table[m.home].gf += parseInt(m.hScore); table[m.home].ga += parseInt(m.aScore);
+                    table[m.away].gf += parseInt(m.aScore); table[m.away].ga += parseInt(m.hScore);
+                    if(m.hScore > m.aScore) { table[m.home].pts += 3; table[m.home].w++; table[m.away].l++; }
+                    else if(m.hScore < m.aScore) { table[m.away].pts += 3; table[m.away].w++; table[m.home].l++; }
+                    else { table[m.home].pts += 1; table[m.away].pts += 1; table[m.home].d++; table[m.away].d++; }
+                }
+            });
+
+            const sorted = Object.entries(table).sort((a,b) => b[1].pts - a[1].pts || (b[1].gf - b[1].ga) - (a[1].gf - a[1].ga));
+            document.getElementById('standings-body').innerHTML = sorted.map(([name, data], i) => `
+                <tr class="border-b last:border-0">
+                    <td class="py-3 font-bold ${i < 2 ? 'text-blue-600' : ''}">${i+1}</td>
+                    <td class="py-3"><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-cover border" style="background-image:url('${state.teams[name].logo}')"></div><span class="font-bold">${name}</span></div></td>
+                    <td class="py-3 font-medium">${data.p}</td>
+                    <td class="py-3 font-medium">${data.gf}:${data.ga}</td>
+                    <td class="py-3 font-black text-slate-900">${data.pts}</td>
+                </tr>
+            `).join('');
+        }
+
+        // --- БОМБАРДИРЫ ---
+        function renderScorers() {
+            let players = [];
+            for(let t in state.teams) state.teams[t].players.forEach(p => players.push({...p, team: t}));
+            players.sort((a,b) => b.g - a.g);
+            document.getElementById('scorers-list').innerHTML = players.map((p, i) => `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-black text-gray-300 w-4">${i+1}</span>
+                        <div class="w-10 h-10 rounded-full bg-gray-100 border"></div>
+                        <div><p class="text-xs font-black">${p.name}</p><p class="text-[9px] font-bold text-gray-400 uppercase">${p.team}</p></div>
                     </div>
-                    <div class="flex-1 space-y-1">
-                        <div class="flex items-center gap-2">
-                            <div class="w-4 h-4 rounded-full border bg-cover bg-center" style="background-image:url('${state.teams[m.home].logo}')"></div>
-                            <span class="text-xs font-bold">${m.home}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-4 h-4 rounded-full border bg-cover bg-center" style="background-image:url('${state.teams[m.away].logo}')"></div>
-                            <span class="text-xs font-bold">${m.away}</span>
-                        </div>
+                    <div class="bg-blue-50 text-blue-600 font-black px-3 py-1 rounded-lg text-xs">${p.g} голов</div>
+                </div>
+            `).join('');
+        }
+
+        // --- КЛУБЫ ---
+        function renderClubs() {
+            document.getElementById('clubs-list').innerHTML = Object.entries(state.teams).map(([name, info]) => `
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="h-24 bg-[#1A1A1A] relative flex items-center px-6">
+                        <div class="w-16 h-16 rounded-2xl bg-white bg-cover border-4 border-white/10" style="background-image:url('${info.logo}')"></div>
+                        <div class="ml-4"><h3 class="text-white font-black uppercase text-sm">${name}</h3><p class="text-blue-400 text-[9px] font-bold">Premium Club</p></div>
                     </div>
-                    <div class="font-black text-sm flex flex-col items-end">
-                        <span>${m.hScore}</span><span>${m.aScore}</span>
+                    <div class="p-4 grid grid-cols-2 gap-4">
+                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Стадион<br><span class="text-slate-800">${info.stadium}</span></div>
+                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Вместимость<br><span class="text-slate-800">${info.capacity}</span></div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function renderMatchInfo() {
-            const m = state.matches.find(x => x.id === activeMatchId);
-            if(!m) return;
+        // --- АДМИНКА ---
+        function requestAdmin() { if(prompt("Pass:") === "1234") { state.isAdmin = true; save(); location.reload(); } }
 
-            document.getElementById('m-home-name').innerText = m.home;
-            document.getElementById('m-away-name').innerText = m.away;
-            document.getElementById('m-score').innerText = `${m.hScore} - ${m.aScore}`;
-            document.getElementById('m-home-logo').style.backgroundImage = `url('${state.teams[m.home].logo}')`;
-            document.getElementById('m-away-logo').style.backgroundImage = `url('${state.teams[m.away].logo}')`;
-
-            // Timeline
-            document.getElementById('m-timeline').innerHTML = m.events.length ? m.events.map(e => `
-                <div class="flex items-start gap-4">
-                    <span class="text-xs font-black text-slate-800 w-6">${e.min}'</span>
-                    <span class="text-xs font-medium text-slate-600">${e.txt}</span>
-                </div>
-            `).join('') : '<span class="text-xs text-gray-400 italic">Событий нет</span>';
-
-            // Stats
-            document.getElementById('stats-bars').innerHTML = `
-                <div class="space-y-1">
-                    <div class="flex justify-between text-[10px] font-black uppercase"><span class="text-emerald-500">${m.stats.poss}%</span><span>Владение</span><span class="text-blue-500">${100-m.stats.poss}%</span></div>
-                    <div class="h-1.5 w-full bg-gray-100 rounded-full flex overflow-hidden"><div style="width:${m.stats.poss}%" class="bg-emerald-500"></div><div style="width:${100-m.stats.poss}%" class="bg-blue-500"></div></div>
-                </div>
-            `;
-
-            // Pitch
-            const pitch = document.getElementById('pitch-players');
-            pitch.innerHTML = '';
-            [...state.teams[m.home].players, ...state.teams[m.away].players].forEach(p => {
-                const node = document.createElement('div');
-                node.className = 'player-node';
-                node.style.top = p.pos.t;
-                node.style.left = p.pos.l;
-                node.onclick = () => openPlayerModal(p.id);
-                node.innerHTML = `
-                    <div class="player-photo"></div>
-                    <div class="p-rating" style="background:${p.r >= 7 ? '#1A9D54' : '#F08022'}">${p.r.toFixed(1)}</div>
-                    <div class="p-name">${p.name}</div>
-                `;
-                pitch.appendChild(node);
-            });
-
-            if(state.isAdmin) document.getElementById('msub-adm').classList.remove('hidden');
+        function saveAdminMatch() {
+            const m = state.matches.find(x => x.id === activeMid);
+            m.hScore = document.getElementById('as-h').value || m.hScore;
+            m.aScore = document.getElementById('as-a').value || m.aScore;
+            const min = document.getElementById('ae-m').value;
+            const txt = document.getElementById('ae-t').value;
+            if(min && txt) m.events.push({min, txt});
+            m.stats.poss = document.getElementById('as-poss').value;
+            m.stats.xgh = document.getElementById('as-xgh').value || m.stats.xgh;
+            m.stats.xga = document.getElementById('as-xga').value || m.stats.xga;
+            m.status = 'LIVE';
+            save(); renderMatchInfo();
         }
 
-        // --- УПРАВЛЕНИЕ ИГРОКАМИ ---
-        function openPlayerModal(pid) {
-            activePlayerId = pid;
-            const p = findGlobalPlayer(pid);
+        let activePid = null;
+        function openPlayer(id) {
+            activePid = id;
+            let p; for(let t in state.teams) { let found = state.teams[t].players.find(x => x.id === id); if(found) { p = found; break; } }
             document.getElementById('pm-name').innerText = p.name;
-            document.getElementById('pm-stat-rtg').innerText = p.r.toFixed(1);
-            document.getElementById('pm-stat-gls').innerText = p.g;
-            document.getElementById('pm-stat-ast').innerText = p.a;
-            document.getElementById('pm-stat-tck').innerText = p.t;
-            
-            if(state.isAdmin) document.getElementById('pm-admin-controls').classList.remove('hidden');
+            document.getElementById('p-stat-r').innerText = p.r.toFixed(1);
+            document.getElementById('p-stat-g').innerText = p.g;
+            if(state.isAdmin) document.getElementById('pm-adm').classList.remove('hidden');
             document.getElementById('player-modal').style.display = 'flex';
         }
 
-        function closePlayerModal() {
-            document.getElementById('player-modal').style.display = 'none';
-        }
-
-        function findGlobalPlayer(pid) {
-            for(let t in state.teams) {
-                let p = state.teams[t].players.find(x => x.id === pid);
-                if(p) return p;
-            }
-        }
-
-        function savePlayerChanges() {
-            const p = findGlobalPlayer(activePlayerId);
-            const newR = document.getElementById('adm-p-rtg').value;
-            const newG = document.getElementById('adm-p-gls').value;
-            const newA = document.getElementById('adm-p-ast').value;
-            
-            if(newR) p.r = parseFloat(newR);
-            if(newG) p.g = parseInt(newG);
-            if(newA) p.a = parseInt(newA);
-            
-            save();
-            renderMatchInfo();
-            closePlayerModal();
-        }
-
-        // --- АДМИНКА ---
-        function requestAdmin() {
-            if(prompt("Пароль:") === "1234") {
-                state.isAdmin = true;
-                save();
-                location.reload();
-            }
+        function savePlayerData() {
+            let p; for(let t in state.teams) { let found = state.teams[t].players.find(x => x.id === activePid); if(found) { p = found; break; } }
+            p.r = parseFloat(document.getElementById('ai-r').value) || p.r;
+            p.g = parseInt(document.getElementById('ai-g').value) || p.g;
+            save(); renderMatchInfo(); document.getElementById('player-modal').style.display='none';
         }
 
         function changeLogo(side) {
             if(!state.isAdmin) return;
-            const input = document.getElementById('logo-input');
-            input.onchange = e => {
+            const m = state.matches.find(x => x.id === activeMid);
+            const team = side === 'home' ? m.home : m.away;
+            const inp = document.getElementById('img-input');
+            inp.onchange = e => {
                 const reader = new FileReader();
-                reader.onload = () => {
-                    const m = state.matches.find(x => x.id === activeMatchId);
-                    const teamName = (side === 'home' ? m.home : m.away);
-                    state.teams[teamName].logo = reader.result;
-                    save();
-                    renderMatchInfo();
-                };
+                reader.onload = () => { state.teams[team].logo = reader.result; save(); renderMatchInfo(); };
                 reader.readAsDataURL(e.target.files[0]);
             };
-            input.click();
-        }
-
-        function addMatchEvent() {
-            const m = state.matches.find(x => x.id === activeMatchId);
-            const min = document.getElementById('adm-event-min').value;
-            const txt = document.getElementById('adm-event-txt').value;
-            const hs = document.getElementById('adm-score-h').value;
-            const as = document.getElementById('adm-score-a').value;
-
-            if(txt && min) m.events.push({min, txt});
-            if(hs) m.hScore = hs;
-            if(as) m.aScore = as;
-
-            save();
-            renderMatchInfo();
-        }
-
-        function save() {
-            localStorage.setItem('sofa_v5_state', JSON.stringify(state));
+            inp.click();
         }
 
         renderMatches();
