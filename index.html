@@ -3,100 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SofaClone Pro - Meridian Greenwich</title>
+    <title>SofaClone Ultimate - Meridian Greenwich</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #f0f2f5; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        .rating-gold { background: #187bcd; } /* 9+ */
-        .rating-green { background: #1a9d54; } /* 7-8 */
-        .rating-orange { background: #f08022; } /* <7 */
-        .tab-active { border-bottom: 3px solid #374df5; color: #374df5; }
-        .admin-panel { display: none; }
+        :root {
+            --sofa-blue: #374df5;
+            --sofa-bg: #f2f5f7;
+            --rating-top: #187bcd; /* 9.0+ */
+            --rating-high: #1a9d54; /* 7.0+ */
+            --rating-mid: #f08022; /* 6.0+ */
+        }
+        body { background: var(--sofa-bg); font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .rating-box { border-radius: 4px; color: white; font-weight: 900; width: 32px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .active-tab { border-bottom: 3px solid var(--sofa-blue); color: var(--sofa-blue) !important; }
+        .hidden { display: none !important; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="pb-20">
 
-    <div class="bg-white p-6 shadow-sm flex justify-between items-center border-b">
-        <div class="flex flex-col items-center w-1/3">
-            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl mb-1">MG</div>
-            <span class="text-xs font-bold text-center">Meridian Greenwich</span>
+    <div id="role-screen" class="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center p-6">
+        <div class="text-white text-3xl font-black mb-8 text-center">SOFACLONE<br><span class="text-blue-500 text-sm tracking-widest uppercase">Select Server</span></div>
+        <div class="w-full space-y-4 max-w-xs">
+            <button onclick="selectRole('admin')" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-900/40">АДМИНИСТРАТОР</button>
+            <button onclick="selectRole('assistant')" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold">АССИСТЕНТ</button>
+            <button onclick="selectRole('viewer')" class="w-full bg-gray-700 text-white py-4 rounded-xl font-bold">НАБЛЮДАТЕЛЬ</button>
         </div>
-        <div class="text-center">
-            <div class="text-green-600 text-xs font-bold mb-1">LIVE</div>
-            <div id="main-score" class="text-4xl font-black text-blue-700">0 - 0</div>
-        </div>
-        <div class="flex flex-col items-center w-1/3">
-            <div class="w-12 h-12 bg-red-800 rounded-full flex items-center justify-center text-white font-bold text-xl mb-1">FD</div>
-            <span class="text-xs font-bold text-center">FC Dedushki</span>
-        </div>
+        <p class="text-gray-500 text-xs mt-10">Meridian Greenwich Official App v2.0</p>
     </div>
 
-    <div class="flex bg-white border-b sticky top-0 z-10">
-        <button onclick="showTab('match')" class="flex-1 py-3 text-sm font-bold text-gray-500 tab-btn tab-active" id="btn-match">МАТЧ</button>
-        <button onclick="showTab('table')" class="flex-1 py-3 text-sm font-bold text-gray-500 tab-btn" id="btn-table">ТАБЛИЦА</button>
-        <button onclick="showTab('stats')" class="flex-1 py-3 text-sm font-bold text-gray-500 tab-btn" id="btn-stats">БОМБАРДИРЫ</button>
-        <button onclick="showTab('admin')" class="flex-1 py-3 text-sm font-bold text-red-500 tab-btn" id="btn-admin">АДМИН</button>
-    </div>
+    <div id="main-app" class="hidden">
+        <div class="bg-white p-4 pt-8 flex justify-between items-center border-b">
+            <div class="flex flex-col items-center w-1/3">
+                <div class="w-14 h-14 bg-blue-700 rounded-full flex items-center justify-center text-white font-bold text-xl mb-2 shadow-inner">MG</div>
+                <span class="text-[11px] font-black text-center leading-tight uppercase">Meridian<br>Greenwich</span>
+            </div>
+            <div class="text-center">
+                <div id="status-badge" class="text-red-600 text-[10px] font-black mb-1 px-2 py-0.5 border border-red-200 rounded inline-block">LIVE</div>
+                <div id="main-score" class="text-5xl font-black text-slate-800 tracking-tighter">0 - 0</div>
+            </div>
+            <div class="flex flex-col items-center w-1/3">
+                <div class="w-14 h-14 bg-red-900 rounded-full flex items-center justify-center text-white font-bold text-xl mb-2 shadow-inner">FD</div>
+                <span class="text-[11px] font-black text-center leading-tight uppercase">FC<br>Dedushki</span>
+            </div>
+        </div>
 
-    <div id="tab-match" class="p-4 space-y-4">
-        <div class="bg-white rounded-xl shadow-sm p-4">
-            <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">СОСТАВ И ОЦЕНКИ</h3>
-            <div id="lineup-list" class="space-y-3">
+        <div class="flex bg-white sticky top-0 z-20 border-b overflow-x-auto">
+            <button onclick="showTab('match')" id="btn-match" class="flex-1 min-w-[80px] py-3 text-xs font-black text-gray-400 active-tab">МАТЧ</button>
+            <button onclick="showTab('lineup')" id="btn-lineup" class="flex-1 min-w-[80px] py-3 text-xs font-black text-gray-400">СОСТАВ</button>
+            <button onclick="showTab('table')" id="btn-table" class="flex-1 min-w-[80px] py-3 text-xs font-black text-gray-400">ТАБЛИЦА</button>
+            <button onclick="showTab('admin')" id="btn-admin-tab" class="flex-1 min-w-[80px] py-3 text-xs font-black text-red-500 hidden">АДМИН</button>
+        </div>
+
+        <div id="tab-match" class="p-3 space-y-3">
+            <div class="card p-4">
+                <h3 class="text-xs font-black text-gray-400 mb-4 uppercase tracking-wider">События матча</h3>
+                <div id="events-list" class="space-y-4">
+                    <p class="text-xs text-center text-gray-400 italic">Матч начался</p>
                 </div>
+            </div>
         </div>
-    </div>
 
-    <div id="tab-table" class="hidden p-4">
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50 text-gray-500">
-                    <tr>
-                        <th class="p-3">#</th>
-                        <th class="p-3">Команда</th>
-                        <th class="p-3">И</th>
-                        <th class="p-3">О</th>
-                    </tr>
-                </thead>
-                <tbody id="league-table">
-                    </tbody>
-            </table>
+        <div id="tab-lineup" class="hidden p-3 space-y-3">
+            <div class="card overflow-hidden">
+                <div class="bg-gray-50 p-2 text-[10px] font-black text-gray-400 uppercase border-b">Meridian Greenwich</div>
+                <div id="lineup-list" class="divide-y divide-gray-100">
+                    </div>
+            </div>
         </div>
-    </div>
 
-    <div id="tab-stats" class="hidden p-4">
-        <div class="bg-white rounded-xl shadow-sm p-4">
-            <h3 class="font-bold mb-3">ТОП БОМБАРДИРОВ</h3>
-            <div id="scorers-list" class="space-y-3"></div>
-        </div>
-    </div>
-
-    <div id="tab-admin" class="hidden p-4 space-y-4">
-        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-            <h3 class="font-bold text-red-700 mb-4 text-center">ПАНЕЛЬ УПРАВЛЕНИЯ</h3>
+        <div id="tab-table" class="hidden p-3">
+            <div class="card overflow-hidden">
+                <table class="w-full text-[13px]">
+                    <thead class="bg-gray-50 text-gray-400 font-bold">
+                        <tr>
+                            <th class="p-3 text-left w-8">#</th>
+                            <th class="p-3 text-left">КОМАНДА</th>
+                            <th class="p-3 text-center">И</th>
+                            <th class="p-3 text-center text-blue-600">О</th>
+                        </tr>
+                    </thead>
+                    <tbody id="league-table"></tbody>
+                </table>
+            </div>
             
-            <div class="space-y-3">
-                <label class="block text-xs font-bold">СЧЁТ МАТЧА</label>
-                <div class="flex gap-2">
-                    <input id="in-score-h" type="number" class="w-1/2 p-2 border rounded" placeholder="MG">
-                    <input id="in-score-a" type="number" class="w-1/2 p-2 border rounded" placeholder="Соперник">
-                </div>
+            <div class="card mt-4 p-4">
+                <h3 class="text-xs font-black text-gray-400 mb-3 uppercase">Топ бомбардиров</h3>
+                <div id="scorers-list" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <div id="tab-admin" class="hidden p-3 space-y-4">
+            <div class="bg-red-50 border-2 border-red-100 rounded-xl p-5">
+                <h2 class="text-red-700 font-black text-center mb-4 uppercase text-sm">Управление матчем</h2>
                 
-                <label class="block text-xs font-bold mt-4">ОБНОВИТЬ ИГРОКА (Имя | Оценка | Голы)</label>
-                <select id="select-player" class="w-full p-2 border rounded mb-2"></select>
-                <div class="flex gap-2">
-                    <input id="in-rating" type="number" step="0.1" class="w-1/2 p-2 border rounded" placeholder="Оценка">
-                    <input id="in-goals" type="number" class="w-1/2 p-2 border rounded" placeholder="Голы">
+                <div id="admin-score-section" class="space-y-3 mb-6">
+                    <div class="flex gap-3">
+                        <input id="in-h-score" type="number" class="w-1/2 p-3 border rounded-lg font-bold" placeholder="MG Score">
+                        <input id="in-a-score" type="number" class="w-1/2 p-3 border rounded-lg font-bold" placeholder="FD Score">
+                    </div>
                 </div>
-                
-                <button onclick="saveAdminData()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg mt-4 shadow-lg active:scale-95 transition">СОХРАНИТЬ ВСЁ</button>
-                <button onclick="resetData()" class="w-full text-red-400 text-xs mt-4 underline">Сбросить всё к чертям</button>
+
+                <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase text-red-400">Редактировать игрока</label>
+                    <select id="sel-player" class="w-full p-3 border rounded-lg font-bold"></select>
+                    <div class="flex gap-3">
+                        <input id="in-rtg" type="number" step="0.1" class="w-1/2 p-3 border rounded-lg" placeholder="Оценка">
+                        <input id="in-gls" type="number" class="w-1/2 p-3 border rounded-lg" placeholder="Голы">
+                    </div>
+                </div>
+
+                <button onclick="updateMasterData()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-6 shadow-lg">СОХРАНИТЬ ДАННЫЕ</button>
+                <div id="admin-only-tools" class="mt-4 pt-4 border-t border-red-200 hidden">
+                    <button onclick="resetAllData()" class="w-full text-red-800 text-[10px] uppercase font-bold underline">Сброс базы данных</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ДАННЫЕ ПО УМОЛЧАНИЮ (Если localStorage пуст)
-        const defaultData = {
+        // --- ДАННЫЕ И ЛОГИКА ---
+        const DEFAULT_APP_DATA = {
             score: "0 - 0",
             players: [
                 { id: 0, name: "Acsor", number: 1, rating: 7.0, goals: 0 },
@@ -105,109 +132,123 @@
                 { id: 3, name: "Kelf", number: 19, rating: 7.0, goals: 0 },
                 { id: 4, name: "Alex", number: 4, rating: 7.0, goals: 0 }
             ],
-            teams: [
-                { name: "Meridian Greenwich", games: 1, points: 3 },
-                { name: "FC Dedushki", games: 1, points: 0 },
-                { name: "Arbuz FC", games: 0, points: 0 }
-            ]
+            standings: [
+                { name: "Meridian Greenwich", played: 1, points: 3 },
+                { name: "FC Dedushki", played: 1, points: 0 },
+                { name: "Arbuz FC", played: 0, points: 0 }
+            ],
+            assistants: ["Admin_Greenwich", "Pica_Helper"]
         };
 
-        let appData = JSON.parse(localStorage.getItem('sofaData')) || defaultData;
+        let currentRole = 'viewer';
+        let data = JSON.parse(localStorage.getItem('sofa_v2_data')) || DEFAULT_APP_DATA;
 
-        function init() {
-            renderAll();
-            populateAdminSelect();
+        function selectRole(role) {
+            if(role === 'admin') {
+                let pass = prompt("Введите пароль админа (по умолчанию 1234):");
+                if(pass !== "1234") return alert("Доступ закрыт!");
+                document.getElementById('btn-admin-tab').classList.remove('hidden');
+                document.getElementById('admin-only-tools').classList.remove('hidden');
+            } 
+            if(role === 'assistant') {
+                let pass = prompt("Пароль ассистента (по умолчанию 0000):");
+                if(pass !== "0000") return alert("Неверно!");
+                document.getElementById('btn-admin-tab').classList.remove('hidden');
+                document.getElementById('admin-score-section').classList.add('hidden'); // Ассистент не меняет счет
+            }
+
+            currentRole = role;
+            document.getElementById('role-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            render();
         }
 
-        function renderAll() {
-            // Score
-            document.getElementById('main-score').innerText = appData.score;
+        function showTab(tab) {
+            const tabs = ['match', 'lineup', 'table', 'admin'];
+            tabs.forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+                document.getElementById('btn-' + t + (t === 'admin' ? '-tab' : '')).classList.remove('active-tab');
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('btn-' + tab + (tab === 'admin' ? '-tab' : '')).classList.add('active-tab');
+        }
 
+        function render() {
+            // Score & Header
+            document.getElementById('main-score').innerText = data.score;
+            
             // Lineup
-            const lineup = document.getElementById('lineup-list');
-            lineup.innerHTML = '';
-            appData.players.forEach(p => {
-                let color = p.rating >= 9 ? 'rating-gold' : (p.rating >= 7 ? 'rating-green' : 'rating-orange');
-                lineup.innerHTML += `
-                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs text-gray-400 w-4">${p.number}</span>
-                            <span class="font-bold text-gray-700">${p.name} ${p.goals > 0 ? '⚽'.repeat(p.goals) : ''}</span>
+            const lList = document.getElementById('lineup-list');
+            lList.innerHTML = '';
+            data.players.forEach(p => {
+                let color = p.rating >= 9 ? 'var(--rating-top)' : (p.rating >= 7 ? 'var(--rating-high)' : 'var(--rating-mid)');
+                lList.innerHTML += `
+                    <div class="flex justify-between items-center p-3">
+                        <div class="flex items-center gap-4">
+                            <span class="text-[10px] font-bold text-gray-400 w-4">${p.number}</span>
+                            <span class="font-bold text-gray-800 text-sm">${p.name} ${'⚽'.repeat(p.goals)}</span>
                         </div>
-                        <div class="text-white px-2 py-1 rounded text-sm font-black ${color}">${p.rating.toFixed(1)}</div>
+                        <div class="rating-box" style="background:${color}">${p.rating.toFixed(1)}</div>
                     </div>
                 `;
             });
 
             // Table
-            const tableBody = document.getElementById('league-table');
-            tableBody.innerHTML = '';
-            appData.teams.sort((a,b) => b.points - a.points).forEach((t, i) => {
-                tableBody.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-3 font-bold text-gray-400">${i+1}</td>
-                        <td class="p-3 font-bold">${t.name}</td>
-                        <td class="p-3">${t.games}</td>
-                        <td class="p-3 font-black text-blue-600">${t.points}</td>
+            const tBody = document.getElementById('league-table');
+            tBody.innerHTML = '';
+            [...data.standings].sort((a,b) => b.points - a.points).forEach((t, i) => {
+                tBody.innerHTML += `
+                    <tr class="border-b border-gray-50">
+                        <td class="p-3 font-bold text-gray-300 text-xs">${i+1}</td>
+                        <td class="p-3 font-black text-slate-700">${t.name}</td>
+                        <td class="p-3 text-center">${t.played}</td>
+                        <td class="p-3 text-center font-black text-blue-600">${t.points}</td>
                     </tr>
                 `;
             });
 
             // Scorers
-            const scorers = document.getElementById('scorers-list');
-            scorers.innerHTML = '';
-            appData.players.filter(p => p.goals > 0).sort((a,b) => b.goals - a.goals).forEach(p => {
-                scorers.innerHTML += `
-                    <div class="flex justify-between border-b pb-2">
-                        <span>${p.name}</span>
-                        <span class="font-bold">${p.goals}</span>
-                    </div>
-                `;
-            });
-            
-            localStorage.setItem('sofaData', JSON.stringify(appData));
+            const sList = document.getElementById('scorers-list');
+            sList.innerHTML = data.players.filter(p => p.goals > 0).sort((a,b) => b.goals - a.goals).map(p => `
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium">${p.name}</span>
+                    <span class="font-bold">${p.goals}</span>
+                </div>
+            `).join('');
+
+            // Admin Dropdown
+            const sel = document.getElementById('sel-player');
+            sel.innerHTML = data.players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+            localStorage.setItem('sofa_v2_data', JSON.stringify(data));
         }
 
-        function showTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById('btn-' + tab).classList.add('tab-active');
-            
-            ['match', 'table', 'stats', 'admin'].forEach(t => {
-                document.getElementById('tab-' + t).classList.add('hidden');
-            });
-            document.getElementById('tab-' + tab).classList.remove('hidden');
+        function updateMasterData() {
+            const hs = document.getElementById('in-h-score').value;
+            const as = document.getElementById('in-a-score').value;
+            if(hs !== "" && as !== "" && currentRole === 'admin') {
+                data.score = `${hs} - ${as}`;
+            }
+
+            const pId = document.getElementById('sel-player').value;
+            const rtg = document.getElementById('in-rtg').value;
+            const gls = document.getElementById('in-gls').value;
+
+            if(rtg !== "") data.players[pId].rating = parseFloat(rtg);
+            if(gls !== "") data.players[pId].goals = parseInt(gls);
+
+            render();
+            alert("Данные засинхронены!");
         }
 
-        function populateAdminSelect() {
-            const select = document.getElementById('select-player');
-            select.innerHTML = appData.players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-        }
-
-        function saveAdminData() {
-            const h = document.getElementById('in-score-h').value;
-            const a = document.getElementById('in-score-a').value;
-            if(h !== "" && a !== "") appData.score = `${h} - ${a}`;
-
-            const pId = document.getElementById('select-player').value;
-            const pRating = document.getElementById('in-rating').value;
-            const pGoals = document.getElementById('in-goals').value;
-
-            if(pRating !== "") appData.players[pId].rating = parseFloat(pRating);
-            if(pGoals !== "") appData.players[pId].goals = parseInt(pGoals);
-
-            renderAll();
-            alert("Данные обновлены!");
-        }
-
-        function resetData() {
-            if(confirm("Удалить всё?")) {
-                localStorage.removeItem('sofaData');
+        function resetAllData() {
+            if(confirm("ПОЛНЫЙ СБРОС? Все игроки и счёт вернутся к нулю.")) {
+                localStorage.removeItem('sofa_v2_data');
                 location.reload();
             }
         }
 
-        init();
+        render();
     </script>
 </body>
-    </html>
-    
+</html>
