@@ -3,326 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FC Mobile Telegram Edition</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>SofaClone Pro - Meridian Greenwich</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Премиальный, минималистичный UI (стиль UEFA / Premier League) */
-        :root {
-            --bg-color: #0b0e14;
-            --panel-bg: #151a25;
-            --accent-color: #00ff87; /* Неоновый акцент как в FC */
-            --text-main: #ffffff;
-            --text-muted: #8a94a6;
-            --border-radius: 12px;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--tg-theme-bg-color, var(--bg-color));
-            color: var(--tg-theme-text-color, var(--text-main));
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow-x: hidden;
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        header {
-            padding: 20px;
-            background: linear-gradient(180deg, rgba(21,26,37,1) 0%, rgba(11,14,20,0) 100%);
-            text-align: center;
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .screen {
-            display: none;
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .screen.active {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .card {
-            background-color: var(--panel-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .card:active {
-            transform: scale(0.95);
-        }
-
-        .card h3 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-        }
-
-        .btn {
-            background-color: var(--accent-color);
-            color: #000;
-            border: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            width: 100%;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        .btn:active {
-            opacity: 0.8;
-        }
-
-        /* Список команд */
-        .team-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .team-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--panel-bg);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            border-left: 4px solid transparent;
-        }
-
-        .team-row[data-ovr^="8"] { border-left-color: #eab308; } /* Золотые команды */
-        .team-row[data-ovr^="9"] { border-left-color: var(--accent-color); } /* Элита */
-
-        .team-info { display: flex; flex-direction: column; }
-        .team-name { font-weight: bold; font-size: 16px; }
-        .team-stats { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-        .team-ovr { font-size: 20px; font-weight: bold; background: #2a3143; padding: 5px 10px; border-radius: 6px; }
-
-        /* Симулятор матча */
-        .match-scoreboard {
-            background: var(--panel-bg);
-            padding: 30px 20px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .score-display {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 32px;
-            font-weight: 900;
-            margin: 20px 0;
-        }
-
-        .match-events {
-            flex: 1;
-            background: rgba(0,0,0,0.2);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            font-size: 14px;
-            overflow-y: auto;
-            max-height: 200px;
-        }
-
-        .event { margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
-        .event-time { color: var(--accent-color); font-weight: bold; margin-right: 10px; }
-
+        body { background: #f0f2f5; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        .rating-gold { background: #187bcd; } /* 9+ */
+        .rating-green { background: #1a9d54; } /* 7-8 */
+        .rating-orange { background: #f08022; } /* <7 */
+        .tab-active { border-bottom: 3px solid #374df5; color: #374df5; }
+        .admin-panel { display: none; }
     </style>
 </head>
-<body>
+<body class="pb-20">
 
-<div class="app-container">
-    <header>TG FC 26</header>
-
-    <div id="main-menu" class="screen active">
-        <h2>Режимы игры</h2>
-        <div class="menu-grid">
-            <div class="card" onclick="navTo('career')">
-                <h3>Карьера</h3>
-                <span style="color: var(--text-muted); font-size: 12px;">Сезон 25/26</span>
-            </div>
-            <div class="card" onclick="navTo('quick-match')">
-                <h3>Быстрый матч</h3>
-                <span style="color: var(--text-muted); font-size: 12px;">Симуляция</span>
-            </div>
-            <div class="card" onclick="navTo('rosters')">
-                <h3>Команды</h3>
-                <span style="color: var(--text-muted); font-size: 12px;">База данных</span>
-            </div>
-            <div class="card">
-                <h3>Настройки</h3>
-                <span style="color: var(--text-muted); font-size: 12px;">Профиль</span>
-            </div>
+    <div class="bg-white p-6 shadow-sm flex justify-between items-center border-b">
+        <div class="flex flex-col items-center w-1/3">
+            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl mb-1">MG</div>
+            <span class="text-xs font-bold text-center">Meridian Greenwich</span>
+        </div>
+        <div class="text-center">
+            <div class="text-green-600 text-xs font-bold mb-1">LIVE</div>
+            <div id="main-score" class="text-4xl font-black text-blue-700">0 - 0</div>
+        </div>
+        <div class="flex flex-col items-center w-1/3">
+            <div class="w-12 h-12 bg-red-800 rounded-full flex items-center justify-center text-white font-bold text-xl mb-1">FD</div>
+            <span class="text-xs font-bold text-center">FC Dedushki</span>
         </div>
     </div>
 
-    <div id="rosters" class="screen">
-        <h2>База клубов</h2>
-        <div class="team-list" id="team-container">
-            </div>
-        <button class="btn" onclick="navTo('main-menu')">Назад в меню</button>
+    <div class="flex bg-white border-b sticky top-0 z-10">
+        <button onclick="showTab('match')" class="flex-1 py-3 text-sm font-bold text-gray-500 tab-btn tab-active" id="btn-match">МАТЧ</button>
+        <button onclick="showTab('table')" class="flex-1 py-3 text-sm font-bold text-gray-500 tab-btn" id="btn-table">ТАБЛИЦА</button>
+        <button onclick="showTab('stats')" class="flex-1 py-3 text-sm font-bold text-gray-500 tab-btn" id="btn-stats">БОМБАРДИРЫ</button>
+        <button onclick="showTab('admin')" class="flex-1 py-3 text-sm font-bold text-red-500 tab-btn" id="btn-admin">АДМИН</button>
     </div>
 
-    <div id="quick-match" class="screen">
-        <h2>Симуляция матча</h2>
-        <div class="match-scoreboard">
-            <div class="score-display">
-                <div id="home-team-name">Команда 1</div>
-                <div><span id="home-score">0</span> - <span id="away-score">0</span></div>
-                <div id="away-team-name">Команда 2</div>
-            </div>
-            <div id="match-timer" style="color: var(--accent-color); font-weight: bold;">0'</div>
-        </div>
-        <div class="match-events" id="event-log">
-            <div style="color: var(--text-muted); text-align: center;">Матч еще не начался</div>
-        </div>
-        <button class="btn" id="start-match-btn" onclick="startMatch()">Начать матч</button>
-        <button class="btn" style="background: var(--panel-bg); color: white;" onclick="navTo('main-menu')">Назад</button>
-    </div>
-
-    <div id="career" class="screen">
-        <h2>Моя Карьера</h2>
-        <div class="card" style="text-align: left; margin-bottom: 20px;">
-            <h3>Текущий клуб: FC Lissabonsk</h3>
-            <p style="color: var(--text-muted); font-size: 14px;">Бюджет: €125,000,000<br>Схема: 3-4-3</p>
-        </div>
-        <button class="btn" onclick="navTo('quick-match')">Следующий матч</button>
-        <button class="btn" style="background: var(--panel-bg); color: white;" onclick="navTo('main-menu')">Назад</button>
-    </div>
-
-</div>
-
-<script>
-    // Инициализация Telegram Mini App
-    window.Telegram.WebApp.ready();
-    window.Telegram.WebApp.expand();
-
-    // База данных: 10 Команд
-    const dbTeams = [
-        { id: 1, name: "FC Lissabonsk", ovr: 86, att: 88, mid: 85, def: 84, tactic: "3-4-3" },
-        { id: 2, name: "FC Dragons", ovr: 83, att: 84, mid: 82, def: 81, tactic: "3-4-3" },
-        { id: 3, name: "Manchester City", ovr: 89, att: 89, mid: 90, def: 87, tactic: "4-3-3" },
-        { id: 4, name: "Real Madrid", ovr: 88, att: 90, mid: 88, def: 85, tactic: "4-3-3" },
-        { id: 5, name: "Arsenal", ovr: 85, att: 86, mid: 86, def: 84, tactic: "4-3-3" },
-        { id: 6, name: "Bayern Munich", ovr: 87, att: 88, mid: 86, def: 86, tactic: "4-2-3-1" },
-        { id: 7, name: "Inter Milan", ovr: 86, att: 85, mid: 85, def: 88, tactic: "3-5-2" },
-        { id: 8, name: "Paris SG", ovr: 86, att: 89, mid: 84, def: 83, tactic: "4-3-3" },
-        { id: 9, name: "Barcelona", ovr: 85, att: 85, mid: 87, def: 83, tactic: "4-3-3" },
-        { id: 10, name: "Juventus", ovr: 84, att: 83, mid: 84, def: 85, tactic: "3-5-2" }
-    ];
-
-    // Навигация UI
-    function navTo(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
-        if(screenId === 'rosters') renderTeams();
-    }
-
-    // Рендер команд
-    function renderTeams() {
-        const container = document.getElementById('team-container');
-        container.innerHTML = '';
-        dbTeams.forEach(team => {
-            container.innerHTML += `
-                <div class="team-row" data-ovr="${team.ovr}">
-                    <div class="team-info">
-                        <div class="team-name">${team.name}</div>
-                        <div class="team-stats">АТК: ${team.att} | ПЗЩ: ${team.mid} | ЗЩТ: ${team.def}</div>
-                    </div>
-                    <div class="team-ovr">${team.ovr}</div>
+    <div id="tab-match" class="p-4 space-y-4">
+        <div class="bg-white rounded-xl shadow-sm p-4">
+            <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">СОСТАВ И ОЦЕНКИ</h3>
+            <div id="lineup-list" class="space-y-3">
                 </div>
-            `;
-        });
-    }
+        </div>
+    </div>
 
-    // Движок симуляции матча
-    let matchInterval;
-    function startMatch() {
-        const home = dbTeams[0]; // FC Lissabonsk
-        const away = dbTeams[3]; // Real Madrid
-        
-        document.getElementById('home-team-name').innerText = home.name;
-        document.getElementById('away-team-name').innerText = away.name;
-        document.getElementById('home-score').innerText = '0';
-        document.getElementById('away-score').innerText = '0';
-        
-        const log = document.getElementById('event-log');
-        log.innerHTML = '';
-        document.getElementById('start-match-btn').style.display = 'none';
+    <div id="tab-table" class="hidden p-4">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 text-gray-500">
+                    <tr>
+                        <th class="p-3">#</th>
+                        <th class="p-3">Команда</th>
+                        <th class="p-3">И</th>
+                        <th class="p-3">О</th>
+                    </tr>
+                </thead>
+                <tbody id="league-table">
+                    </tbody>
+            </table>
+        </div>
+    </div>
 
-        let minute = 0;
-        let homeGoals = 0;
-        let awayGoals = 0;
+    <div id="tab-stats" class="hidden p-4">
+        <div class="bg-white rounded-xl shadow-sm p-4">
+            <h3 class="font-bold mb-3">ТОП БОМБАРДИРОВ</h3>
+            <div id="scorers-list" class="space-y-3"></div>
+        </div>
+    </div>
 
-        matchInterval = setInterval(() => {
-            minute += Math.floor(Math.random() * 5) + 1; // Скачки по 1-5 минут
-            if (minute >= 90) {
-                clearInterval(matchInterval);
-                document.getElementById('match-timer').innerText = 'FT';
-                logEvent(log, '90', 'Финальный свисток. Матч окончен.');
-                document.getElementById('start-match-btn').style.display = 'block';
-                document.getElementById('start-match-btn').innerText = 'Играть снова';
-                return;
-            }
-
-            document.getElementById('match-timer').innerText = minute + "'";
-
-            // Логика вероятностей
-            let eventChance = Math.random() * 100;
+    <div id="tab-admin" class="hidden p-4 space-y-4">
+        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+            <h3 class="font-bold text-red-700 mb-4 text-center">ПАНЕЛЬ УПРАВЛЕНИЯ</h3>
             
-            // Расчет преимущества (очень базовая формула для примера)
-            let homeAdvantage = (home.att - away.def) + (home.mid - away.mid) / 2;
-            let awayAdvantage = (away.att - home.def) + (away.mid - home.mid) / 2;
+            <div class="space-y-3">
+                <label class="block text-xs font-bold">СЧЁТ МАТЧА</label>
+                <div class="flex gap-2">
+                    <input id="in-score-h" type="number" class="w-1/2 p-2 border rounded" placeholder="MG">
+                    <input id="in-score-a" type="number" class="w-1/2 p-2 border rounded" placeholder="Соперник">
+                </div>
+                
+                <label class="block text-xs font-bold mt-4">ОБНОВИТЬ ИГРОКА (Имя | Оценка | Голы)</label>
+                <select id="select-player" class="w-full p-2 border rounded mb-2"></select>
+                <div class="flex gap-2">
+                    <input id="in-rating" type="number" step="0.1" class="w-1/2 p-2 border rounded" placeholder="Оценка">
+                    <input id="in-goals" type="number" class="w-1/2 p-2 border rounded" placeholder="Голы">
+                </div>
+                
+                <button onclick="saveAdminData()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg mt-4 shadow-lg active:scale-95 transition">СОХРАНИТЬ ВСЁ</button>
+                <button onclick="resetData()" class="w-full text-red-400 text-xs mt-4 underline">Сбросить всё к чертям</button>
+            </div>
+        </div>
+    </div>
 
-            if (eventChance < 8 + (homeAdvantage * 0.2)) {
-                homeGoals++;
-                document.getElementById('home-score').innerText = homeGoals;
-                logEvent(log, minute, `ГОЛ! ${home.name} забивает шикарный мяч!`);
-            } else if (eventChance > 92 - (awayAdvantage * 0.2)) {
-                awayGoals++;
-                document.getElementById('away-score').innerText = awayGoals;
-                logEvent(log, minute, `ГОЛ! ${away.name} прорывает оборону!`);
-            } else if (eventChance > 45 && eventChance < 50) {
-                logEvent(log, minute, `${home.name} опасно атакует, но вратарь на месте.`);
-            } else if (eventChance > 50 && eventChance < 55) {
-                logEvent(log, minute, `Жесткий фол в центре поля. Тактическая борьба.`);
+    <script>
+        // ДАННЫЕ ПО УМОЛЧАНИЮ (Если localStorage пуст)
+        const defaultData = {
+            score: "0 - 0",
+            players: [
+                { id: 0, name: "Acsor", number: 1, rating: 7.0, goals: 0 },
+                { id: 1, name: "Mels", number: 9, rating: 7.0, goals: 0 },
+                { id: 2, name: "Niko", number: 10, rating: 7.0, goals: 0 },
+                { id: 3, name: "Kelf", number: 19, rating: 7.0, goals: 0 },
+                { id: 4, name: "Alex", number: 4, rating: 7.0, goals: 0 }
+            ],
+            teams: [
+                { name: "Meridian Greenwich", games: 1, points: 3 },
+                { name: "FC Dedushki", games: 1, points: 0 },
+                { name: "Arbuz FC", games: 0, points: 0 }
+            ]
+        };
+
+        let appData = JSON.parse(localStorage.getItem('sofaData')) || defaultData;
+
+        function init() {
+            renderAll();
+            populateAdminSelect();
+        }
+
+        function renderAll() {
+            // Score
+            document.getElementById('main-score').innerText = appData.score;
+
+            // Lineup
+            const lineup = document.getElementById('lineup-list');
+            lineup.innerHTML = '';
+            appData.players.forEach(p => {
+                let color = p.rating >= 9 ? 'rating-gold' : (p.rating >= 7 ? 'rating-green' : 'rating-orange');
+                lineup.innerHTML += `
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400 w-4">${p.number}</span>
+                            <span class="font-bold text-gray-700">${p.name} ${p.goals > 0 ? '⚽'.repeat(p.goals) : ''}</span>
+                        </div>
+                        <div class="text-white px-2 py-1 rounded text-sm font-black ${color}">${p.rating.toFixed(1)}</div>
+                    </div>
+                `;
+            });
+
+            // Table
+            const tableBody = document.getElementById('league-table');
+            tableBody.innerHTML = '';
+            appData.teams.sort((a,b) => b.points - a.points).forEach((t, i) => {
+                tableBody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3 font-bold text-gray-400">${i+1}</td>
+                        <td class="p-3 font-bold">${t.name}</td>
+                        <td class="p-3">${t.games}</td>
+                        <td class="p-3 font-black text-blue-600">${t.points}</td>
+                    </tr>
+                `;
+            });
+
+            // Scorers
+            const scorers = document.getElementById('scorers-list');
+            scorers.innerHTML = '';
+            appData.players.filter(p => p.goals > 0).sort((a,b) => b.goals - a.goals).forEach(p => {
+                scorers.innerHTML += `
+                    <div class="flex justify-between border-b pb-2">
+                        <span>${p.name}</span>
+                        <span class="font-bold">${p.goals}</span>
+                    </div>
+                `;
+            });
+            
+            localStorage.setItem('sofaData', JSON.stringify(appData));
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById('btn-' + tab).classList.add('tab-active');
+            
+            ['match', 'table', 'stats', 'admin'].forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+        }
+
+        function populateAdminSelect() {
+            const select = document.getElementById('select-player');
+            select.innerHTML = appData.players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        }
+
+        function saveAdminData() {
+            const h = document.getElementById('in-score-h').value;
+            const a = document.getElementById('in-score-a').value;
+            if(h !== "" && a !== "") appData.score = `${h} - ${a}`;
+
+            const pId = document.getElementById('select-player').value;
+            const pRating = document.getElementById('in-rating').value;
+            const pGoals = document.getElementById('in-goals').value;
+
+            if(pRating !== "") appData.players[pId].rating = parseFloat(pRating);
+            if(pGoals !== "") appData.players[pId].goals = parseInt(pGoals);
+
+            renderAll();
+            alert("Данные обновлены!");
+        }
+
+        function resetData() {
+            if(confirm("Удалить всё?")) {
+                localStorage.removeItem('sofaData');
+                location.reload();
             }
+        }
 
-        }, 300); // Скорость симуляции (300мс = 1 игровой шаг)
-    }
-
-    function logEvent(container, minute, text) {
-        const el = document.createElement('div');
-        el.className = 'event';
-        el.innerHTML = `<span class="event-time">${minute}'</span> ${text}`;
-        container.prepend(el); // Новые события сверху
-    }
-
-</script>
+        init();
+    </script>
 </body>
-</html>
+    </html>
+    
