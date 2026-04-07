@@ -3,50 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SofaScore Ultra v6.0 NEON</title>
+    <title>SofaScore Ultra v6.0 NEON - ADMIN PANEL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root { --sofa-blue: #374DF5; --sofa-bg: #0f111a; --pitch-green: #4C9142; --neon-accent: #00f3ff; }
         body { background: var(--sofa-bg); font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; color: #fff; }
         
-        /* АНИМАЦИЯ ЗАГРУЗКИ */
-        #splash { position: fixed; inset: 0; background: #0a0a0f; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
-        .loader-ring { width: 80px; height: 80px; border: 5px solid rgba(0,243,255,0.1); border-top-color: var(--neon-accent); border-radius: 50%; animation: spin 1s linear infinite; box-shadow: 0 0 20px rgba(0,243,255,0.4); }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
         .active-tab { border-bottom: 3px solid var(--neon-accent); color: var(--neon-accent) !important; text-shadow: 0 0 10px var(--neon-accent); }
         .nav-item-active { color: var(--neon-accent) !important; font-weight: 800; text-shadow: 0 0 10px rgba(0,243,255,0.5); }
         
-        /* Поле */
         .pitch { background: #1a4a16; background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 40px 40px; border-radius: 12px; position: relative; border: 2px solid rgba(0,243,255,0.3); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
         .player-node { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 10; }
-        .p-circle { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--neon-accent); background: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; background-size: cover; box-shadow: 0 0 10px rgba(0,243,255,0.5); }
+        .p-circle { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--neon-accent); background: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center; box-shadow: 0 0 10px rgba(0,243,255,0.5); }
         .p-rating { background: #1A9D54; color: white; font-size: 8px; font-weight: 900; padding: 1px 4px; border-radius: 4px; margin-top: -10px; z-index: 20; border: 1px solid rgba(0,0,0,0.5); }
         
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; padding: 15px; }
         
-        /* НЕОНОВЫЕ ЭФФЕКТЫ */
         .neon-border { border: 1px solid rgba(0, 243, 255, 0.4); box-shadow: 0 0 15px rgba(0, 243, 255, 0.1); }
         .neon-card { background: #161925; color: white; border-radius: 16px; border-left: 4px solid var(--neon-accent); transition: 0.3s; }
-        .neon-card:hover { box-shadow: 0 0 20px rgba(0,243,255,0.2); }
         .neon-text { text-shadow: 0 0 10px var(--neon-accent); color: #fff; }
         
-        /* Инфо из скрина */
         .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        .admin-input { background: #0a0a0f; border: 1px solid var(--neon-accent); color: white; padding: 4px 8px; border-radius: 4px; width: 120px; text-align: right; font-weight: bold; }
+        
+        .upload-overlay { position: relative; cursor: pointer; }
+        .upload-overlay::after { content: '📷'; position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; font-size: 24px; border-radius: inherit; }
+        .upload-overlay:hover::after { opacity: 1; }
     </style>
 </head>
 <body class="pb-24">
 
-    <div id="splash">
-        <div class="loader-ring mb-4"></div>
-        <h1 class="text-white font-black tracking-tighter text-2xl italic neon-text">SOFASCORE IFCL</h1>
-        <p class="text-[10px] uppercase font-bold tracking-widest mt-2" style="color: var(--neon-accent)">Professional Edition 2026</p>
-    </div>
-
     <div id="main-header" class="bg-[#161925] p-4 pt-10 text-white flex justify-between items-center shadow-[0_4px_20px_rgba(0,0,0,0.5)] border-b border-cyan-500/30">
         <h1 class="font-black text-xl italic tracking-tighter neon-text">SOFASCORE</h1>
-        <div class="flex gap-4">
+        <div class="flex gap-4 items-center">
+            <span id="admin-badge" class="hidden bg-red-600 text-white text-[9px] font-black px-2 py-1 rounded">ADMIN</span>
             <button onclick="requestAdmin()"><svg class="w-6 h-6 opacity-50" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></button>
         </div>
     </div>
@@ -54,18 +45,19 @@
     <div id="view-matches" class="p-3 space-y-4">
         <div class="rounded-xl shadow-sm">
             <div class="p-3 flex items-center justify-between border-b border-white/5">
-                <span class="text-[10px] font-black text-cyan-500 uppercase tracking-widest">International Friendly Cup</span>
+                <span class="text-[10px] font-black text-cyan-500 uppercase tracking-widest">ТУРЫ / МАТЧИ</span>
+                <button id="btn-add-match" onclick="createNewMatch()" class="hidden bg-cyan-600 text-white text-[9px] font-bold px-2 py-1 rounded uppercase">Создать матч +</button>
             </div>
             <div id="match-list-container" class="space-y-3 mt-2"></div>
         </div>
     </div>
 
     <div id="view-standings" class="p-3 hidden">
-        <div class="neon-card p-4">
+        <div class="neon-card p-4 overflow-x-auto">
             <h2 class="font-black text-sm uppercase mb-4 flex items-center gap-2"><span class="w-1 h-4 bg-cyan-400"></span>Таблица LIVE</h2>
-            <table class="w-full text-left text-[11px]">
+            <table class="w-full text-left text-[11px] min-w-[300px]">
                 <thead class="text-gray-400 border-b border-white/10">
-                    <tr><th class="pb-2">#</th><th class="pb-2">КЛУБ</th><th class="pb-2">И</th><th class="pb-2">Г</th><th class="pb-2">О</th></tr>
+                    <tr><th class="pb-2">#</th><th class="pb-2">КЛУБ</th><th class="pb-2 text-center">И</th><th class="pb-2 text-center">Г</th><th class="pb-2 text-center">О</th></tr>
                 </thead>
                 <tbody id="standings-body"></tbody>
             </table>
@@ -91,7 +83,7 @@
                 <div class="w-6"></div>
             </div>
             <div class="flex flex-col items-center mb-6">
-                <div id="cp-logo" class="w-24 h-24 rounded-full bg-cover border-4 border-cyan-500 shadow-[0_0_20px_rgba(0,243,255,0.3)] mb-3"></div>
+                <div id="cp-logo" class="w-24 h-24 rounded-full bg-cover bg-center border-4 border-cyan-500 shadow-[0_0_20px_rgba(0,243,255,0.3)] mb-3 bg-[#111]"></div>
                 <h2 id="cp-name" class="text-2xl font-black uppercase neon-text"></h2>
             </div>
             <div class="flex justify-between border-t border-white/10 text-[10px] font-black uppercase">
@@ -104,6 +96,7 @@
                 </div>
             <div id="cview-squad" class="hidden space-y-2">
                 </div>
+            <button id="btn-add-player" onclick="addNewPlayer()" class="hidden w-full mt-4 bg-cyan-900/50 text-cyan-400 p-3 rounded-xl border border-cyan-500/30 font-bold uppercase text-[10px] text-center">Добавить игрока в клуб</button>
         </div>
     </div>
 
@@ -116,23 +109,23 @@
             </div>
             <div class="flex justify-around items-center mb-8">
                 <div class="text-center w-1/3" onclick="openClubPage(curM().home)">
-                    <div id="m-home-logo" onclick="changeLogo('home')" class="w-16 h-16 mx-auto bg-[#111] rounded-full bg-cover border-2 border-cyan-500 mb-2 shadow-[0_0_10px_rgba(0,243,255,0.3)]"></div>
-                    <div id="m-home-name" class="text-[10px] font-black uppercase"></div>
+                    <div id="m-home-logo" class="w-16 h-16 mx-auto bg-[#111] rounded-full bg-cover bg-center border-2 border-cyan-500 mb-2 shadow-[0_0_10px_rgba(0,243,255,0.3)]"></div>
+                    <div id="m-home-name" class="text-[10px] font-black uppercase line-clamp-1"></div>
                 </div>
                 <div class="text-center w-1/3">
                     <div id="m-score" class="text-5xl font-black italic tracking-tighter neon-text">0-0</div>
                     <div id="m-status" class="text-[9px] font-black uppercase bg-red-600 px-2 py-0.5 rounded inline-block mt-2">LIVE</div>
                 </div>
                 <div class="text-center w-1/3" onclick="openClubPage(curM().away)">
-                    <div id="m-away-logo" onclick="changeLogo('away')" class="w-16 h-16 mx-auto bg-[#111] rounded-full bg-cover border-2 border-cyan-500 mb-2 shadow-[0_0_10px_rgba(0,243,255,0.3)]"></div>
-                    <div id="m-away-name" class="text-[10px] font-black uppercase"></div>
+                    <div id="m-away-logo" class="w-16 h-16 mx-auto bg-[#111] rounded-full bg-cover bg-center border-2 border-cyan-500 mb-2 shadow-[0_0_10px_rgba(0,243,255,0.3)]"></div>
+                    <div id="m-away-name" class="text-[10px] font-black uppercase line-clamp-1"></div>
                 </div>
             </div>
             <div class="flex justify-between border-t border-white/10 text-[10px] font-black uppercase overflow-x-auto">
-                <button onclick="mTab('det')" id="mt-det" class="p-4 active-tab">Детали</button>
-                <button onclick="mTab('line')" id="mt-line" class="p-4 text-gray-500">Составы</button>
-                <button onclick="mTab('stat')" id="mt-stat" class="p-4 text-gray-500">Статистика</button>
-                <button onclick="mTab('adm')" id="mt-adm" class="p-4 text-red-500 hidden">Админ</button>
+                <button onclick="mTab('det')" id="mt-det" class="p-4 active-tab min-w-[70px]">Детали</button>
+                <button onclick="mTab('line')" id="mt-line" class="p-4 text-gray-500 min-w-[70px]">Составы</button>
+                <button onclick="mTab('stat')" id="mt-stat" class="p-4 text-gray-500 min-w-[70px]">Статы</button>
+                <button onclick="mTab('adm')" id="mt-adm" class="p-4 text-red-500 hidden min-w-[70px]">Админ</button>
             </div>
         </div>
 
@@ -147,12 +140,17 @@
             
             <div id="mview-adm" class="hidden bg-red-900/20 p-5 rounded-xl border-2 border-red-500/50 space-y-4">
                 <div class="grid grid-cols-2 gap-2">
-                    <input id="as-h" type="number" class="p-3 bg-black border border-red-500 rounded font-black text-center text-white" placeholder="Дома">
-                    <input id="as-a" type="number" class="p-3 bg-black border border-red-500 rounded font-black text-center text-white" placeholder="Гости">
+                    <input id="as-h" type="number" class="p-3 bg-black border border-red-500 rounded font-black text-center text-white" placeholder="Голы Дома">
+                    <input id="as-a" type="number" class="p-3 bg-black border border-red-500 rounded font-black text-center text-white" placeholder="Голы Гости">
                 </div>
-                <div class="flex gap-2">
+                <select id="as-status" class="w-full p-3 bg-black border border-red-500 rounded text-white text-sm font-bold">
+                    <option value="LIVE">LIVE (Идет)</option>
+                    <option value="FT">FT (Закончен)</option>
+                    <option value="UPC">UPC (Скоро)</option>
+                </select>
+                <div class="flex gap-2 border-t border-red-500/30 pt-4 mt-2">
                     <input id="ae-m" type="number" class="w-1/4 p-3 bg-black border border-red-500 rounded text-white" placeholder="Мин.">
-                    <input id="ae-t" type="text" class="w-3/4 p-3 bg-black border border-red-500 rounded text-white" placeholder="Событие...">
+                    <input id="ae-t" type="text" class="w-3/4 p-3 bg-black border border-red-500 rounded text-white" placeholder="Событие (Гол, ЖК...)">
                 </div>
                 <button onclick="saveAdminMatch()" class="w-full bg-red-600 text-white p-4 rounded-xl font-bold uppercase text-xs">Обновить данные матча</button>
                 <div class="space-y-4 pt-4 border-t border-red-500/50">
@@ -169,24 +167,29 @@
     </div>
 
     <div id="player-modal" class="modal">
-        <div class="bg-[#161925] w-full max-w-sm rounded-3xl overflow-hidden neon-border">
+        <div class="bg-[#161925] w-full max-w-sm rounded-3xl overflow-hidden neon-border relative">
             <div id="pm-header" class="p-6 bg-[#0a0a0f] text-white flex items-center gap-4 border-b border-cyan-500/20">
-                <div class="w-16 h-16 rounded-full bg-gray-800 bg-cover border-2 border-cyan-500" id="pm-photo"></div>
+                <div class="w-16 h-16 rounded-full bg-[#111] bg-cover bg-center border-2 border-cyan-500" id="pm-photo"></div>
                 <div><h3 id="pm-name" class="font-black text-xl neon-text"></h3><p id="pm-team" class="text-[10px] text-cyan-400 font-bold uppercase italic">Match Stats</p></div>
             </div>
             <div class="p-6 space-y-4">
                 <div id="player-stats-grid" class="grid grid-cols-3 gap-2"></div>
                 
                 <div id="pm-adm" class="hidden space-y-2 pt-4 border-t border-white/10">
+                    <p class="text-[9px] text-red-400 font-bold text-center uppercase">Редактор статистики в матче</p>
                     <div class="grid grid-cols-3 gap-2">
-                        <input id="ai-r" type="number" step="0.1" class="col-span-3 p-2 bg-black border border-red-500 rounded text-xs text-white" placeholder="Рейтинг">
+                        <input id="ai-r" type="number" step="0.1" class="col-span-3 p-2 bg-black border border-red-500 rounded text-xs text-white" placeholder="Рейтинг (напр. 8.5)">
                         <input id="ai-g" type="number" class="p-2 bg-black border border-red-500 rounded text-xs text-white" placeholder="Голы">
                         <input id="ai-a" type="number" class="p-2 bg-black border border-red-500 rounded text-xs text-white" placeholder="Асс">
                         <input id="ai-s" type="number" class="p-2 bg-black border border-red-500 rounded text-xs text-white" placeholder="Удары">
                         <input id="ai-st" type="number" class="p-2 bg-black border border-red-500 rounded text-xs text-white" placeholder="В ств">
                         <input id="ai-t" type="number" class="p-2 bg-black border border-red-500 rounded text-xs text-white" placeholder="Отб">
                     </div>
-                    <button onclick="savePlayerData()" class="w-full bg-red-600 text-white p-3 rounded-xl font-bold uppercase text-[10px]">Сохранить статы</button>
+                    <div class="flex gap-2">
+                         <input id="ai-pos-t" type="text" class="w-1/2 p-2 bg-black border border-red-500 rounded text-xs text-white" placeholder="Top (напр. 50%)">
+                         <input id="ai-pos-l" type="text" class="w-1/2 p-2 bg-black border border-red-500 rounded text-xs text-white" placeholder="Left (напр. 50%)">
+                    </div>
+                    <button onclick="savePlayerData()" class="w-full bg-red-600 text-white p-3 rounded-xl font-bold uppercase text-[10px]">Сохранить статы и позицию</button>
                 </div>
                 <button onclick="document.getElementById('player-modal').style.display='none'" class="w-full bg-gray-800 p-3 rounded-xl font-bold text-[10px] uppercase">Закрыть</button>
             </div>
@@ -194,20 +197,36 @@
     </div>
 
     <div id="profile-modal" class="modal">
-        <div class="bg-[#161925] w-full max-w-sm rounded-3xl overflow-hidden neon-border">
-            <div class="p-6 bg-gradient-to-b from-cyan-900/30 to-transparent flex flex-col items-center">
-                <div class="w-24 h-24 rounded-full bg-gray-800 bg-cover border-4 border-cyan-500 mb-4 shadow-[0_0_15px_rgba(0,243,255,0.4)]" id="prof-photo"></div>
-                <h3 id="prof-name" class="font-black text-2xl uppercase tracking-tighter neon-text"></h3>
-                <p id="prof-team" class="text-cyan-400 font-bold uppercase text-xs italic"></p>
+        <div class="bg-[#161925] w-full max-w-sm rounded-3xl overflow-hidden neon-border h-[80vh] overflow-y-auto">
+            <div class="p-6 bg-gradient-to-b from-cyan-900/30 to-transparent flex flex-col items-center relative">
+                <div class="w-24 h-24 rounded-full bg-[#111] bg-cover bg-center border-4 border-cyan-500 mb-4 shadow-[0_0_15px_rgba(0,243,255,0.4)]" id="prof-photo"></div>
+                <h3 id="prof-name-display" class="font-black text-2xl uppercase tracking-tighter neon-text text-center"></h3>
+                <p id="prof-team-display" class="text-cyan-400 font-bold uppercase text-xs italic text-center"></p>
             </div>
+            
+            <div class="p-6 pt-0" id="prof-view-mode">
+                <div class="info-row"><span class="text-gray-400 font-medium">Гражданство</span><span id="p-v-cit" class="font-bold"></span></div>
+                <div class="info-row"><span class="text-gray-400 font-medium">Рейтинг (ОБЩ)</span><span id="p-v-rating" class="font-bold"></span></div>
+                <div class="info-row"><span class="text-gray-400 font-medium">Позиция</span><span id="p-v-pos" class="font-bold"></span></div>
+                <div class="info-row"><span class="text-gray-400 font-medium">Рабочая нога</span><span id="p-v-foot" class="font-bold"></span></div>
+                <div class="info-row border-none mt-2"><span class="text-gray-400 font-medium">Рыночная стоимость</span><span id="p-v-val" class="text-[#ffcc00] text-lg font-black drop-shadow-[0_0_5px_rgba(255,204,0,0.5)]"></span></div>
+            </div>
+
+            <div class="p-6 pt-0 hidden bg-red-900/10 border-t border-red-500/30" id="prof-edit-mode">
+                <p class="text-[9px] text-red-400 font-bold text-center uppercase mb-3">Редактор профиля игрока</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Имя</span><input id="p-e-name" type="text" class="admin-input"></div>
+                    <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Гражданство</span><input id="p-e-cit" type="text" class="admin-input"></div>
+                    <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Рейтинг</span><input id="p-e-rating" type="text" class="admin-input"></div>
+                    <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Позиция</span><input id="p-e-pos" type="text" class="admin-input"></div>
+                    <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Нога</span><input id="p-e-foot" type="text" class="admin-input"></div>
+                    <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Стоимость</span><input id="p-e-val" type="text" class="admin-input"></div>
+                </div>
+                <button onclick="savePlayerProfile()" class="w-full mt-4 bg-red-600 text-white p-3 rounded-xl font-bold uppercase text-[10px]">Сохранить профиль</button>
+            </div>
+
             <div class="p-6 pt-0">
-                <div class="info-row"><span class="text-gray-400 font-medium">Гражданство</span><span id="prof-cit" class="font-bold"></span></div>
-                <div class="info-row"><span class="text-gray-400 font-medium">Возраст</span><span id="prof-age" class="font-bold"></span></div>
-                <div class="info-row"><span class="text-gray-400 font-medium">Позиция</span><span id="prof-pos" class="font-bold"></span></div>
-                <div class="info-row"><span class="text-gray-400 font-medium">Рабочая нога</span><span id="prof-foot" class="font-bold"></span></div>
-                <div class="info-row border-none mt-2"><span class="text-gray-400 font-medium">Рыночная стоимость</span><span id="prof-val" class="text-[#ffcc00] text-lg font-black drop-shadow-[0_0_5px_rgba(255,204,0,0.5)]"></span></div>
-                
-                <button onclick="document.getElementById('profile-modal').style.display='none'" class="w-full bg-gray-800 p-4 rounded-2xl font-black text-[10px] uppercase mt-4">Закрыть профиль</button>
+                <button onclick="document.getElementById('profile-modal').style.display='none'" class="w-full bg-gray-800 p-4 rounded-2xl font-black text-[10px] uppercase">Закрыть профиль</button>
             </div>
         </div>
     </div>
@@ -216,66 +235,98 @@
         <button onclick="nav('matches')" id="nv-matches" class="flex flex-col items-center gap-1 nav-item-active"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg><span class="text-[8px] uppercase font-black">Матчи</span></button>
         <button onclick="nav('standings')" id="nv-standings" class="flex flex-col items-center gap-1 text-gray-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg><span class="text-[8px] uppercase font-black">Таблица</span></button>
         <button onclick="nav('scorers')" id="nv-scorers" class="flex flex-col items-center gap-1 text-gray-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg><span class="text-[8px] uppercase font-black">Топ</span></button>
+        <button onclick="nav('clubs')" id="nv-clubs" class="flex flex-col items-center gap-1 text-gray-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81
+              <button onclick="nav('scorers')" id="nv-scorers" class="flex flex-col items-center gap-1 text-gray-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg><span class="text-[8px] uppercase font-black">Топ</span></button>
         <button onclick="nav('clubs')" id="nv-clubs" class="flex flex-col items-center gap-1 text-gray-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="text-[8px] uppercase font-black">Клубы</span></button>
     </div>
 
     <input type="file" id="img-input" class="hidden" accept="image/*">
 
     <script>
-        // ИНИЦИАЛИЗАЦИЯ ДАННЫХ С ДОБАВЛЕНИЕМ ПРОФИЛЕЙ
-        let state = JSON.parse(localStorage.getItem('sofa_v8_data')) || {
+        // ИНИЦИАЛИЗАЦИЯ ДАННЫХ
+        let state = JSON.parse(localStorage.getItem('sofa_v9_data')) || {
             isAdmin: false,
             teams: {
                 'Meridian Greenwich': { logo: '', stadium: 'London Stadium', capacity: '20,000', players: [
-                    {id: 1, name: 'Niko', r: 8.5, g: 12, a: 5, s: 24, st: 12, t: 3, pos: {t: '15%', l: '50%'}, prof: {cit: 'ENG 🏴󠁧󠁢󠁥󠁮󠁧󠁿', age: '23 года', pos: 'ST (ФРВ)', foot: 'Правая', val: '120M €'}},
-                    {id: 2, name: 'Acsor', r: 7.2, g: 2, a: 8, s: 10, st: 4, t: 25, pos: {t: '30%', l: '30%'}, prof: {cit: 'KAZ 🇰🇿', age: '21 год', pos: 'MF (ЦП)', foot: 'Правая', val: '85M €'}},
-                    {id: 3, name: 'Kelf', r: 7.9, g: 4, a: 1, s: 15, st: 7, t: 12, pos: {t: '30%', l: '70%'}, prof: {cit: 'FRA 🇫🇷', age: '20 лет', pos: 'RW (ПФА)', foot: 'Левая', val: '65M €'}}
+                    {id: 1, name: 'Niko', img: '', r: 8.5, g: 12, a: 5, s: 24, st: 12, t: 3, pos: {t: '15%', l: '50%'}, prof: {cit: 'ENG 🏴󠁧󠁢󠁥󠁮󠁧󠁿', rating: '85', pos: 'ST (ФРВ)', foot: 'Правая', val: '120M €'}},
+                    {id: 2, name: 'Acsor', img: '', r: 7.2, g: 2, a: 8, s: 10, st: 4, t: 25, pos: {t: '30%', l: '30%'}, prof: {cit: 'KAZ 🇰🇿', rating: '78', pos: 'MF (ЦП)', foot: 'Правая', val: '85M €'}}
                 ]},
-                'Lions': { logo: '', stadium: 'Lion Arena', capacity: '15,000', players: [
-                    {id: 4, name: 'Mels', r: 7.0, g: 8, a: 3, s: 20, st: 10, t: 4, pos: {t: '85%', l: '50%'}, prof: {cit: 'ESP 🇪🇸', age: '25 лет', pos: 'CB (ЦЗ)', foot: 'Правая', val: '40M €'}}
-                ]},
-                'Phoenix': { logo: '', stadium: 'Fire Dome', capacity: '12,000', players: [
-                    {id: 5, name: 'Rise', r: 7.5, g: 3, a: 4, s: 12, st: 6, t: 15, pos: {t: '50%', l: '50%'}, prof: {cit: 'GER 🇩🇪', age: '28 лет', pos: 'CDM (ЦОП)', foot: 'Левая', val: '30M €'}}
+                'FC Dedushki': { logo: '', stadium: 'Old Trafford', capacity: '10,000', players: [
+                    {id: 3, name: 'Dizzik', img: '', r: 7.0, g: 8, a: 3, s: 20, st: 10, t: 4, pos: {t: '85%', l: '50%'}, prof: {cit: 'RUS 🇷🇺', rating: '74', pos: 'CB (ЦЗ)', foot: 'Правая', val: '40M €'}}
                 ]}
             },
             matches: [
-                {id: 1, home: 'Meridian Greenwich', away: 'Lions', hScore: 2, aScore: 1, status: 'LIVE', events: [{min: 12, txt: 'Niko забивает с пенальти!'}], stats: {poss: 55, xgh: 1.2, xga: 0.8, shots: 10, target: 4}},
-                {id: 2, home: 'Phoenix', away: 'Meridian Greenwich', hScore: 0, aScore: 3, status: 'FT', events: [], stats: {poss: 35, xgh: 0.4, xga: 2.5}}
+                {id: 1, home: 'Meridian Greenwich', away: 'FC Dedushki', hScore: 2, aScore: 1, status: 'LIVE', events: [{min: 12, txt: 'Niko забивает с пенальти!'}], stats: {poss: 55, xgh: 1.2, xga: 0.8, shots: 10, target: 4}}
             ]
         };
 
-        setTimeout(() => { document.getElementById('splash').style.opacity = '0'; setTimeout(() => document.getElementById('splash').remove(), 800); }, 1500);
+        function save() { localStorage.setItem('sofa_v9_data', JSON.stringify(state)); applyAdminUI(); }
 
-        function save() { localStorage.setItem('sofa_v8_data', JSON.stringify(state)); }
+        // Универсальная загрузка фото
+        function triggerImageUpload(callback) {
+            if(!state.isAdmin) return;
+            const inp = document.getElementById('img-input');
+            inp.onchange = e => {
+                const reader = new FileReader();
+                reader.onload = () => callback(reader.result);
+                if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+                inp.value = ''; // сброс
+            };
+            inp.click();
+        }
+
+        // --- АДМИН UI ---
+        function applyAdminUI() {
+            if(state.isAdmin) {
+                document.getElementById('admin-badge').classList.remove('hidden');
+                document.getElementById('btn-add-match').classList.remove('hidden');
+                document.getElementById('btn-add-player').classList.remove('hidden');
+                // Добавляем стили наведения на фото
+                document.getElementById('cp-logo').classList.add('upload-overlay');
+                document.getElementById('prof-photo').classList.add('upload-overlay');
+            } else {
+                document.getElementById('admin-badge').classList.add('hidden');
+                document.getElementById('btn-add-match').classList.add('hidden');
+                document.getElementById('btn-add-player').classList.add('hidden');
+                document.getElementById('cp-logo').classList.remove('upload-overlay');
+                document.getElementById('prof-photo').classList.remove('upload-overlay');
+            }
+        }
+
+        function requestAdmin() { 
+            if(state.isAdmin) { if(confirm("Выйти из режима админа?")) { state.isAdmin = false; save(); location.reload(); } return; }
+            if(prompt("Введи пароль (1234):") === "1234") { state.isAdmin = true; save(); alert("Доступ разрешен!"); location.reload(); } 
+        }
 
         // --- НАВИГАЦИЯ ---
         function nav(v) {
-            ['matches', 'standings', 'scorers', 'clubs'].forEach(x => {
-                document.getElementById('view-'+x).classList.add('hidden');
-                document.getElementById('nv-'+x).classList.remove('nav-item-active');
-                document.getElementById('nv-'+x).classList.add('text-gray-500');
-            });
-            document.getElementById('view-'+v).classList.remove('hidden');
-            document.getElementById('nv-'+v).classList.add('nav-item-active');
-            document.getElementById('nv-'+v).classList.remove('text-gray-500');
+            ['matches', 'standings', 'scorers', 'clubs'].forEach(x => { document.getElementById('view-'+x).classList.add('hidden'); document.getElementById('nv-'+x).classList.remove('nav-item-active'); document.getElementById('nv-'+x).classList.add('text-gray-500'); });
+            document.getElementById('view-'+v).classList.remove('hidden'); document.getElementById('nv-'+v).classList.add('nav-item-active'); document.getElementById('nv-'+v).classList.remove('text-gray-500');
             if(v === 'matches') renderMatches();
             if(v === 'standings') renderStandings();
             if(v === 'scorers') renderScorers();
             if(v === 'clubs') renderClubs();
         }
 
-        // --- ЛОГИКА МАТЧЕЙ ---
+        // --- МАТЧИ ---
         function renderMatches() {
             document.getElementById('match-list-container').innerHTML = state.matches.map(m => `
                 <div onclick="openMatch(${m.id})" class="neon-card p-4 flex justify-between items-center cursor-pointer">
-                    <div class="w-12 flex flex-col"><span class="text-[10px] font-bold text-gray-400">16:45</span><span class="text-[9px] font-black ${m.status === 'LIVE' ? 'text-red-500' : 'text-gray-500'}">${m.status}</span></div>
+                    <div class="w-12 flex flex-col"><span class="text-[10px] font-bold text-gray-400">IFCL</span><span class="text-[9px] font-black ${m.status === 'LIVE' ? 'text-red-500' : 'text-gray-500'}">${m.status}</span></div>
                     <div class="flex-1 space-y-2 px-2">
-                        <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full border border-cyan-500/50 bg-[#111] bg-cover" style="background-image:url('${state.teams[m.home].logo}')"></div><span class="text-xs font-bold">${m.home}</span></div>
-                        <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full border border-cyan-500/50 bg-[#111] bg-cover" style="background-image:url('${state.teams[m.away].logo}')"></div><span class="text-xs font-bold">${m.away}</span></div>
+                        <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full border border-cyan-500/50 bg-[#111] bg-cover bg-center" style="background-image:url('${state.teams[m.home]?.logo || ''}')"></div><span class="text-xs font-bold truncate">${m.home}</span></div>
+                        <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full border border-cyan-500/50 bg-[#111] bg-cover bg-center" style="background-image:url('${state.teams[m.away]?.logo || ''}')"></div><span class="text-xs font-bold truncate">${m.away}</span></div>
                     </div>
                     <div class="flex flex-col items-end font-black text-sm neon-text space-y-1"><span>${m.hScore}</span><span>${m.aScore}</span></div>
                 </div>
             `).join('');
+        }
+
+        function createNewMatch() {
+            const h = prompt("Название клуба хозяев:"); const a = prompt("Название клуба гостей:");
+            if(!h || !a || !state.teams[h] || !state.teams[a]) return alert("Клубы не найдены. Вводите точное название.");
+            state.matches.push({ id: Date.now(), home: h, away: a, hScore: 0, aScore: 0, status: 'UPC', events: [], stats: {poss: 50, xgh: 0, xga: 0, shots: 0, target: 0} });
+            save(); renderMatches();
         }
 
         let activeMid = null;
@@ -291,71 +342,61 @@
         }
 
         function renderMatchInfo() {
-            const m = curM();
-            if(!m) return;
-            document.getElementById('m-home-name').innerText = m.home;
-            document.getElementById('m-away-name').innerText = m.away;
+            const m = curM(); if(!m) return;
+            document.getElementById('m-home-name').innerText = m.home; document.getElementById('m-away-name').innerText = m.away;
             document.getElementById('m-score').innerText = `${m.hScore}-${m.aScore}`;
-            document.getElementById('m-home-logo').style.backgroundImage = `url('${state.teams[m.home].logo}')`;
-            document.getElementById('m-away-logo').style.backgroundImage = `url('${state.teams[m.away].logo}')`;
+            document.getElementById('m-status').innerText = m.status;
+            document.getElementById('m-home-logo').style.backgroundImage = `url('${state.teams[m.home]?.logo || ''}')`;
+            document.getElementById('m-away-logo').style.backgroundImage = `url('${state.teams[m.away]?.logo || ''}')`;
             
-            if(state.isAdmin) document.getElementById('mt-adm').classList.remove('hidden');
-            else document.getElementById('mt-adm').classList.add('hidden');
+            if(state.isAdmin) document.getElementById('mt-adm').classList.remove('hidden'); else document.getElementById('mt-adm').classList.add('hidden');
 
-            document.getElementById('mview-det').innerHTML = m.events.length ? m.events.map(e => `
-                <div class="flex gap-4 items-start"><span class="font-black text-xs w-6 text-cyan-400">${e.min}'</span><span class="text-xs text-gray-300">${e.txt}</span></div>
-            `).join('') : '<p class="text-xs text-gray-500 italic text-center">Ожидание событий...</p>';
+            document.getElementById('mview-det').innerHTML = m.events.length ? m.events.map(e => `<div class="flex gap-4 items-start"><span class="font-black text-xs w-6 text-cyan-400">${e.min}'</span><span class="text-xs text-gray-300">${e.txt}</span></div>`).join('') : '<p class="text-xs text-gray-500 italic text-center">Ожидание событий...</p>';
 
-            const pArea = document.getElementById('pitch-players');
-            pArea.innerHTML = '';
-            [...state.teams[m.home].players, ...state.teams[m.away].players].forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'player-node';
-                div.style.top = p.pos.t; div.style.left = p.pos.l;
-                // КЛИК НА ПОЛЕ = СТАТИСТИКА МАТЧА
+            const pArea = document.getElementById('pitch-players'); pArea.innerHTML = '';
+            const allPlayers = [...(state.teams[m.home]?.players || []), ...(state.teams[m.away]?.players || [])];
+            allPlayers.forEach(p => {
+                const div = document.createElement('div'); div.className = 'player-node'; div.style.top = p.pos.t; div.style.left = p.pos.l;
                 div.onclick = (e) => { e.stopPropagation(); openPlayerStats(p.id); };
-                div.innerHTML = `<div class="p-circle"></div><div class="p-rating">${p.r.toFixed(1)}</div><span class="text-[8px] font-black text-white mt-1 drop-shadow-[0_0_5px_black]">${p.name}</span>`;
+                div.innerHTML = `<div class="p-circle" style="background-image:url('${p.img || ''}')"></div><div class="p-rating">${p.r.toFixed(1)}</div><span class="text-[8px] font-black text-white mt-1 drop-shadow-[0_0_5px_black]">${p.name}</span>`;
                 pArea.appendChild(div);
             });
 
-            document.getElementById('mview-stat').innerHTML = `
-                <div class="space-y-4">
-                    ${statBar("Владение", m.stats.poss)}
-                    <div class="flex justify-between font-black text-[10px] uppercase text-gray-300"><span class="text-white">${m.stats.xgh}</span><span>Ожидаемые голы (xG)</span><span class="text-white">${m.stats.xga}</span></div>
-                </div>
-            `;
+            document.getElementById('mview-stat').innerHTML = `<div class="space-y-4">${statBar("Владение", m.stats.poss)}<div class="flex justify-between font-black text-[10px] uppercase text-gray-300"><span class="text-white">${m.stats.xgh}</span><span>Ожидаемые голы (xG)</span><span class="text-white">${m.stats.xga}</span></div></div>`;
+            
+            // Заполняем админку матча
+            if(state.isAdmin) {
+                document.getElementById('as-h').value = m.hScore; document.getElementById('as-a').value = m.aScore;
+                document.getElementById('as-status').value = m.status;
+                document.getElementById('as-poss').value = m.stats.poss;
+                document.getElementById('as-xgh').value = m.stats.xgh; document.getElementById('as-xga').value = m.stats.xga;
+            }
         }
 
-        function statBar(label, val) {
-            return `
-                <div class="space-y-1">
-                    <div class="flex justify-between text-[10px] font-black uppercase"><span class="text-cyan-400">${val}%</span><span class="text-gray-400">${label}</span><span class="text-blue-500">${100-val}%</span></div>
-                    <div class="h-1.5 w-full bg-gray-800 rounded-full flex overflow-hidden"><div style="width:${val}%" class="bg-cyan-400 box-shadow-[0_0_10px_cyan]"></div><div style="width:${100-val}%" class="bg-blue-600"></div></div>
-                </div>
-            `;
-        }
+        function statBar(label, val) { return `<div class="space-y-1"><div class="flex justify-between text-[10px] font-black uppercase"><span class="text-cyan-400">${val}%</span><span class="text-gray-400">${label}</span><span class="text-blue-500">${100-val}%</span></div><div class="h-1.5 w-full bg-gray-800 rounded-full flex overflow-hidden"><div style="width:${val}%" class="bg-cyan-400 box-shadow-[0_0_10px_cyan]"></div><div style="width:${100-val}%" class="bg-blue-600"></div></div></div>`; }
 
         function saveAdminMatch() {
             const m = curM();
-            m.hScore = document.getElementById('as-h').value || m.hScore;
-            m.aScore = document.getElementById('as-a').value || m.aScore;
-            const min = document.getElementById('ae-m').value;
-            const txt = document.getElementById('ae-t').value;
+            m.hScore = document.getElementById('as-h').value || m.hScore; m.aScore = document.getElementById('as-a').value || m.aScore;
+            m.status = document.getElementById('as-status').value;
+            const min = document.getElementById('ae-m').value; const txt = document.getElementById('ae-t').value;
             if(min && txt) { m.events.push({min, txt}); document.getElementById('ae-m').value=''; document.getElementById('ae-t').value=''; }
             m.stats.poss = document.getElementById('as-poss').value || m.stats.poss;
-            m.stats.xgh = document.getElementById('as-xgh').value || m.stats.xgh;
-            m.stats.xga = document.getElementById('as-xga').value || m.stats.xga;
-            save(); renderMatchInfo();
+            m.stats.xgh = document.getElementById('as-xgh').value || m.stats.xgh; m.stats.xga = document.getElementById('as-xga').value || m.stats.xga;
+            save(); renderMatchInfo(); alert('Матч обновлен!');
         }
 
-        // --- ЛОГИКА СТРАНИЦЫ КЛУБА ---
+        // --- КЛУБЫ ---
         let activeClub = null;
         function openClubPage(name) {
-            activeClub = name;
-            const t = state.teams[name];
+            activeClub = name; const t = state.teams[name]; if(!t) return;
             document.getElementById('club-page').classList.remove('hidden');
             document.getElementById('cp-name').innerText = name;
-            document.getElementById('cp-logo').style.backgroundImage = `url('${t.logo}')`;
+            const logoEl = document.getElementById('cp-logo');
+            logoEl.style.backgroundImage = `url('${t.logo}')`;
+            
+            // Загрузка лого (Админ)
+            logoEl.onclick = () => { triggerImageUpload(img => { state.teams[name].logo = img; save(); renderClubInfo(); openClubPage(name); }); };
             cTab('info');
         }
         function closeClubPage() { document.getElementById('club-page').classList.add('hidden'); activeClub = null; }
@@ -369,93 +410,142 @@
         function renderClubInfo() {
             const t = state.teams[activeClub];
             
-            // Вкладка Обзор
-            document.getElementById('cview-info').innerHTML = `
-                <div class="neon-card p-4 flex justify-between items-center"><span class="text-gray-400 text-xs font-bold uppercase">Стадион</span><span class="font-black text-sm">${t.stadium}</span></div>
-                <div class="neon-card p-4 flex justify-between items-center"><span class="text-gray-400 text-xs font-bold uppercase">Вместимость</span><span class="font-black text-sm text-cyan-400">${t.capacity}</span></div>
-                <div class="neon-card p-4 flex justify-between items-center"><span class="text-gray-400 text-xs font-bold uppercase">Игроков в ростере</span><span class="font-black text-sm">${t.players.length}</span></div>
-            `;
+            if(state.isAdmin) {
+                document.getElementById('cview-info').innerHTML = `
+                    <div class="bg-red-900/10 p-4 rounded-xl border border-red-500/30 space-y-3">
+                        <p class="text-[9px] text-red-400 font-bold text-center uppercase">Редактор клуба</p>
+                        <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Название</span><input id="ce-name" type="text" class="admin-input" value="${activeClub}"></div>
+                        <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Стадион</span><input id="ce-stad" type="text" class="admin-input" value="${t.stadium}"></div>
+                        <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Вместимость</span><input id="ce-cap" type="text" class="admin-input" value="${t.capacity}"></div>
+                        <button onclick="saveClubProfile()" class="w-full mt-2 bg-red-600 text-white p-2 rounded-lg font-bold uppercase text-[10px]">Сохранить клуб</button>
+                    </div>
+                `;
+            } else {
+                document.getElementById('cview-info').innerHTML = `
+                    <div class="neon-card p-4 flex justify-between items-center"><span class="text-gray-400 text-xs font-bold uppercase">Стадион</span><span class="font-black text-sm text-right">${t.stadium}</span></div>
+                    <div class="neon-card p-4 flex justify-between items-center"><span class="text-gray-400 text-xs font-bold uppercase">Вместимость</span><span class="font-black text-sm text-cyan-400">${t.capacity}</span></div>
+                    <div class="neon-card p-4 flex justify-between items-center"><span class="text-gray-400 text-xs font-bold uppercase">Игроков в ростере</span><span class="font-black text-sm">${t.players.length}</span></div>
+                `;
+            }
 
-            // Вкладка Состав
             document.getElementById('cview-squad').innerHTML = t.players.map(p => `
                 <div onclick="openProfileModal(${p.id})" class="neon-card p-3 flex items-center gap-3 cursor-pointer">
-                    <div class="w-10 h-10 rounded-full bg-gray-800 border border-cyan-500"></div>
-                    <div class="flex-1"><h4 class="font-black text-sm">${p.name}</h4><p class="text-[10px] text-cyan-400 font-bold">${p.prof ? p.prof.pos : 'N/A'}</p></div>
+                    <div class="w-10 h-10 rounded-full bg-[#111] bg-cover bg-center border border-cyan-500" style="background-image:url('${p.img || ''}')"></div>
+                    <div class="flex-1"><h4 class="font-black text-sm">${p.name}</h4><p class="text-[10px] text-cyan-400 font-bold">${p.prof?.pos || 'N/A'}</p></div>
                     <div class="text-xs font-bold bg-gray-800 px-2 py-1 rounded text-gray-300">ПРОФИЛЬ ▶</div>
                 </div>
             `).join('');
         }
 
-        // --- ЛОГИКА ПРОФИЛЯ ИГРОКА (ИЗ КЛУБА) ---
+        function saveClubProfile() {
+            const oldName = activeClub; const newName = document.getElementById('ce-name').value;
+            const t = state.teams[oldName];
+            t.stadium = document.getElementById('ce-stad').value; t.capacity = document.getElementById('ce-cap').value;
+            if(newName !== oldName) {
+                state.teams[newName] = t; delete state.teams[oldName];
+                state.matches.forEach(m => { if(m.home === oldName) m.home = newName; if(m.away === oldName) m.away = newName; });
+                activeClub = newName;
+            }
+            save(); openClubPage(activeClub);
+        }
+
+        function addNewPlayer() {
+            const name = prompt("Имя игрока:"); if(!name) return;
+            const p = { id: Date.now(), name: name, img: '', r: 6.0, g: 0, a: 0, s: 0, st: 0, t: 0, pos: {t: '50%', l: '50%'}, prof: {cit: '-', rating: '60', pos: '-', foot: '-', val: '-'} };
+            state.teams[activeClub].players.push(p); save(); renderClubInfo();
+        }
+            // --- ПРОФИЛЬ ИГРОКА (ПОЛНЫЙ) ---
+        let activeProfId = null;
         function openProfileModal(id) {
-            let p; let tName;
+            activeProfId = id; let p; let tName;
             for(let t in state.teams) { let f = state.teams[t].players.find(x => x.id === id); if(f) { p = f; tName = t; break; } }
             
-            document.getElementById('prof-name').innerText = p.name;
-            document.getElementById('prof-team').innerText = tName;
+            document.getElementById('prof-name-display').innerText = p.name;
+            document.getElementById('prof-team-display').innerText = tName;
             
-            const pr = p.prof || {cit:'-', age:'-', pos:'-', foot:'-', val:'-'};
-            document.getElementById('prof-cit').innerText = pr.cit;
-            document.getElementById('prof-age').innerText = pr.age;
-            document.getElementById('prof-pos').innerText = pr.pos;
-            document.getElementById('prof-foot').innerText = pr.foot;
-            document.getElementById('prof-val').innerText = pr.val;
-
+            const photoEl = document.getElementById('prof-photo');
+            photoEl.style.backgroundImage = `url('${p.img || ''}')`;
+            photoEl.onclick = () => { triggerImageUpload(img => { p.img = img; save(); openProfileModal(id); }); };
+            
+            const pr = p.prof || {cit:'-', rating:'-', pos:'-', foot:'-', val:'-'};
+            
+            if(state.isAdmin) {
+                document.getElementById('prof-view-mode').classList.add('hidden');
+                document.getElementById('prof-edit-mode').classList.remove('hidden');
+                document.getElementById('p-e-name').value = p.name;
+                document.getElementById('p-e-cit').value = pr.cit;
+                document.getElementById('p-e-rating').value = pr.rating;
+                document.getElementById('p-e-pos').value = pr.pos;
+                document.getElementById('p-e-foot').value = pr.foot;
+                document.getElementById('p-e-val').value = pr.val;
+            } else {
+                document.getElementById('prof-edit-mode').classList.add('hidden');
+                document.getElementById('prof-view-mode').classList.remove('hidden');
+                document.getElementById('p-v-cit').innerText = pr.cit;
+                document.getElementById('p-v-rating').innerText = pr.rating;
+                document.getElementById('p-v-pos').innerText = pr.pos;
+                document.getElementById('p-v-foot').innerText = pr.foot;
+                document.getElementById('p-v-val').innerText = pr.val;
+            }
             document.getElementById('profile-modal').style.display = 'flex';
         }
 
-        // --- ЛОГИКА СТАТИСТИКИ ИГРОКА (ИЗ МАТЧА) ---
-        let activePid = null;
-        function openPlayerStats(id) {
-            activePid = id;
-            let p; for(let t in state.teams) { let f = state.teams[t].players.find(x => x.id === id); if(f) { p = f; break; } }
-            document.getElementById('pm-name').innerText = p.name;
-            
-            const stats = [
-                {l:'Рейтинг', v:p.r.toFixed(1), c:'text-cyan-400'}, {l:'Голы', v:p.g, c:'text-white'}, {l:'Асс', v:p.a, c:'text-white'},
-                {l:'Удары', v:p.s || 0, c:'text-white'}, {l:'В ств', v:p.st || 0, c:'text-white'}, {l:'Отб', v:p.t || 0, c:'text-white'}
-            ];
-            
-            document.getElementById('player-stats-grid').innerHTML = stats.map(s => `
-                <div class="bg-gray-800/50 p-2 rounded-xl text-center border border-white/5">
-                    <p class="text-[7px] text-gray-400 font-bold uppercase">${s.l}</p>
-                    <p class="font-black text-xs ${s.c}">${s.v}</p>
-                </div>
-            `).join('');
+        function savePlayerProfile() {
+            let p; for(let t in state.teams) { let f = state.teams[t].players.find(x => x.id === activeProfId); if(f) { p = f; break; } }
+            p.name = document.getElementById('p-e-name').value;
+            p.prof.cit = document.getElementById('p-e-cit').value;
+            p.prof.rating = document.getElementById('p-e-rating').value;
+            p.prof.pos = document.getElementById('p-e-pos').value;
+            p.prof.foot = document.getElementById('p-e-foot').value;
+            p.prof.val = document.getElementById('p-e-val').value;
+            save(); document.getElementById('profile-modal').style.display = 'none';
+            if(activeClub) renderClubInfo();
+        }
 
-            if(state.isAdmin) document.getElementById('pm-adm').classList.remove('hidden');
-            else document.getElementById('pm-adm').classList.add('hidden');
+        // --- СТАТИСТИКА ИГРОКА (В МАТЧЕ) ---
+        let activePidMatch = null;
+        function openPlayerStats(id) {
+            activePidMatch = id; let p; for(let t in state.teams) { let f = state.teams[t].players.find(x => x.id === id); if(f) { p = f; break; } }
+            document.getElementById('pm-name').innerText = p.name;
+            const photoEl = document.getElementById('pm-photo');
+            photoEl.style.backgroundImage = `url('${p.img || ''}')`;
+            // Загрузка фото прямо с поля
+            photoEl.onclick = () => { triggerImageUpload(img => { p.img = img; save(); renderMatchInfo(); openPlayerStats(id); }); };
+            
+            const stats = [{l:'Рейтинг', v:p.r.toFixed(1), c:'text-cyan-400'}, {l:'Голы', v:p.g, c:'text-white'}, {l:'Асс', v:p.a, c:'text-white'}, {l:'Удары', v:p.s || 0, c:'text-white'}, {l:'В ств', v:p.st || 0, c:'text-white'}, {l:'Отб', v:p.t || 0, c:'text-white'}];
+            
+            document.getElementById('player-stats-grid').innerHTML = stats.map(s => `<div class="bg-gray-800/50 p-2 rounded-xl text-center border border-white/5"><p class="text-[7px] text-gray-400 font-bold uppercase">${s.l}</p><p class="font-black text-xs ${s.c}">${s.v}</p></div>`).join('');
+
+            if(state.isAdmin) {
+                document.getElementById('pm-adm').classList.remove('hidden');
+                document.getElementById('ai-r').value = p.r; document.getElementById('ai-g').value = p.g; document.getElementById('ai-a').value = p.a;
+                document.getElementById('ai-s').value = p.s; document.getElementById('ai-st').value = p.st; document.getElementById('ai-t').value = p.t;
+                document.getElementById('ai-pos-t').value = p.pos.t; document.getElementById('ai-pos-l').value = p.pos.l;
+            } else document.getElementById('pm-adm').classList.add('hidden');
             
             document.getElementById('player-modal').style.display = 'flex';
         }
 
         function savePlayerData() {
-            let p; for(let t in state.teams) { let f = state.teams[t].players.find(x => x.id === activePid); if(f) { p = f; break; } }
-            p.r = parseFloat(document.getElementById('ai-r').value) || p.r;
-            p.g = parseInt(document.getElementById('ai-g').value) || p.g;
-            p.a = parseInt(document.getElementById('ai-a').value) || p.a;
-            p.s = parseInt(document.getElementById('ai-s').value) || p.s;
-            p.st = parseInt(document.getElementById('ai-st').value) || p.st;
-            p.t = parseInt(document.getElementById('ai-t').value) || p.t;
+            let p; for(let t in state.teams) { let f = state.teams[t].players.find(x => x.id === activePidMatch); if(f) { p = f; break; } }
+            p.r = parseFloat(document.getElementById('ai-r').value) || p.r; p.g = parseInt(document.getElementById('ai-g').value) || p.g; p.a = parseInt(document.getElementById('ai-a').value) || p.a;
+            p.s = parseInt(document.getElementById('ai-s').value) || p.s; p.st = parseInt(document.getElementById('ai-st').value) || p.st; p.t = parseInt(document.getElementById('ai-t').value) || p.t;
+            p.pos.t = document.getElementById('ai-pos-t').value || p.pos.t; p.pos.l = document.getElementById('ai-pos-l').value || p.pos.l;
             save(); renderMatchInfo(); document.getElementById('player-modal').style.display='none';
-            document.getElementById('ai-r').value=''; document.getElementById('ai-g').value=''; // очистка
         }
 
-        // --- ТАБЛИЦА, БОМБАРДИРЫ И СПИСОК КЛУБОВ ---
+        // --- ПРОЧИЕ СПИСКИ ---
         function renderStandings() {
             let table = {}; for(let t in state.teams) table[t] = { p: 0, gf: 0, ga: 0, pts: 0 };
             state.matches.forEach(m => {
+                if(!table[m.home] || !table[m.away] || m.status === 'UPC') return;
                 table[m.home].p++; table[m.away].p++;
                 table[m.home].gf += parseInt(m.hScore); table[m.home].ga += parseInt(m.aScore);
                 table[m.away].gf += parseInt(m.aScore); table[m.away].ga += parseInt(m.hScore);
-                if(m.hScore > m.aScore) table[m.home].pts += 3;
-                else if(m.hScore < m.aScore) table[m.away].pts += 3;
-                else { table[m.home].pts += 1; table[m.away].pts += 1; }
+                if(m.hScore > m.aScore) table[m.home].pts += 3; else if(m.hScore < m.aScore) table[m.away].pts += 3; else { table[m.home].pts += 1; table[m.away].pts += 1; }
             });
             const sorted = Object.entries(table).sort((a,b) => b[1].pts - a[1].pts);
-            document.getElementById('standings-body').innerHTML = sorted.map(([n, d], i) => `
-                <tr class="border-b border-white/5"><td class="py-3 font-bold text-gray-500">${i+1}</td><td class="font-bold cursor-pointer hover:text-cyan-400" onclick="openClubPage('${n}')">${n}</td><td>${d.p}</td><td>${d.gf}:${d.ga}</td><td class="font-black text-cyan-400">${d.pts}</td></tr>
-            `).join('');
+            document.getElementById('standings-body').innerHTML = sorted.map(([n, d], i) => `<tr class="border-b border-white/5"><td class="py-3 font-bold text-gray-500">${i+1}</td><td class="font-bold cursor-pointer hover:text-cyan-400 truncate max-w-[100px]" onclick="openClubPage('${n}')">${n}</td><td class="text-center">${d.p}</td><td class="text-center text-gray-400">${d.gf}:${d.ga}</td><td class="text-center font-black text-cyan-400">${d.pts}</td></tr>`).join('');
         }
 
         function renderScorers() {
@@ -467,37 +557,15 @@
         function renderClubs() {
             document.getElementById('clubs-list').innerHTML = Object.entries(state.teams).map(([name, info]) => `
                 <div onclick="openClubPage('${name}')" class="neon-card p-4 flex items-center gap-4 cursor-pointer">
-                    <div class="w-12 h-12 rounded-xl bg-[#111] bg-cover border border-cyan-500/50 shadow-[0_0_10px_rgba(0,243,255,0.2)]" style="background-image:url('${info.logo}')"></div>
-                    <div><h3 class="font-black text-sm uppercase">${name}</h3><p class="text-[9px] text-cyan-400 font-bold">${info.stadium}</p></div>
+                    <div class="w-12 h-12 rounded-xl bg-[#111] bg-cover bg-center border border-cyan-500/50 shadow-[0_0_10px_rgba(0,243,255,0.2)]" style="background-image:url('${info.logo || ''}')"></div>
+                    <div class="flex-1"><h3 class="font-black text-sm uppercase truncate">${name}</h3><p class="text-[9px] text-cyan-400 font-bold">${info.stadium}</p></div>
                 </div>
             `).join('');
         }
 
-        // АДМИН ПРАВА
-        function requestAdmin() { 
-            if(prompt("Введи пароль администратора:") === "1234") { 
-                state.isAdmin = true; 
-                save(); 
-                alert("Права администратора получены. Панели редактирования открыты.");
-                location.reload(); 
-            } else {
-                alert("Неверный пароль!");
-            }
-        }
-
-        function changeLogo(side) {
-            if(!state.isAdmin) return;
-            const m = curM(); const team = side === 'home' ? m.home : m.away;
-            const inp = document.getElementById('img-input');
-            inp.onchange = e => {
-                const reader = new FileReader();
-                reader.onload = () => { state.teams[team].logo = reader.result; save(); renderMatchInfo(); };
-                reader.readAsDataURL(e.target.files[0]);
-            };
-            inp.click();
-        }
-
-        renderMatches();
+        // Старт
+        applyAdminUI();
+        nav('matches');
     </script>
 </body>
 </html>
