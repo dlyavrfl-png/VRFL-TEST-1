@@ -744,178 +744,120 @@
      
         
         // СТАРТ
-        nav('matches');
-    </script>
-    <style>
-    /* 1. ПРИНУДИТЕЛЬНОЕ ФУТБОЛЬНОЕ ПОЛЕ */
-    .field {
-        background-color: #2b5e28 !important;
-        background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/cf/Soccer_pitch_standard.svg') !important;
-        background-size: 100% 100% !important;
-        background-position: center !important;
-        background-repeat: no-repeat !important;
-        position: relative !important;
-        overflow: hidden !important;
-    }
-
-    /* 2. ИГРОКИ: Скрыты наглухо, пока ты их не выберешь */
-    .player {
-        position: absolute !important;
-        display: none !important; 
-        cursor: move !important;
-        z-index: 100;
-        touch-action: none;
-        user-select: none;
-    }
-
-    /* Показываем только по твоему клику */
-    .player.on-pitch {
-        display: flex !important; 
-    }
-
-    /* 3. ОЦЕНКИ */
-    .rating { cursor: pointer !important; z-index: 1000 !important; }
-
-    /* 4. ПАНЕЛЬ АДМИНА (Компактная кнопка в углу) */
-    #admin-roster-wrap {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 999999;
-        font-family: sans-serif;
-    }
-    #admin-trigger-btn {
-        background: #d90429;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        text-transform: uppercase;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    }
-    #admin-roster-list {
-        display: none;
-        background: #111;
-        width: 250px;
-        margin-bottom: 10px;
-        padding: 15px;
-        border-radius: 8px;
-        border: 2px solid #444;
-        color: white;
-        max-height: 400px;
-        overflow-y: auto;
-    }
-    .roster-btn {
-        background: #222;
-        padding: 8px;
-        margin: 4px 0;
-        border: 1px solid #444;
-        cursor: pointer;
-        font-size: 13px;
-    }
-    .roster-btn.active { background: #2b9348; border-color: #fff; }
-</style>
-
-<div id="admin-roster-wrap">
-    <div id="admin-roster-list">
-        <div style="text-align:center; font-weight:bold; border-bottom:1px solid #444; padding-bottom:5px; margin-bottom:10px;">ВЫБОР СОСТАВА</div>
-        <div id="roster-items-container"></div>
-    </div>
-    <div id="admin-trigger-btn">СОСТАВ (АДМИН)</div>
-</div>
-
-<script>
+        nav('matches'):
+        
+            <script>
+             
 (function() {
-    const trigger = document.getElementById('admin-trigger-btn');
-    const list = document.getElementById('admin-roster-list');
-    const container = document.getElementById('roster-items-container');
+    // 1. ПРИНУДИТЕЛЬНЫЙ ФИКС ПОЛЯ (ЧЕРЕЗ CSS ИНЪЕКЦИЮ)
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .field {
+            background: #2d5a27 !important;
+            background-image: 
+                linear-gradient(90deg, transparent 49.5%, #fff 49.5%, #fff 50.5%, transparent 50.5%),
+                linear-gradient(#fff 2px, transparent 2px),
+                linear-gradient(90deg, #fff 2px, transparent 2px),
+                linear-gradient(90deg, transparent 98%, #fff 98%),
+                linear-gradient(transparent 98%, #fff 98%),
+                radial-gradient(circle at center, transparent 40%, #fff 40%, #fff 41%, transparent 41%) !important;
+            background-size: 100% 100%, 50% 50%, 50% 50%, 100% 100%, 100% 100%, 20% 32% !important;
+            background-position: center !important;
+            border: 4px solid #fff !important;
+            position: relative !important;
+        }
+        .player {
+            position: absolute !important;
+            display: none !important;
+            z-index: 999 !important;
+            cursor: move !important;
+            touch-action: none !important;
+            user-select: none !important;
+        }
+        .player.active-on-pitch { display: flex !important; }
+        .rating { cursor: pointer !important; z-index: 1000 !important; }
+    `;
+    document.head.appendChild(style);
 
-    // 1. Показать/скрыть список
-    trigger.onclick = () => {
-        list.style.display = (list.style.display === 'block') ? 'none' : 'block';
-    };
+    // 2. СОЗДАНИЕ ПАНЕЛИ УПРАВЛЕНИЯ (МАЛЕНЬКАЯ КНОПКА В УГЛУ)
+    const adminWrap = document.createElement('div');
+    adminWrap.id = 'gemini-final-admin';
+    adminWrap.style.cssText = 'position:fixed; bottom:10px; right:10px; z-index:9999999; font-family:Arial;';
+    
+    const btn = document.createElement('button');
+    btn.innerText = 'СОСТАВ';
+    btn.style.cssText = 'background:#f00; color:#fff; border:none; padding:8px 12px; cursor:pointer; font-weight:bold; border-radius:5px;';
+    
+    const list = document.createElement('div');
+    list.style.cssText = 'display:none; background:#000; border:2px solid #444; padding:10px; margin-bottom:5px; width:200px; max-height:300px; overflow-y:auto; border-radius:8px;';
+    
+    adminWrap.appendChild(list);
+    adminWrap.appendChild(btn);
+    document.body.appendChild(adminWrap);
 
-    // 2. Поиск игроков и добавление в список
-    function refreshRoster() {
-        const players = document.querySelectorAll('.player');
-        players.forEach((p, i) => {
-            if (p.dataset.scanned) return;
-            p.dataset.scanned = "true";
+    btn.onclick = () => { list.style.display = list.style.display === 'block' ? 'none' : 'block'; };
 
-            // Гарантируем, что игрок скрыт, если на нем нет класса 'on-pitch'
-            if (!p.classList.contains('on-pitch')) {
-                p.style.setProperty('display', 'none', 'important');
-            }
+    // 3. ЛОГИКА ИГРОКОВ
+    function syncPlayers() {
+        document.querySelectorAll('.player').forEach((p, i) => {
+            if (p.dataset.scannedByMe) return;
+            p.dataset.scannedByMe = "true";
+            p.style.display = 'none';
 
             const name = p.querySelector('.player-name')?.innerText || `Игрок ${i+1}`;
-            const btn = document.createElement('div');
-            btn.className = 'roster-btn';
-            btn.innerText = name;
-
-            btn.onclick = () => {
-                const isActive = p.classList.toggle('on-pitch');
-                btn.classList.toggle('active');
-                
-                // Если выпустил — кидаем в центр
-                if (isActive) {
-                    p.style.left = "45%";
-                    p.style.top = "45%";
-                }
+            const pBtn = document.createElement('div');
+            pBtn.innerText = name;
+            pBtn.style.cssText = 'background:#222; color:#fff; padding:5px; margin:3px 0; cursor:pointer; font-size:12px; border:1px solid #333;';
+            
+            pBtn.onclick = () => {
+                const isOn = p.classList.toggle('active-on-pitch');
+                pBtn.style.background = isOn ? '#28a745' : '#222';
+                if(isOn) { p.style.left = '50%'; p.style.top = '50%'; }
             };
-            container.appendChild(btn);
+            list.appendChild(pBtn);
         });
     }
+    setInterval(syncPlayers, 1000);
 
-    setInterval(refreshRoster, 1000);
-
-    // 3. СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ (Drag & Drop)
-    let activePlayer = null;
-    let shiftX, shiftY;
+    // 4. ПЕРЕМЕЩЕНИЕ (ГЛОБАЛЬНЫЙ ПЕРЕХВАТ)
+    let dragTarget = null;
+    let sX, sY, pX, pY;
 
     document.addEventListener('mousedown', (e) => {
         const p = e.target.closest('.player');
         if (p && !e.target.closest('.rating')) {
-            activePlayer = p;
-            const rect = p.getBoundingClientRect();
-            shiftX = e.clientX - rect.left;
-            shiftY = e.clientY - rect.top;
+            dragTarget = p;
+            sX = e.clientX; sY = e.clientY;
+            pX = p.offsetLeft; pY = p.offsetTop;
             p.style.zIndex = 10000;
+            e.preventDefault();
         }
-    });
+    }, true);
 
     document.addEventListener('mousemove', (e) => {
-        if (!activePlayer) return;
-        const field = document.querySelector('.field');
-        if (!field) return;
+        if (!dragTarget) return;
+        const dx = e.clientX - sX;
+        const dy = e.clientY - sY;
+        dragTarget.style.left = (pX + dx) + 'px';
+        dragTarget.style.top = (pY + dy) + 'px';
+    }, true);
 
-        const fRect = field.getBoundingClientRect();
-        let x = e.clientX - fRect.left - shiftX;
-        let y = e.clientY - fRect.top - shiftY;
+    document.addEventListener('mouseup', () => { 
+        if(dragTarget) dragTarget.style.zIndex = 999;
+        dragTarget = null; 
+    }, true);
 
-        activePlayer.style.left = x + 'px';
-        activePlayer.style.top = y + 'px';
-    });
-
-    document.addEventListener('mouseup', () => {
-        if (activePlayer) {
-            activePlayer.style.zIndex = 100;
-            activePlayer = null;
-        }
-    });
-
-    // 4. СМЕНА ЦВЕТА ОЦЕНОК (Зеленый -> Оранжевый -> Красный)
-    const colors = ['#2b9348', '#ee9b00', '#ae2012'];
+    // 5. ЦВЕТА ОЦЕНОК
+    const clrs = ['#28a745', '#ff8c00', '#ff0000'];
     document.addEventListener('click', (e) => {
         const r = e.target.closest('.rating');
         if (r) {
-            let idx = parseInt(r.getAttribute('data-c')) || 0;
-            idx = (idx + 1) % colors.length;
-            r.style.backgroundColor = colors[idx];
-            r.setAttribute('data-c', idx);
+            let cur = parseInt(r.dataset.c) || 0;
+            cur = (cur + 1) % clrs.length;
+            r.style.backgroundColor = clrs[cur];
+            r.dataset.c = cur;
         }
-    });
-
+    }, true);
 })();
 </script>
     
