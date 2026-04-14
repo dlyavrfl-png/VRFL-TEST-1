@@ -528,6 +528,14 @@
             }
             save(); openMatch(activeTourId, activeMatchId);
         }
+
+        <div id="custom-roster-manager" style="background: #222; padding: 10px; border-radius: 5px; color: white; margin-bottom: 15px;">
+    <div id="toggle-roster-btn" style="cursor: pointer; background: #444; padding: 8px; text-align: center; border-radius: 4px; font-weight: bold;">
+        Выбрать стартовый состав ▼
+    </div>
+    <div id="roster-list" style="display: none; margin-top: 10px; max-height: 250px; overflow-y: auto;"></div>
+</div>
+        
         
         // --- КЛУБЫ ---
         let activeClub = null;
@@ -747,48 +755,15 @@
     </script>
 
     <style>
-    /* 1. АДМИНКА */
-    #gemini-admin {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        width: 220px;
-        background: rgba(0, 0, 0, 0.95);
-        color: white;
-        padding: 15px;
-        border: 2px solid #555;
-        border-radius: 8px;
-        z-index: 10000;
-        font-family: sans-serif;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    /* Кнопки внутри списка игроков */
+    .roster-player-btn {
+        background: #333; margin: 4px 0; padding: 8px; cursor: pointer;
+        border-radius: 4px; font-size: 13px; border: 1px solid #555; transition: 0.2s;
     }
-    #admin-header {
-        font-weight: bold; 
-        margin-bottom: 10px; 
-        border-bottom: 1px solid #555;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 5px;
-    }
-    #toggle-admin { cursor: pointer; background: #333; padding: 2px 6px; border-radius: 3px; }
-    #admin-list { max-height: 400px; overflow-y: auto; }
-    
-    .admin-btn {
-        background: #333;
-        margin: 4px 0;
-        padding: 8px;
-        cursor: pointer;
-        border-radius: 4px;
-        font-size: 13px;
-        border: 1px solid #555;
-        transition: 0.2s;
-    }
-    .admin-btn.active { background: #28a745; border-color: #fff; }
+    .roster-player-btn.active { background: #28a745; border-color: #fff; }
 
-    /* 2. ПОЛЕ (ФУТБОЛЬНОЕ) */
+    /* Дизайн поля (чтобы был футбол, а не регби) */
     .field {
-        /* Принудительно ставим футбольную разметку, чтобы не было "регби" */
         background-color: #2e7d32 !important;
         background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/82/Soccer_field_-_empty.svg') !important;
         background-position: center !important;
@@ -798,64 +773,47 @@
         overflow: hidden !important;
     }
 
-    /* 3. ИГРОКИ (ЖЕСТКОЕ СКРЫТИЕ ПО УМОЛЧАНИЮ) */
+    /* Игроки: скрыты по умолчанию, пока ты не нажмешь на них в списке */
     .player {
         position: absolute !important;
         cursor: grab !important;
-        display: none !important; /* Никто не выйдет на поле без приказа */
+        display: none !important; 
         touch-action: none;
         user-select: none;
     }
     .player:active { cursor: grabbing !important; }
-    
-    /* Класс для тех, кого ты лично выпустил */
-    .player.active-on-pitch { 
-        display: flex !important; /* или block, смотря как у тебя сверстано */
-    }
+    .player.active-on-pitch { display: flex !important; } /* Показываем, если выпущены */
 
-    /* 4. ОЦЕНКИ */
-    .rating { 
-        cursor: pointer !important; 
-        z-index: 10; 
-        user-select: none !important; /* Чтобы текст не выделялся при клике */
-    }
+    /* Оценки */
+    .rating { cursor: pointer !important; z-index: 10; user-select: none !important; }
 </style>
-
-<div id="gemini-admin">
-    <div id="admin-header">
-        <span>СОСТАВ</span>
-        <span id="toggle-admin">[ _ ]</span>
-    </div>
-    <div id="admin-list"></div>
-</div>
 
 <script>
 (function() {
-    const adminList = document.getElementById('admin-list');
-    const colors = ['#28a745', '#fd7e14', '#dc3545']; // Зеленый, Оранжевый, Красный
+    // 1. ОТКРЫТИЕ/ЗАКРЫТИЕ СПИСКА
+    const toggleBtn = document.getElementById('toggle-roster-btn');
+    const rosterList = document.getElementById('roster-list');
+    
+    if (toggleBtn && rosterList) {
+        toggleBtn.onclick = function() {
+            rosterList.style.display = rosterList.style.display === 'none' ? 'block' : 'none';
+        };
+    }
 
-    // Сворачивание/Разворачивание админки
-    document.getElementById('toggle-admin').onclick = function() {
-        const list = document.getElementById('admin-list');
-        list.style.display = list.style.display === 'none' ? 'block' : 'none';
-    };
-
-    // ФУНКЦИЯ: Поиск новых игроков (решает проблему автоматического добавления)
+    // 2. СКАНИРОВАНИЕ ИГРОКОВ (Добавляет их в твой список)
     function scanForPlayers() {
+        if (!rosterList) return;
         const players = document.querySelectorAll('.player');
         
         players.forEach((p, i) => {
-            // Если игрок уже есть в админке — пропускаем
-            if (p.dataset.adminAdded) return;
-            p.dataset.adminAdded = "true"; // Помечаем, что забрали под контроль
+            if (p.dataset.addedToList) return;
+            p.dataset.addedToList = "true"; // Чтобы не дублировать
 
-            // Ищем имя или даем дефолтное
             const nameEl = p.querySelector('.player-name') || p.querySelector('span');
             const name = nameEl ? nameEl.innerText : `Игрок ${i+1}`;
 
-            // Создаем кнопку в админке
             const btn = document.createElement('div');
-            btn.className = 'admin-btn';
+            btn.className = 'roster-player-btn';
             btn.innerText = name;
             
             btn.onclick = (e) => {
@@ -863,25 +821,25 @@
                 p.classList.toggle('active-on-pitch');
                 btn.classList.toggle('active');
                 
-                // Если выпустили на поле — кидаем в центр
+                // Ставим в центр при выходе на поле
                 if(p.classList.contains('active-on-pitch')) {
                     const field = document.querySelector('.field');
                     if(field) {
-                        p.style.left = (field.offsetWidth / 2 - p.offsetWidth / 2) + "px";
-                        p.style.top = (field.offsetHeight / 2 - p.offsetHeight / 2) + "px";
+                        p.style.left = (field.offsetWidth / 2 - 20) + "px";
+                        p.style.top = (field.offsetHeight / 2 - 20) + "px";
                     }
                 }
             };
-            adminList.appendChild(btn);
+            rosterList.appendChild(btn);
         });
     }
 
-    // Запускаем сканер каждую секунду, чтобы ловить тех, кого система кидает сама
+    // Проверяем игроков раз в секунду
     setInterval(scanForPlayers, 1000);
-    scanForPlayers(); // Запуск сразу
+    scanForPlayers();
 
 
-    // СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ (ЖЕЛЕЗОБЕТОННОЕ)
+    // 3. ПЕРЕМЕЩЕНИЕ ИГРОКОВ ЗАЖАТИЕМ (Без процентов, жесткие пиксели)
     let dragged = null;
     let offsetX = 0, offsetY = 0;
 
@@ -890,7 +848,6 @@
         if (p && !e.target.closest('.rating')) {
             dragged = p;
             const rect = p.getBoundingClientRect();
-            // Вычисляем, за какое место карточки мы схватили
             offsetX = e.clientX - rect.left;
             offsetY = e.clientY - rect.top;
             p.style.zIndex = 2000;
@@ -903,8 +860,6 @@
         if (!field) return;
 
         const fieldRect = field.getBoundingClientRect();
-        
-        // Считаем координаты относительно самого поля (в пикселях)
         let newX = e.clientX - fieldRect.left - offsetX;
         let newY = e.clientY - fieldRect.top - offsetY;
 
@@ -919,7 +874,8 @@
         }
     });
 
-    // СМЕНА ЦВЕТА ОЦЕНОК
+    // 4. СМЕНА ЦВЕТА ОЦЕНОК
+    const colors = ['#28a745', '#fd7e14', '#dc3545'];
     document.addEventListener('click', (e) => {
         const r = e.target.closest('.rating');
         if (r) {
@@ -931,7 +887,7 @@
     });
 
 })();
-    </script>
+        </script>
     
     
 </body>
