@@ -743,5 +743,143 @@
         // СТАРТ
         nav('matches');
     </script>
+    <style>
+    /* 1. СТИЛЬ ПОЛЯ */
+    #pitch-players {
+        background-color: #143011 !important;
+        background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10%, transparent 10%, transparent 20%) !important;
+        position: relative !important;
+        border: 2px solid #ffffff33 !important;
+        min-height: 500px !important;
+        overflow: hidden !important;
+        touch-action: none; /* Чтобы страница не дергалась при переносе */
+    }
+
+    /* 2. ИГРОКИ И ОЦЕНКИ */
+    .player-node { 
+        position: absolute !important; 
+        display: none !important; /* Скрыты по умолчанию */
+        z-index: 100 !important; 
+        cursor: grab;
+    }
+    .player-node.on-pitch { display: flex !important; } /* Показываем только выбранных */
+
+    .p-rating { 
+        font-weight: bold !important; 
+        border-radius: 4px !important; 
+        padding: 2px 5px !important; 
+        color: #000 !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    /* 3. КНОПКА И МЕНЮ УПРАВЛЕНИЯ (Миниатюрная) */
+    #acsor-ctrl {
+        position: absolute; top: 10px; right: 10px; z-index: 9999;
+    }
+    #acsor-btn {
+        background: #d90429; color: #fff; border: none; width: 35px; height: 35px; 
+        border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 18px;
+    }
+    #acsor-menu {
+        display: none; position: absolute; right: 0; top: 40px; background: #111; 
+        border: 1px solid #444; width: 180px; max-height: 250px; overflow-y: auto;
+        border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+    }
+    .acsor-opt {
+        padding: 10px; border-bottom: 1px solid #222; color: #ccc; cursor: pointer; font-size: 12px;
+    }
+    .acsor-opt.active { color: #2ecc71; background: #1a2a1a; font-weight: bold; }
+</style>
+
+<script>
+(function() {
+    // РИСУЕМ РАЗМЕТКУ ПОЛЯ
+    function drawPitch() {
+        const p = document.getElementById('pitch-players');
+        if (p && !p.querySelector('.pitch-lines')) {
+            const svg = `<svg class="pitch-lines" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.5;">
+                <line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/>
+                <circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/>
+                <rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/>
+                <rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/>
+            </svg>`;
+            p.insertAdjacentHTML('afterbegin', svg);
+            
+            // Добавляем кнопку управления прямо в поле
+            p.insertAdjacentHTML('beforeend', `
+                <div id="acsor-ctrl">
+                    <button id="acsor-btn" title="Управление">⚙</button>
+                    <div id="acsor-menu"></div>
+                </div>
+            `);
+        }
+    }
+
+    // КРАСИМ ОЦЕНКИ
+    function updateColors() {
+        document.querySelectorAll('.p-rating').forEach(r => {
+            const v = parseFloat(r.innerText.replace(',', '.'));
+            if (isNaN(v)) return;
+            r.style.backgroundColor = v >= 7.0 ? '#2ecc71' : (v >= 5.0 ? '#f1c40f' : '#e74c3c');
+        });
+    }
+
+    // МЕНЮ ВЫБОРА ИГРОКОВ
+    document.addEventListener('click', (e) => {
+        if (e.target.id === 'acsor-btn') {
+            const m = document.getElementById('acsor-menu');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+            if (m.style.display === 'block') {
+                m.innerHTML = '';
+                document.querySelectorAll('.player-node').forEach((p, i) => {
+                    const opt = document.createElement('div');
+                    opt.className = 'acsor-opt' + (p.classList.contains('on-pitch') ? ' active' : '');
+                    opt.innerText = 'Игрок ' + (i + 1);
+                    opt.onclick = () => {
+                        const ok = p.classList.toggle('on-pitch');
+                        opt.classList.toggle('active');
+                        if (ok) { p.style.left = '45%'; p.style.top = '45%'; }
+                    };
+                    m.appendChild(opt);
+                });
+            }
+        }
+    });
+
+    // ПЕРЕМЕЩЕНИЕ (MOUSE + TOUCH)
+    let drag = null, sx, sy, ix, iy;
+    const start = (e) => {
+        const node = e.target.closest('.player-node');
+        if (node && !e.target.closest('.p-rating')) {
+            drag = node;
+            const c = e.touches ? e.touches[0] : e;
+            sx = c.clientX; sy = c.clientY;
+            ix = node.offsetLeft; iy = node.offsetTop;
+            node.style.zIndex = 5000;
+        }
+    };
+    const move = (e) => {
+        if (!drag) return;
+        const c = e.touches ? e.touches[0] : e;
+        drag.style.left = (ix + (c.clientX - sx)) + 'px';
+        drag.style.top = (iy + (c.clientY - sy)) + 'px';
+        if (e.touches) e.preventDefault(); // Чтоб не скроллило
+    };
+    const end = () => { if (drag) drag.style.zIndex = 100; drag = null; };
+
+    document.addEventListener('mousedown', start);
+    document.addEventListener('touchstart', start, {passive: false});
+    document.addEventListener('mousemove', move);
+    document.addEventListener('touchmove', move, {passive: false});
+    document.addEventListener('mouseup', end);
+    document.addEventListener('touchend', end);
+
+    // Запускаем "слежку" за изменениями (каждые 1.5 сек)
+    setInterval(() => {
+        drawPitch();
+        updateColors();
+    }, 1500);
+})();
+        </script>
 </body>
 </html>
