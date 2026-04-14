@@ -746,186 +746,178 @@
         // СТАРТ
         nav('matches');
     </script>
-
     <style>
-    /* ФИКС ПОЛЯ: Принудительный футбол (убираем регби) */
+    /* 1. ПРИНУДИТЕЛЬНОЕ ФУТБОЛЬНОЕ ПОЛЕ */
     .field {
-        background-color: #2e7d32 !important;
+        background-color: #2b5e28 !important;
         background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/cf/Soccer_pitch_standard.svg') !important;
-        background-position: center !important;
         background-size: 100% 100% !important;
+        background-position: center !important;
         background-repeat: no-repeat !important;
         position: relative !important;
-        width: 100% !important;
-        aspect-ratio: 16 / 10 !important; /* Пропорции футбольного поля */
+        overflow: hidden !important;
     }
 
-    /* ИГРОКИ: Скрыты, пока ты их не выберешь */
+    /* 2. ИГРОКИ: Скрыты наглухо, пока ты их не выберешь */
     .player {
         position: absolute !important;
+        display: none !important; 
         cursor: move !important;
-        display: none !important; /* По умолчанию на поле никого */
         z-index: 100;
         touch-action: none;
         user-select: none;
     }
-    .player.active-on-pitch { display: flex !important; }
 
-    /* ОЦЕНКИ */
+    /* Показываем только по твоему клику */
+    .player.on-pitch {
+        display: flex !important; 
+    }
+
+    /* 3. ОЦЕНКИ */
     .rating { cursor: pointer !important; z-index: 1000 !important; }
 
-    /* ПАНЕЛЬ АДМИНКИ (Кнопка и Список) */
-    #gemini-manager-wrap {
+    /* 4. ПАНЕЛЬ АДМИНА (Компактная кнопка в углу) */
+    #admin-roster-wrap {
         position: fixed;
         bottom: 20px;
         right: 20px;
-        z-index: 99999;
+        z-index: 999999;
         font-family: sans-serif;
     }
-    #gemini-trigger {
-        background: #e63946;
+    #admin-trigger-btn {
+        background: #d90429;
         color: white;
-        padding: 12px 18px;
-        border-radius: 8px;
+        padding: 10px 15px;
+        border-radius: 5px;
         cursor: pointer;
         font-weight: bold;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        text-transform: uppercase;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
-    #gemini-roster {
+    #admin-roster-list {
         display: none;
-        background: #1b1b1b;
-        width: 260px;
-        margin-top: 10px;
+        background: #111;
+        width: 250px;
+        margin-bottom: 10px;
         padding: 15px;
         border-radius: 8px;
-        border: 2px solid #333;
-        color: #eee;
+        border: 2px solid #444;
+        color: white;
+        max-height: 400px;
+        overflow-y: auto;
     }
-    .roster-player-row {
-        background: #2a2a2a;
-        margin: 5px 0;
+    .roster-btn {
+        background: #222;
         padding: 8px;
-        border-radius: 4px;
+        margin: 4px 0;
+        border: 1px solid #444;
         cursor: pointer;
         font-size: 13px;
-        border: 1px solid #444;
-        transition: 0.2s;
     }
-    .roster-player-row.active {
-        background: #2a9d8f;
-        border-color: #fff;
-    }
-    .roster-player-row:hover { background: #3d3d3d; }
+    .roster-btn.active { background: #2b9348; border-color: #fff; }
 </style>
 
-<div id="gemini-manager-wrap">
-    <div id="gemini-trigger">УПРАВЛЕНИЕ СОСТАВОМ</div>
-    <div id="gemini-roster">
-        <div style="font-size: 12px; color: #888; margin-bottom: 10px; text-align: center;">Кликни, чтобы выпустить/убрать:</div>
-        <div id="gemini-player-list" style="max-height: 300px; overflow-y: auto;"></div>
+<div id="admin-roster-wrap">
+    <div id="admin-roster-list">
+        <div style="text-align:center; font-weight:bold; border-bottom:1px solid #444; padding-bottom:5px; margin-bottom:10px;">ВЫБОР СОСТАВА</div>
+        <div id="roster-items-container"></div>
     </div>
+    <div id="admin-trigger-btn">СОСТАВ (АДМИН)</div>
 </div>
 
 <script>
 (function() {
-    const trigger = document.getElementById('gemini-trigger');
-    const roster = document.getElementById('gemini-roster');
-    const list = document.getElementById('gemini-player-list');
+    const trigger = document.getElementById('admin-trigger-btn');
+    const list = document.getElementById('admin-roster-list');
+    const container = document.getElementById('roster-items-container');
 
-    // 1. Показать/скрыть список состава
+    // 1. Показать/скрыть список
     trigger.onclick = () => {
-        roster.style.display = roster.style.display === 'block' ? 'none' : 'block';
+        list.style.display = (list.style.display === 'block') ? 'none' : 'block';
     };
 
-    // 2. Сканируем страницу на наличие игроков
-    function refreshPlayers() {
-        const allPlayers = document.querySelectorAll('.player');
-        allPlayers.forEach((p, i) => {
+    // 2. Поиск игроков и добавление в список
+    function refreshRoster() {
+        const players = document.querySelectorAll('.player');
+        players.forEach((p, i) => {
             if (p.dataset.scanned) return;
             p.dataset.scanned = "true";
 
-            // Берем имя игрока
+            // Гарантируем, что игрок скрыт, если на нем нет класса 'on-pitch'
+            if (!p.classList.contains('on-pitch')) {
+                p.style.setProperty('display', 'none', 'important');
+            }
+
             const name = p.querySelector('.player-name')?.innerText || `Игрок ${i+1}`;
-            
-            // Создаем кнопку в списке
             const btn = document.createElement('div');
-            btn.className = 'roster-player-row';
+            btn.className = 'roster-btn';
             btn.innerText = name;
 
             btn.onclick = () => {
-                p.classList.toggle('active-on-pitch');
+                const isActive = p.classList.toggle('on-pitch');
                 btn.classList.toggle('active');
                 
-                // Если выпустили, ставим в центр поля
-                if (p.classList.contains('active-on-pitch')) {
-                    const field = document.querySelector('.field');
-                    if(field) {
-                        p.style.left = "45%";
-                        p.style.top = "45%";
-                    }
+                // Если выпустил — кидаем в центр
+                if (isActive) {
+                    p.style.left = "45%";
+                    p.style.top = "45%";
                 }
             };
-            list.appendChild(btn);
+            container.appendChild(btn);
         });
     }
 
-    // Запускаем сканер (чтобы поймать игроков, которые добавляются позже)
-    setInterval(refreshPlayers, 1000);
+    setInterval(refreshRoster, 1000);
 
-    // 3. ПЕРЕМЕЩЕНИЕ (Drag & Drop)
-    let activeP = null;
-    let startX, startY, playerX, playerY;
+    // 3. СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ (Drag & Drop)
+    let activePlayer = null;
+    let shiftX, shiftY;
 
     document.addEventListener('mousedown', (e) => {
         const p = e.target.closest('.player');
-        // Если схватили игрока (но не оценку)
         if (p && !e.target.closest('.rating')) {
-            activeP = p;
-            startX = e.clientX;
-            startY = e.clientY;
-            playerX = p.offsetLeft;
-            playerY = p.offsetTop;
-            p.style.zIndex = 5000;
+            activePlayer = p;
+            const rect = p.getBoundingClientRect();
+            shiftX = e.clientX - rect.left;
+            shiftY = e.clientY - rect.top;
+            p.style.zIndex = 10000;
         }
     });
 
     document.addEventListener('mousemove', (e) => {
-        if (!activeP) return;
-        
+        if (!activePlayer) return;
         const field = document.querySelector('.field');
         if (!field) return;
 
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
+        const fRect = field.getBoundingClientRect();
+        let x = e.clientX - fRect.left - shiftX;
+        let y = e.clientY - fRect.top - shiftY;
 
-        activeP.style.left = (playerX + dx) + 'px';
-        activeP.style.top = (playerY + dy) + 'px';
+        activePlayer.style.left = x + 'px';
+        activePlayer.style.top = y + 'px';
     });
 
     document.addEventListener('mouseup', () => {
-        if (activeP) {
-            activeP.style.zIndex = 100;
-            activeP = null;
+        if (activePlayer) {
+            activePlayer.style.zIndex = 100;
+            activePlayer = null;
         }
     });
 
-    // 4. ЦВЕТА ОЦЕНОК (Клик по цифре)
-    const ratingColors = ['#28a745', '#f4a261', '#e76f51']; // Зеленый, Оранжевый, Красный
+    // 4. СМЕНА ЦВЕТА ОЦЕНОК (Зеленый -> Оранжевый -> Красный)
+    const colors = ['#2b9348', '#ee9b00', '#ae2012'];
     document.addEventListener('click', (e) => {
         const r = e.target.closest('.rating');
         if (r) {
-            let colorIdx = parseInt(r.getAttribute('data-c-idx')) || 0;
-            colorIdx = (colorIdx + 1) % ratingColors.length;
-            
-            r.style.backgroundColor = ratingColors[colorIdx];
-            r.setAttribute('data-c-idx', colorIdx);
+            let idx = parseInt(r.getAttribute('data-c')) || 0;
+            idx = (idx + 1) % colors.length;
+            r.style.backgroundColor = colors[idx];
+            r.setAttribute('data-c', idx);
         }
     });
 
 })();
 </script>
-    
     
 </body>
 </html>
