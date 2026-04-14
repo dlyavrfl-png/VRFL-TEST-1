@@ -740,6 +740,55 @@
             input.click();
         }
 
+        // Логика перемещения игроков
+const players = document.querySelectorAll('.player');
+let isDragging = false;
+let currentPlayer = null;
+
+players.forEach(player => {
+    player.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        currentPlayer = player;
+        
+        // Вычисляем смещение курсора относительно края элемента
+        const rect = player.getBoundingClientRect();
+        player.dataset.offsetX = e.clientX - rect.left;
+        player.dataset.offsetY = e.clientY - rect.top;
+        
+        player.style.cursor = 'grabbing';
+        player.style.zIndex = 1000; // Поднимаем над другими
+    });
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging || !currentPlayer) return;
+
+    // Рассчитываем новые координаты
+    const field = document.querySelector('.field'); // Убедитесь, что класс поля верный
+    const fieldRect = field.getBoundingClientRect();
+    
+    let x = e.clientX - fieldRect.left - parseFloat(currentPlayer.dataset.offsetX);
+    let y = e.clientY - fieldRect.top - parseFloat(currentPlayer.dataset.offsetY);
+
+    // Ограничение перемещения внутри поля
+    x = Math.max(0, Math.min(x, fieldRect.width - currentPlayer.offsetWidth));
+    y = Math.max(0, Math.min(y, fieldRect.height - currentPlayer.offsetHeight));
+
+    currentPlayer.style.left = `${x}px`;
+    currentPlayer.style.top = `${y}px`;
+    currentPlayer.style.position = 'absolute';
+});
+
+document.addEventListener('mouseup', () => {
+    if (currentPlayer) {
+        currentPlayer.style.cursor = 'grab';
+        currentPlayer.style.zIndex = '';
+    }
+    isDragging = false;
+    currentPlayer = null;
+});
+        
+
         // СТАРТ
         nav('matches');
     </script>
