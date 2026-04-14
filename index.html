@@ -528,13 +528,6 @@
             }
             save(); openMatch(activeTourId, activeMatchId);
         }
-
-        <div id="custom-roster-manager" style="background: #222; padding: 10px; border-radius: 5px; color: white; margin-bottom: 15px;">
-    <div id="toggle-roster-btn" style="cursor: pointer; background: #444; padding: 8px; text-align: center; border-radius: 4px; font-weight: bold;">
-        Выбрать стартовый состав ▼
-    </div>
-    <div id="roster-list" style="display: none; margin-top: 10px; max-height: 250px; overflow-y: auto;"></div>
-</div>
         
         
         // --- КЛУБЫ ---
@@ -755,139 +748,183 @@
     </script>
 
     <style>
-    /* Кнопки внутри списка игроков */
-    .roster-player-btn {
-        background: #333; margin: 4px 0; padding: 8px; cursor: pointer;
-        border-radius: 4px; font-size: 13px; border: 1px solid #555; transition: 0.2s;
-    }
-    .roster-player-btn.active { background: #28a745; border-color: #fff; }
-
-    /* Дизайн поля (чтобы был футбол, а не регби) */
+    /* ФИКС ПОЛЯ: Принудительный футбол (убираем регби) */
     .field {
         background-color: #2e7d32 !important;
-        background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/82/Soccer_field_-_empty.svg') !important;
+        background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/cf/Soccer_pitch_standard.svg') !important;
         background-position: center !important;
         background-size: 100% 100% !important;
         background-repeat: no-repeat !important;
         position: relative !important;
-        overflow: hidden !important;
+        width: 100% !important;
+        aspect-ratio: 16 / 10 !important; /* Пропорции футбольного поля */
     }
 
-    /* Игроки: скрыты по умолчанию, пока ты не нажмешь на них в списке */
+    /* ИГРОКИ: Скрыты, пока ты их не выберешь */
     .player {
         position: absolute !important;
-        cursor: grab !important;
-        display: none !important; 
+        cursor: move !important;
+        display: none !important; /* По умолчанию на поле никого */
+        z-index: 100;
         touch-action: none;
         user-select: none;
     }
-    .player:active { cursor: grabbing !important; }
-    .player.active-on-pitch { display: flex !important; } /* Показываем, если выпущены */
+    .player.active-on-pitch { display: flex !important; }
 
-    /* Оценки */
-    .rating { cursor: pointer !important; z-index: 10; user-select: none !important; }
+    /* ОЦЕНКИ */
+    .rating { cursor: pointer !important; z-index: 1000 !important; }
+
+    /* ПАНЕЛЬ АДМИНКИ (Кнопка и Список) */
+    #gemini-manager-wrap {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 99999;
+        font-family: sans-serif;
+    }
+    #gemini-trigger {
+        background: #e63946;
+        color: white;
+        padding: 12px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    #gemini-roster {
+        display: none;
+        background: #1b1b1b;
+        width: 260px;
+        margin-top: 10px;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #333;
+        color: #eee;
+    }
+    .roster-player-row {
+        background: #2a2a2a;
+        margin: 5px 0;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        border: 1px solid #444;
+        transition: 0.2s;
+    }
+    .roster-player-row.active {
+        background: #2a9d8f;
+        border-color: #fff;
+    }
+    .roster-player-row:hover { background: #3d3d3d; }
 </style>
+
+<div id="gemini-manager-wrap">
+    <div id="gemini-trigger">УПРАВЛЕНИЕ СОСТАВОМ</div>
+    <div id="gemini-roster">
+        <div style="font-size: 12px; color: #888; margin-bottom: 10px; text-align: center;">Кликни, чтобы выпустить/убрать:</div>
+        <div id="gemini-player-list" style="max-height: 300px; overflow-y: auto;"></div>
+    </div>
+</div>
 
 <script>
 (function() {
-    // 1. ОТКРЫТИЕ/ЗАКРЫТИЕ СПИСКА
-    const toggleBtn = document.getElementById('toggle-roster-btn');
-    const rosterList = document.getElementById('roster-list');
-    
-    if (toggleBtn && rosterList) {
-        toggleBtn.onclick = function() {
-            rosterList.style.display = rosterList.style.display === 'none' ? 'block' : 'none';
-        };
-    }
+    const trigger = document.getElementById('gemini-trigger');
+    const roster = document.getElementById('gemini-roster');
+    const list = document.getElementById('gemini-player-list');
 
-    // 2. СКАНИРОВАНИЕ ИГРОКОВ (Добавляет их в твой список)
-    function scanForPlayers() {
-        if (!rosterList) return;
-        const players = document.querySelectorAll('.player');
-        
-        players.forEach((p, i) => {
-            if (p.dataset.addedToList) return;
-            p.dataset.addedToList = "true"; // Чтобы не дублировать
+    // 1. Показать/скрыть список состава
+    trigger.onclick = () => {
+        roster.style.display = roster.style.display === 'block' ? 'none' : 'block';
+    };
 
-            const nameEl = p.querySelector('.player-name') || p.querySelector('span');
-            const name = nameEl ? nameEl.innerText : `Игрок ${i+1}`;
+    // 2. Сканируем страницу на наличие игроков
+    function refreshPlayers() {
+        const allPlayers = document.querySelectorAll('.player');
+        allPlayers.forEach((p, i) => {
+            if (p.dataset.scanned) return;
+            p.dataset.scanned = "true";
 
-            const btn = document.createElement('div');
-            btn.className = 'roster-player-btn';
-            btn.innerText = name;
+            // Берем имя игрока
+            const name = p.querySelector('.player-name')?.innerText || `Игрок ${i+1}`;
             
-            btn.onclick = (e) => {
-                e.stopPropagation();
+            // Создаем кнопку в списке
+            const btn = document.createElement('div');
+            btn.className = 'roster-player-row';
+            btn.innerText = name;
+
+            btn.onclick = () => {
                 p.classList.toggle('active-on-pitch');
                 btn.classList.toggle('active');
                 
-                // Ставим в центр при выходе на поле
-                if(p.classList.contains('active-on-pitch')) {
+                // Если выпустили, ставим в центр поля
+                if (p.classList.contains('active-on-pitch')) {
                     const field = document.querySelector('.field');
                     if(field) {
-                        p.style.left = (field.offsetWidth / 2 - 20) + "px";
-                        p.style.top = (field.offsetHeight / 2 - 20) + "px";
+                        p.style.left = "45%";
+                        p.style.top = "45%";
                     }
                 }
             };
-            rosterList.appendChild(btn);
+            list.appendChild(btn);
         });
     }
 
-    // Проверяем игроков раз в секунду
-    setInterval(scanForPlayers, 1000);
-    scanForPlayers();
+    // Запускаем сканер (чтобы поймать игроков, которые добавляются позже)
+    setInterval(refreshPlayers, 1000);
 
-
-    // 3. ПЕРЕМЕЩЕНИЕ ИГРОКОВ ЗАЖАТИЕМ (Без процентов, жесткие пиксели)
-    let dragged = null;
-    let offsetX = 0, offsetY = 0;
+    // 3. ПЕРЕМЕЩЕНИЕ (Drag & Drop)
+    let activeP = null;
+    let startX, startY, playerX, playerY;
 
     document.addEventListener('mousedown', (e) => {
         const p = e.target.closest('.player');
+        // Если схватили игрока (но не оценку)
         if (p && !e.target.closest('.rating')) {
-            dragged = p;
-            const rect = p.getBoundingClientRect();
-            offsetX = e.clientX - rect.left;
-            offsetY = e.clientY - rect.top;
-            p.style.zIndex = 2000;
+            activeP = p;
+            startX = e.clientX;
+            startY = e.clientY;
+            playerX = p.offsetLeft;
+            playerY = p.offsetTop;
+            p.style.zIndex = 5000;
         }
     });
 
     document.addEventListener('mousemove', (e) => {
-        if (!dragged) return;
+        if (!activeP) return;
+        
         const field = document.querySelector('.field');
         if (!field) return;
 
-        const fieldRect = field.getBoundingClientRect();
-        let newX = e.clientX - fieldRect.left - offsetX;
-        let newY = e.clientY - fieldRect.top - offsetY;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
 
-        dragged.style.left = newX + "px";
-        dragged.style.top = newY + "px";
+        activeP.style.left = (playerX + dx) + 'px';
+        activeP.style.top = (playerY + dy) + 'px';
     });
 
     document.addEventListener('mouseup', () => {
-        if (dragged) {
-            dragged.style.zIndex = 1000;
-            dragged = null;
+        if (activeP) {
+            activeP.style.zIndex = 100;
+            activeP = null;
         }
     });
 
-    // 4. СМЕНА ЦВЕТА ОЦЕНОК
-    const colors = ['#28a745', '#fd7e14', '#dc3545'];
+    // 4. ЦВЕТА ОЦЕНОК (Клик по цифре)
+    const ratingColors = ['#28a745', '#f4a261', '#e76f51']; // Зеленый, Оранжевый, Красный
     document.addEventListener('click', (e) => {
         const r = e.target.closest('.rating');
         if (r) {
-            let currentIdx = parseInt(r.getAttribute('data-clr')) || 0;
-            let nextIdx = (currentIdx + 1) % colors.length;
-            r.style.backgroundColor = colors[nextIdx];
-            r.setAttribute('data-clr', nextIdx);
+            let colorIdx = parseInt(r.getAttribute('data-c-idx')) || 0;
+            colorIdx = (colorIdx + 1) % ratingColors.length;
+            
+            r.style.backgroundColor = ratingColors[colorIdx];
+            r.setAttribute('data-c-idx', colorIdx);
         }
     });
 
 })();
-        </script>
+</script>
     
     
 </body>
