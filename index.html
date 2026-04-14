@@ -740,116 +740,141 @@
 
         }
 
-      <style>
-    /* Панель выбора игроков (Админка) */
-    .admin-panel {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        background: rgba(0, 0, 0, 0.8);
-        padding: 15px;
-        border-radius: 10px;
-        color: white;
-        z-index: 9999;
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid #444;
-    }
-    .admin-player-btn {
-        display: block;
-        padding: 5px 10px;
-        margin: 5px 0;
-        background: #333;
-        cursor: pointer;
-        border-radius: 4px;
-        font-size: 14px;
-    }
-    .admin-player-btn:hover { background: #555; }
-
-    /* Исправление стилей */
-    .field { background-size: 100% 100% !important; position: relative !important; }
-    .player { 
-        position: absolute !important; 
-        cursor: move !important; 
-        touch-action: none;
-        display: none; /* Скрыты по умолчанию, пока не выберем в админке */
-    }
-    .player.on-field { display: block !important; }
-    .rating { cursor: pointer !important; }
-</style>
-
-<div class="admin-panel" id="adminPanel">
-    <strong>Выберите игроков на поле:</strong>
-    <div id="playerList"></div>
-</div>
-
-<script>
-(function() {
-    const players = document.querySelectorAll('.player');
-    const playerList = document.getElementById('playerList');
-    const colors = ['#28a745', '#fd7e14', '#dc3545']; // Зеленый, Оранжевый, Красный
-
-    // 1. ЗАПОЛНЯЕМ АДМИНКУ
-    players.forEach((player, index) => {
-        const name = player.querySelector('.player-name')?.innerText || `Игрок ${index + 1}`;
-        const btn = document.createElement('div');
-        btn.className = 'admin-player-btn';
-        btn.innerText = name;
-        btn.onclick = () => {
-            player.classList.toggle('on-field');
-            btn.style.background = player.classList.contains('on-field') ? '#28a745' : '#333';
-        };
-        playerList.appendChild(btn);
-    });
-
-    // 2. СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ (Игнорируем старые скрипты)
-    let activeItem = null;
-    let offset = { x: 0, y: 0 };
-
-    document.addEventListener('mousedown', (e) => {
-        const player = e.target.closest('.player');
-        if (player && !e.target.closest('.rating')) {
-            activeItem = player;
-            const rect = player.getBoundingClientRect();
-            offset.x = e.clientX - rect.left;
-            offset.y = e.clientY - rect.top;
-            player.style.zIndex = 1000;
-        }
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (!activeItem) return;
-        const field = document.querySelector('.field').getBoundingClientRect();
-        let x = e.clientX - field.left - offset.x;
-        let y = e.clientY - field.top - offset.y;
-        
-        activeItem.style.left = x + 'px';
-        activeItem.style.top = y + 'px';
-    });
-
-    document.addEventListener('mouseup', () => {
-        if (activeItem) {
-            activeItem.style.zIndex = '';
-            activeItem = null;
-        }
-    });
-
-    // 3. ЦВЕТ ОЦЕНОК
-    document.addEventListener('click', (e) => {
-        const rating = e.target.closest('.rating');
-        if (rating) {
-            let idx = parseInt(rating.getAttribute('data-c-idx')) || 0;
-            idx = (idx + 1) % colors.length;
-            rating.style.backgroundColor = colors[idx];
-            rating.setAttribute('data-c-idx', idx);
-        }
-    });
-})();
-</script>
-    
+     
         
         // СТАРТ
         nav('matches');
     </script>
+    <style>
+    /* Панель выбора (Админка) */
+    #gemini-admin {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 200px;
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 15px;
+        border: 2px solid #444;
+        border-radius: 8px;
+        z-index: 10000;
+        font-family: sans-serif;
+    }
+    .admin-btn {
+        background: #333;
+        margin: 4px 0;
+        padding: 6px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 12px;
+        border: 1px solid #555;
+    }
+    .admin-btn.active { background: #28a745; border-color: #fff; }
+
+    /* Поле: принудительно растягиваем фон */
+    .field {
+        background-size: 100% 100% !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    /* Игроки: разрешаем свободное движение, игнорируем старые стили */
+    .player {
+        position: absolute !important;
+        cursor: move !important;
+        display: none; /* Скрыты, пока не нажмем в админке */
+        touch-action: none;
+        user-select: none;
+    }
+    .player.active-on-pitch { display: block !important; }
+
+    /* Оценки */
+    .rating { cursor: pointer !important; z-index: 10; }
+</style>
+
+<div id="gemini-admin">
+    <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #555;">СОСТАВ (Кликни)</div>
+    <div id="admin-list"></div>
+</div>
+
+<script>
+// Оборачиваем всё в функцию, чтобы не было конфликта имен
+(function() {
+    // Ждем чуть-чуть, чтобы основной код успел отработать
+    setTimeout(() => {
+        const field = document.querySelector('.field');
+        const players = document.querySelectorAll('.player');
+        const adminList = document.getElementById('admin-list');
+        const colors = ['#28a745', '#fd7e14', '#dc3545']; // Зеленый, Оранжевый, Красный
+
+        if (!field) return console.error("Поле .field не найдено!");
+
+        // 1. НАСТРОЙКА АДМИНКИ И ВЫБОРА
+        players.forEach((p, i) => {
+            const name = p.querySelector('.player-name')?.innerText || `Игрок ${i+1}`;
+            const btn = document.createElement('div');
+            btn.className = 'admin-btn';
+            btn.innerText = name;
+            
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                p.classList.toggle('active-on-pitch');
+                btn.classList.toggle('active');
+                
+                // Ставим игрока в центр, если его только что вывели
+                if(p.classList.contains('active-on-pitch')) {
+                    p.style.left = "50%";
+                    p.style.top = "50%";
+                }
+            };
+            adminList.appendChild(btn);
+        });
+
+        // 2. СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ (УЛЬТРА-ПРОСТОЕ)
+        let dragged = null;
+        let startX, startY, objX, objY;
+
+        document.addEventListener('mousedown', (e) => {
+            const p = e.target.closest('.player');
+            if (p && !e.target.closest('.rating')) {
+                dragged = p;
+                startX = e.clientX;
+                startY = e.clientY;
+                objX = p.offsetLeft;
+                objY = p.offsetTop;
+                p.style.zIndex = 2000;
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!dragged) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            dragged.style.left = (objX + dx) + "px";
+            dragged.style.top = (objY + dy) + "px";
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (dragged) {
+                dragged.style.zIndex = 1000;
+                dragged = null;
+            }
+        });
+
+        // 3. СМЕНА ЦВЕТА ОЦЕНОК
+        document.addEventListener('click', (e) => {
+            const r = e.target.closest('.rating');
+            if (r) {
+                let currentIdx = parseInt(r.getAttribute('data-clr')) || 0;
+                let nextIdx = (currentIdx + 1) % colors.length;
+                r.style.backgroundColor = colors[nextIdx];
+                r.setAttribute('data-clr', nextIdx);
+            }
+        });
+
+    }, 500); // Задержка полсекунды для стабильности
+})();
+</script>
+    
 </body>
 </html>
