@@ -148,7 +148,14 @@
             <div id="mview-det" class="neon-card p-5 space-y-4"></div>
             <div id="mview-line" class="hidden">
                 <div class="pitch w-full h-[480px] mb-4">
-                    <div id="pitch-players"></div>
+                    <div id="pitch-players"><div id="acsor-admin-ui" style="margin: 10px 0; border-top: 1px solid #444; padding-top: 10px;">
+    <button id="acsor-menu-btn" type="button" style="background: #222; color: #fff; border: 1px solid #555; padding: 8px 12px; cursor: pointer; font-size: 13px; border-radius: 4px; width: auto; font-weight: bold;">
+        СОСТАВ НА ПОЛЕ ▼
+    </button>
+    <div id="acsor-players-list" style="display: none; background: #111; border: 1px solid #444; margin-top: 5px; max-height: 200px; overflow-y: auto; padding: 5px; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+        </div>
+                    </div>
+                        
                 </div>
             </div>
             <div id="mview-stat" class="hidden neon-card p-6 space-y-6"></div>
@@ -754,5 +761,162 @@
         // СТАРТ
         nav('matches');
     </script>
+
+<style>
+    /* 1. ДИЗАЙН ПОЛЯ: Темная трава и полосы */
+    #pitch-players {
+        background-color: #163012 !important;
+        background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10%, transparent 10%, transparent 20%) !important;
+        position: relative !important;
+        overflow: hidden !important;
+        border: 2px solid #fff !important;
+        min-height: 500px !important;
+        touch-action: none; /* Важно для мобилы */
+    }
+    
+    /* Линии разметки */
+    .pitch-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
+    /* 2. ИГРОКИ И ОЦЕНКИ (Твои классы!) */
+    .player-node {
+        position: absolute !important; 
+        display: none !important; /* Скрыты до выбора в админке */
+        z-index: 100 !important; 
+        touch-action: none;
+        cursor: grab !important;
+    }
+    .player-node.on-pitch { display: flex !important; }
+    
+    .p-rating { 
+        cursor: pointer !important; 
+        z-index: 101 !important; 
+        font-weight: bold !important;
+        transition: background 0.3s;
+        border-radius: 4px; /* Чтобы красиво смотрелось */
+    }
+
+    /* 3. ОФОРМЛЕНИЕ СПИСКА В МЕНЮ Acsor */
+    .acsor-item { padding: 10px; border-bottom: 1px solid #222; color: #ccc; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .acsor-item.active { color: #2ecc71; background: #1a2a1a; font-weight: bold; }
+    .acsor-item img { width: 20px; height: 20px; border-radius: 50%; margin-right: 10px; }
+</style>
+
+<script>
+(function() {
+    // 1. РИСУЕМ РАЗМЕТКУ (Поле)
+    function initPitch() {
+        const f = document.getElementById('pitch-players');
+        if (f && !document.querySelector('.pitch-svg')) {
+            const lines = `
+            <svg class="pitch-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/>
+                <circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/>
+                <rect x="0" y="25" width="16" height="50" fill="none" stroke="white" stroke-width="0.5"/>
+                <rect x="84" y="25" width="16" height="50" fill="none" stroke="white" stroke-width="0.5"/>
+                <rect x="0" y="38" width="6" height="24" fill="none" stroke="white" stroke-width="0.5"/>
+                <rect x="94" y="38" width="6" height="24" fill="none" stroke="white" stroke-width="0.5"/>
+                <circle cx="50" cy="50" r="0.5" fill="white"/>
+            </svg>`;
+            f.insertAdjacentHTML('afterbegin', lines); // Вставляем вниз, чтобы не перекрыть игроков
+        }
+    }
+
+    // 2. ЦВЕТА ОЦЕНОК (Зеленый, желтый, красный)
+    function updateRatingColors() {
+        document.querySelectorAll('.p-rating').forEach(r => {
+            const val = parseFloat(r.innerText.replace(',', '.'));
+            if (isNaN(val)) return;
+            if (val >= 7.0) { r.style.backgroundColor = '#2ecc71'; r.style.color = '#000'; } // Зеленый
+            else if (val >= 5.0) { r.style.backgroundColor = '#f1c40f'; r.style.color = '#000'; } // Желтый
+            else { r.style.backgroundColor = '#e74c3c'; r.style.color = '#fff'; } // Красный
+        });
+    }
+
+    // 3. ЛОГИКА МЕНЮ УПРАВЛЕНИЯ
+    document.addEventListener('click', (e) => {
+        if (e.target.id === 'acsor-menu-btn') {
+            const list = document.getElementById('acsor-players-list');
+            if (!list) return;
+            
+            if (list.style.display === 'block') {
+                list.style.display = 'none';
+            } else {
+                list.innerHTML = '';
+                // Ищем твоих игроков по новому классу
+                document.querySelectorAll('.player-node').forEach((p, index) => {
+                    // Пытаемся вытащить картинку и оценку, так как имени в блоке нет
+                    const imgDiv = p.querySelector('.p-circle');
+                    const imgUrl = imgDiv ? imgDiv.style.backgroundImage.slice(5, -2) : '';
+                    const rating = p.querySelector('.p-rating')?.innerText || 'Б/О';
+                    
+                    const item = document.createElement('div');
+                    item.className = 'acsor-item' + (p.classList.contains('on-pitch') ? ' active' : '');
+                    
+                    // Показываем мини-аватарку и оценку в списке
+                    let imgTag = imgUrl && imgUrl !== '""' ? `<img src="${imgUrl}">` : `<div style="width:20px;height:20px;background:#555;border-radius:50%;margin-right:10px;"></div>`;
+                    item.innerHTML = `<div style="display:flex; align-items:center;">${imgTag} Игрок ${index+1}</div> <span>${rating}</span>`;
+                    
+                    item.onclick = () => {
+                        const active = p.classList.toggle('on-pitch');
+                        item.classList.toggle('active');
+                        // Если вывели на поле, ставим в центр
+                        if (active) { p.style.left = '45%'; p.style.top = '45%'; }
+                        updateRatingColors();
+                    };
+                    list.appendChild(item);
+                });
+                list.style.display = 'block';
+            }
+        }
+    });
+
+    // 4. ПЕРЕМЕЩЕНИЕ ИГРОКОВ (Тач для телефона)
+    let activeDrag = null;
+    let startX, startY, initX, initY;
+
+    function startDragging(e) {
+        const p = e.target.closest('.player-node');
+        if (p && !e.target.closest('.p-rating')) {
+            activeDrag = p;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            startX = clientX; startY = clientY;
+            initX = p.offsetLeft; initY = p.offsetTop;
+            p.style.zIndex = 5000;
+        }
+    }
+
+    function doDrag(e) {
+        if (!activeDrag) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        activeDrag.style.left = (initX + (clientX - startX)) + 'px';
+        activeDrag.style.top = (initY + (clientY - startY)) + 'px';
+        if (e.touches) e.preventDefault(); // Запрещаем скролл экрана вниз
+    }
+
+    function stopDragging() { 
+        if (activeDrag) activeDrag.style.zIndex = 100;
+        activeDrag = null; 
+    }
+
+    // Слушатели для мыши и пальца
+    document.addEventListener('mousedown', startDragging);
+    document.addEventListener('touchstart', startDragging, { passive: false });
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('touchmove', doDrag, { passive: false });
+    document.addEventListener('mouseup', stopDragging);
+    document.addEventListener('touchend', stopDragging);
+
+    // Запускаем перерисовку и цвета через секунду после открытия вкладки
+    setInterval(() => {
+        initPitch();
+        updateRatingColors();
+    }, 1500);
+
+})();
+</script>
+        
 </body>
 </html>
