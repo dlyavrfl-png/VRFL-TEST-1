@@ -286,6 +286,23 @@
             if(activeClub) renderClubInfo();
         }
 
+        // --- ФУНКЦИИ УДАЛЕНИЯ ---
+        function deleteTour(tIndex) {
+            if(!state.isAdmin) return;
+            if(confirm("Удалить весь тур и все его матчи?")) {
+                state.tours.splice(tIndex, 1);
+                save();
+            }
+        }
+
+        function deleteMatch(tIndex, mIndex) {
+            if(!state.isAdmin) return;
+            if(confirm("Удалить этот матч?")) {
+                state.tours[tIndex].matches.splice(mIndex, 1);
+                save();
+            }
+        }
+
         // АДМИН ПАНЕЛЬ (КОД 4774)
         function requestAdmin() {
             if(state.isAdmin) {
@@ -342,17 +359,23 @@
             container.innerHTML = state.tours.map((tour, tIndex) => `
                 <div class="bg-[#161925] rounded-xl border border-white/5 overflow-hidden shadow-md mb-4">
                     <div class="bg-[#11131c] p-3 flex justify-between items-center border-b border-cyan-500/20">
-                        <h3 class="font-black text-cyan-400 text-[11px] uppercase tracking-wider">${tour.name}</h3>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-black text-cyan-400 text-[11px] uppercase tracking-wider">${tour.name}</h3>
+                            <button onclick="deleteTour(${tIndex})" class="btn-add-match hidden text-red-500 opacity-50 hover:opacity-100 transition">🗑</button>
+                        </div>
                         <button onclick="createNewMatch(${tIndex})" class="btn-add-match hidden bg-cyan-600 hover:bg-cyan-500 text-white text-[9px] font-bold px-2 py-1 rounded transition">+ МАТЧ</button>
                     </div>
                     <div class="p-2 space-y-2">
                         ${tour.matches.length > 0 ? tour.matches.map((m, mIndex) => `
-                            <div onclick="openMatch(${tIndex}, ${mIndex})" class="neon-card p-3 flex justify-between items-center cursor-pointer hover:scale-[1.02] transition">
-                                <span class="font-bold text-[10px] w-[40%] text-right truncate text-gray-300">${m.home}</span>
-                                <span class="font-black text-sm w-[20%] text-center ${m.status==='LIVE'?'text-red-500':(m.status==='FT'?'text-cyan-400':'text-gray-500')}">
-                                    ${m.status === 'UPC' ? 'VS' : `${m.hScore} - ${m.aScore}`}
-                                </span>
-                                <span class="font-bold text-[10px] w-[40%] text-left truncate text-gray-300">${m.away}</span>
+                            <div class="flex gap-1 items-center">
+                                <div onclick="openMatch(${tIndex}, ${mIndex})" class="neon-card p-3 flex-1 flex justify-between items-center cursor-pointer hover:scale-[1.01] transition">
+                                    <span class="font-bold text-[10px] w-[40%] text-right truncate text-gray-300">${m.home}</span>
+                                    <span class="font-black text-sm w-[20%] text-center ${m.status==='LIVE'?'text-red-500':(m.status==='FT'?'text-cyan-400':'text-gray-500')}">
+                                        ${m.status === 'UPC' ? 'VS' : `${m.hScore} - ${m.aScore}`}
+                                    </span>
+                                    <span class="font-bold text-[10px] w-[40%] text-left truncate text-gray-300">${m.away}</span>
+                                </div>
+                                <button onclick="deleteMatch(${tIndex}, ${mIndex})" class="btn-add-match hidden bg-red-900/20 p-3 rounded-lg text-red-500 text-xs hover:bg-red-900/40 transition">✕</button>
                             </div>
                         `).join('') : '<p class="text-[9px] text-gray-500 text-center py-2">Матчи не назначены</p>'}
                     </div>
@@ -505,7 +528,7 @@
             }
             save(); openMatch(activeTourId, activeMatchId);
         }
-
+        
         // --- КЛУБЫ ---
         let activeClub = null;
         function openClubPage(name) {
@@ -586,7 +609,7 @@
             const p = { id: Date.now(), name: name, img: '', r: 6.0, g: 0, a: 0, s: 0, st: 0, t: 0, pos: {t: '50%', l: '50%'}, prof: {cit: '-', rating: '60', pos: '-', foot: '-', val: '-'} };
             state.teams[activeClub].players.push(p); save(); renderClubInfo();
         }
-        
+
         // --- ПРОФИЛЬ ИГРОКА (ПОЛНЫЙ) ---
         let activeProfId = null;
         function openProfileModal(id) {
