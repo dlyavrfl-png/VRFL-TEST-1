@@ -748,116 +748,138 @@
         
             <script>
              
-(function() {
-    // 1. ПРИНУДИТЕЛЬНЫЙ ФИКС ПОЛЯ (ЧЕРЕЗ CSS ИНЪЕКЦИЮ)
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .field {
-            background: #2d5a27 !important;
-            background-image: 
-                linear-gradient(90deg, transparent 49.5%, #fff 49.5%, #fff 50.5%, transparent 50.5%),
-                linear-gradient(#fff 2px, transparent 2px),
-                linear-gradient(90deg, #fff 2px, transparent 2px),
-                linear-gradient(90deg, transparent 98%, #fff 98%),
-                linear-gradient(transparent 98%, #fff 98%),
-                radial-gradient(circle at center, transparent 40%, #fff 40%, #fff 41%, transparent 41%) !important;
-            background-size: 100% 100%, 50% 50%, 50% 50%, 100% 100%, 100% 100%, 20% 32% !important;
-            background-position: center !important;
-            border: 4px solid #fff !important;
-            position: relative !important;
-        }
-        .player {
-            position: absolute !important;
-            display: none !important;
-            z-index: 999 !important;
-            cursor: move !important;
-            touch-action: none !important;
-            user-select: none !important;
-        }
-        .player.active-on-pitch { display: flex !important; }
-        .rating { cursor: pointer !important; z-index: 1000 !important; }
-    `;
-    document.head.appendChild(style);
-
-    // 2. СОЗДАНИЕ ПАНЕЛИ УПРАВЛЕНИЯ (МАЛЕНЬКАЯ КНОПКА В УГЛУ)
-    const adminWrap = document.createElement('div');
-    adminWrap.id = 'gemini-final-admin';
-    adminWrap.style.cssText = 'position:fixed; bottom:10px; right:10px; z-index:9999999; font-family:Arial;';
-    
-    const btn = document.createElement('button');
-    btn.innerText = 'СОСТАВ';
-    btn.style.cssText = 'background:#f00; color:#fff; border:none; padding:8px 12px; cursor:pointer; font-weight:bold; border-radius:5px;';
-    
-    const list = document.createElement('div');
-    list.style.cssText = 'display:none; background:#000; border:2px solid #444; padding:10px; margin-bottom:5px; width:200px; max-height:300px; overflow-y:auto; border-radius:8px;';
-    
-    adminWrap.appendChild(list);
-    adminWrap.appendChild(btn);
-    document.body.appendChild(adminWrap);
-
-    btn.onclick = () => { list.style.display = list.style.display === 'block' ? 'none' : 'block'; };
-
-    // 3. ЛОГИКА ИГРОКОВ
-    function syncPlayers() {
-        document.querySelectorAll('.player').forEach((p, i) => {
-            if (p.dataset.scannedByMe) return;
-            p.dataset.scannedByMe = "true";
-            p.style.display = 'none';
-
-            const name = p.querySelector('.player-name')?.innerText || `Игрок ${i+1}`;
-            const pBtn = document.createElement('div');
-            pBtn.innerText = name;
-            pBtn.style.cssText = 'background:#222; color:#fff; padding:5px; margin:3px 0; cursor:pointer; font-size:12px; border:1px solid #333;';
-            
-            pBtn.onclick = () => {
-                const isOn = p.classList.toggle('active-on-pitch');
-                pBtn.style.background = isOn ? '#28a745' : '#222';
-                if(isOn) { p.style.left = '50%'; p.style.top = '50%'; }
-            };
-            list.appendChild(pBtn);
-        });
+            <style>
+    /* ПРИНУДИТЕЛЬНОЕ ПОЛЕ: Газон, ворота, штрафная, круг */
+    .field {
+        background: #1e3d1a !important; /* Темный газон */
+        background-image: 
+            linear-gradient(90deg, rgba(255,255,255,0.1) 50%, transparent 50%),
+            radial-gradient(circle at center, transparent 39%, #fff 40%, #fff 41%, transparent 42%),
+            linear-gradient(90deg, #fff 2px, transparent 2px),
+            linear-gradient(90deg, transparent 99%, #fff 99%) !important;
+        background-size: 80px 100%, 150px 150px, 50% 100%, 100% 100% !important;
+        background-position: center !important;
+        border: 4px solid #fff !important;
+        position: relative !important;
+        height: 600px !important;
+        overflow: hidden !important;
     }
-    setInterval(syncPlayers, 1000);
+    /* Отрисовка зон через псевдоэлементы, чтобы не грузить код */
+    .field::before { content: ''; position: absolute; top: 20%; left: 0; width: 15%; height: 60%; border: 2px solid #fff; z-index: 1; pointer-events: none; }
+    .field::after { content: ''; position: absolute; top: 20%; right: 0; width: 15%; height: 60%; border: 2px solid #fff; z-index: 1; pointer-events: none; }
 
-    // 4. ПЕРЕМЕЩЕНИЕ (ГЛОБАЛЬНЫЙ ПЕРЕХВАТ)
-    let dragTarget = null;
-    let sX, sY, pX, pY;
+    /* ИГРОКИ: Скрыты наглухо, пока не вызваны */
+    .player {
+        position: absolute !important;
+        display: none !important;
+        z-index: 100 !important;
+        cursor: grab !important;
+        touch-action: none !important;
+    }
+    .player.active-on-field { display: flex !important; }
+    .rating { cursor: pointer !important; z-index: 101 !important; border-radius: 50% !important; }
 
+    /* КНОПКА В АДМИНКЕ (Стили) */
+    .my-admin-btn {
+        background: #d90429; color: #fff; border: none; padding: 6px 12px;
+        border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; margin: 5px;
+    }
+    .my-admin-panel {
+        background: #111; border: 1px solid #444; padding: 10px;
+        display: none; position: absolute; z-index: 9999; width: 200px; max-height: 250px; overflow-y: auto;
+    }
+    .p-row { padding: 5px; border-bottom: 1px solid #333; cursor: pointer; font-size: 12px; color: #eee; }
+    .p-row:hover { background: #222; }
+    .p-row.on { color: #2ecc71; font-weight: bold; }
+</style>
+
+<script>
+(function() {
+    // 1. АВТО-ВСТАВКА КНОПКИ В ТВОЮ АДМИНКУ
+    function injectAdmin() {
+        if (document.getElementById('auto-admin-ready')) return;
+        
+        // Ищем твой раздел админки по тексту "Состав в матче" или похожим
+        const panels = document.querySelectorAll('div, section, h3, b');
+        let target = null;
+        panels.forEach(el => {
+            if (el.innerText.includes('СОСТАВ В МАТЧЕ') || el.innerText.includes('Состав в матче')) {
+                target = el.parentElement;
+            }
+        });
+
+        if (!target) return; // Ждем появления админки
+
+        const wrap = document.createElement('div');
+        wrap.id = 'auto-admin-ready';
+        wrap.innerHTML = `
+            <button class="my-admin-btn" id="open-roster">ИГРОКИ НА ПОЛЕ ▼</button>
+            <div class="my-admin-panel" id="roster-panel"></div>
+        `;
+        target.appendChild(wrap);
+
+        const btn = document.getElementById('open-roster');
+        const panel = document.getElementById('roster-panel');
+        btn.onclick = (e) => { 
+            e.preventDefault();
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block'; 
+        };
+
+        // 2. СИНХРОНИЗАЦИЯ ИГРОКОВ
+        function sync() {
+            const players = document.querySelectorAll('.player');
+            players.forEach((p, i) => {
+                if (p.dataset.scanned) return;
+                p.dataset.scanned = "true";
+                p.style.display = 'none'; // Скрываем всех сразу
+
+                const name = p.querySelector('.player-name')?.innerText || `Игрок ${i+1}`;
+                const row = document.createElement('div');
+                row.className = 'p-row';
+                row.innerText = name;
+                
+                row.onclick = () => {
+                    const isOn = p.classList.toggle('active-on-field');
+                    row.classList.toggle('on');
+                    if (isOn) { p.style.left = '45%'; p.style.top = '45%'; }
+                };
+                panel.appendChild(row);
+            });
+        }
+        setInterval(sync, 1000);
+        sync();
+    }
+
+    // Запускаем поиск твоей админки
+    setInterval(injectAdmin, 1000);
+
+    // 3. ПЕРЕМЕЩЕНИЕ И ОЦЕНКИ
+    let drag = null, sx, sy, ox, oy;
     document.addEventListener('mousedown', (e) => {
         const p = e.target.closest('.player');
         if (p && !e.target.closest('.rating')) {
-            dragTarget = p;
-            sX = e.clientX; sY = e.clientY;
-            pX = p.offsetLeft; pY = p.offsetTop;
-            p.style.zIndex = 10000;
-            e.preventDefault();
+            drag = p; sx = e.clientX; sy = e.clientY;
+            ox = p.offsetLeft; oy = p.offsetTop;
+            p.style.zIndex = 1000;
         }
-    }, true);
-
-    document.addEventListener('mousemove', (e) => {
-        if (!dragTarget) return;
-        const dx = e.clientX - sX;
-        const dy = e.clientY - sY;
-        dragTarget.style.left = (pX + dx) + 'px';
-        dragTarget.style.top = (pY + dy) + 'px';
-    }, true);
-
-    document.addEventListener('mouseup', () => { 
-        if(dragTarget) dragTarget.style.zIndex = 999;
-        dragTarget = null; 
-    }, true);
-
-    // 5. ЦВЕТА ОЦЕНОК
-    const clrs = ['#28a745', '#ff8c00', '#ff0000'];
-    document.addEventListener('click', (e) => {
+        // Смена цвета оценки
         const r = e.target.closest('.rating');
         if (r) {
-            let cur = parseInt(r.dataset.c) || 0;
-            cur = (cur + 1) % clrs.length;
-            r.style.backgroundColor = clrs[cur];
-            r.dataset.c = cur;
+            const colors = ['#28a745', '#f1c40f', '#e74c3c'];
+            let c = parseInt(r.dataset.c) || 0;
+            c = (c + 1) % colors.length;
+            r.style.backgroundColor = colors[c];
+            r.dataset.c = c;
         }
-    }, true);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!drag) return;
+        drag.style.left = (ox + (e.clientX - sx)) + 'px';
+        drag.style.top = (oy + (e.clientY - sy)) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => { if(drag) drag.style.zIndex = 100; drag = null; });
 })();
 </script>
     
