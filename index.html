@@ -256,13 +256,13 @@
     <input type="file" id="img-input" class="hidden" accept="image/*">
 
     <script>
-        // СПЛЭШ ЭКРАН (ЗАГРУЗКА УСКОРЕНА ДО 0.3 сек)
+        // СПЛЭШ ЭКРАН (ЗАГРУЗКА УСКОРЕНА ДО 1.5 сек)
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
                 splash.style.opacity = '0';
-                setTimeout(() => splash.style.display = 'none', 300);
-            }, 300); 
+                setTimeout(() => splash.style.display = 'none', 500);
+            }, 500); 
         });
 
         // ИНИЦИАЛИЗАЦИЯ ДАННЫХ (ИСПРАВЛЕНА ОШИБКА ОБЪЕКТА И ДОБАВЛЕНЫ ТУРЫ)
