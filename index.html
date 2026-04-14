@@ -740,55 +740,95 @@
             input.click();
         }
 
-        // Логика перемещения игроков
+// --- 1. СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ ИГРОКОВ ---
 const players = document.querySelectorAll('.player');
-let isDragging = false;
-let currentPlayer = null;
+let activePlayer = null;
+let offsetX = 0;
+let offsetY = 0;
 
+// Функция начала перетаскивания (работает и для мыши, и для пальца)
+function startDrag(e) {
+    activePlayer = this;
+    
+    // Определяем координаты в зависимости от устройства
+    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+    const rect = activePlayer.getBoundingClientRect();
+    offsetX = clientX - rect.left;
+    offsetY = clientY - rect.top;
+
+    activePlayer.style.position = 'absolute';
+    activePlayer.style.zIndex = 1000; // Выводим игрока на передний план
+    activePlayer.style.cursor = 'grabbing';
+}
+
+// Функция самого перемещения
+function doDrag(e) {
+    if (!activePlayer) return;
+    
+    // Отключаем стандартный скролл страницы при перетаскивании на телефоне
+    if (e.type.includes('touch')) e.preventDefault();
+
+    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+    // Просто задаем новые координаты без ограничений
+    activePlayer.style.left = (clientX - offsetX) + 'px';
+    activePlayer.style.top = (clientY - offsetY) + 'px';
+}
+
+// Функция завершения перетаскивания
+function endDrag() {
+    if (activePlayer) {
+        activePlayer.style.zIndex = '';
+        activePlayer.style.cursor = 'grab';
+        activePlayer = null;
+    }
+}
+
+// Навешиваем события на каждого игрока
 players.forEach(player => {
-    player.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        currentPlayer = player;
+    player.style.cursor = 'grab';
+    player.addEventListener('mousedown', startDrag);
+    player.addEventListener('touchstart', startDrag, { passive: false });
+});
+
+// Слушаем движение и отпускание по всему документу
+document.addEventListener('mousemove', doDrag);
+document.addEventListener('touchmove', doDrag, { passive: false });
+document.addEventListener('mouseup', endDrag);
+document.addEventListener('touchend', endDrag);
+
+
+// --- 2. СМЕНА ЦВЕТА ОЦЕНОК ---
+// Убедитесь, что у элементов с оценками стоит класс "rating"
+const ratings = document.querySelectorAll('.rating');
+const colors = ['#28a745', '#fd7e14', '#dc3545']; // Зеленый, оранжевый, красный
+
+ratings.forEach(rating => {
+    // Устанавливаем базовые параметры
+    rating.dataset.colorIndex = 0;
+    rating.style.backgroundColor = colors[0]; 
+    rating.style.color = '#fff'; // Белый текст для контраста
+    rating.style.cursor = 'pointer';
+
+    // Чтобы при клике на оценку игрок не начинал перетаскиваться
+    rating.addEventListener('mousedown', (e) => e.stopPropagation());
+    rating.addEventListener('touchstart', (e) => e.stopPropagation());
+
+    // Переключение цвета по клику
+    rating.addEventListener('click', (e) => {
+        e.stopPropagation(); // Блокируем лишние срабатывания
         
-        // Вычисляем смещение курсора относительно края элемента
-        const rect = player.getBoundingClientRect();
-        player.dataset.offsetX = e.clientX - rect.left;
-        player.dataset.offsetY = e.clientY - rect.top;
+        let currentIndex = parseInt(rating.dataset.colorIndex);
+        let nextIndex = (currentIndex + 1) % colors.length; // Переход по кругу (0 -> 1 -> 2 -> 0)
         
-        player.style.cursor = 'grabbing';
-        player.style.zIndex = 1000; // Поднимаем над другими
+        rating.dataset.colorIndex = nextIndex;
+        rating.style.backgroundColor = colors[nextIndex];
     });
 });
-
-document.addEventListener('mousemove', (e) => {
-    if (!isDragging || !currentPlayer) return;
-
-    // Рассчитываем новые координаты
-    const field = document.querySelector('.field'); // Убедитесь, что класс поля верный
-    const fieldRect = field.getBoundingClientRect();
-    
-    let x = e.clientX - fieldRect.left - parseFloat(currentPlayer.dataset.offsetX);
-    let y = e.clientY - fieldRect.top - parseFloat(currentPlayer.dataset.offsetY);
-
-    // Ограничение перемещения внутри поля
-    x = Math.max(0, Math.min(x, fieldRect.width - currentPlayer.offsetWidth));
-    y = Math.max(0, Math.min(y, fieldRect.height - currentPlayer.offsetHeight));
-
-    currentPlayer.style.left = `${x}px`;
-    currentPlayer.style.top = `${y}px`;
-    currentPlayer.style.position = 'absolute';
-});
-
-document.addEventListener('mouseup', () => {
-    if (currentPlayer) {
-        currentPlayer.style.cursor = 'grab';
-        currentPlayer.style.zIndex = '';
-    }
-    isDragging = false;
-    currentPlayer = null;
-});
         
-
         // СТАРТ
         nav('matches');
     </script>
