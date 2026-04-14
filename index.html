@@ -748,139 +748,194 @@
         
             <script>
              
-            <style>
-    /* ПРИНУДИТЕЛЬНОЕ ПОЛЕ: Газон, ворота, штрафная, круг */
+                    <style>
+    /* 1. ФУТБОЛЬНОЕ ПОЛЕ (Горизонтальные полосы) */
     .field {
-        background: #1e3d1a !important; /* Темный газон */
-        background-image: 
-            linear-gradient(90deg, rgba(255,255,255,0.1) 50%, transparent 50%),
-            radial-gradient(circle at center, transparent 39%, #fff 40%, #fff 41%, transparent 42%),
-            linear-gradient(90deg, #fff 2px, transparent 2px),
-            linear-gradient(90deg, transparent 99%, #fff 99%) !important;
-        background-size: 80px 100%, 150px 150px, 50% 100%, 100% 100% !important;
-        background-position: center !important;
-        border: 4px solid #fff !important;
+        background-color: #1a4314 !important; /* Тёмно-зелёный */
+        background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10%, transparent 10%, transparent 20%) !important;
         position: relative !important;
-        height: 600px !important;
         overflow: hidden !important;
+        border: 2px solid #fff !important;
     }
-    /* Отрисовка зон через псевдоэлементы, чтобы не грузить код */
-    .field::before { content: ''; position: absolute; top: 20%; left: 0; width: 15%; height: 60%; border: 2px solid #fff; z-index: 1; pointer-events: none; }
-    .field::after { content: ''; position: absolute; top: 20%; right: 0; width: 15%; height: 60%; border: 2px solid #fff; z-index: 1; pointer-events: none; }
 
-    /* ИГРОКИ: Скрыты наглухо, пока не вызваны */
+    /* Линии разметки (вставляются скриптом, чтобы не ломать твой код) */
+    .pitch-lines {
+        position: absolute !important;
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none !important; /* Чтобы не мешали кликать на игроков */
+        z-index: 1 !important;
+    }
+
+    /* 2. ИГРОКИ (Скрыты, пока не выберешь) */
     .player {
         position: absolute !important;
         display: none !important;
         z-index: 100 !important;
-        cursor: grab !important;
+        cursor: pointer !important;
         touch-action: none !important;
+        user-select: none !important;
     }
-    .player.active-on-field { display: flex !important; }
-    .rating { cursor: pointer !important; z-index: 101 !important; border-radius: 50% !important; }
+    .player.on-pitch { display: flex !important; }
 
-    /* КНОПКА В АДМИНКЕ (Стили) */
-    .my-admin-btn {
-        background: #d90429; color: #fff; border: none; padding: 6px 12px;
-        border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; margin: 5px;
+    /* Оценки */
+    .rating { cursor: pointer !important; z-index: 101 !important; }
+
+    /* 3. КОМПАКТНАЯ АДМИНКА (Кнопка и список) */
+    .acsor-admin-btn {
+        background: #2b2b2b; color: #fff; border: 1px solid #555;
+        padding: 5px 10px; cursor: pointer; font-size: 13px; font-weight: bold;
+        border-radius: 4px; display: inline-block; margin-top: 5px;
     }
-    .my-admin-panel {
-        background: #111; border: 1px solid #444; padding: 10px;
-        display: none; position: absolute; z-index: 9999; width: 200px; max-height: 250px; overflow-y: auto;
+    .acsor-admin-btn:hover { background: #444; }
+    
+    .acsor-roster-box {
+        display: none; background: #111; border: 1px solid #444;
+        width: 250px; max-height: 250px; overflow-y: auto;
+        padding: 5px; margin-top: 5px; border-radius: 4px;
+        position: absolute; z-index: 99999;
     }
-    .p-row { padding: 5px; border-bottom: 1px solid #333; cursor: pointer; font-size: 12px; color: #eee; }
-    .p-row:hover { background: #222; }
-    .p-row.on { color: #2ecc71; font-weight: bold; }
+    .acsor-player-row {
+        padding: 5px; border-bottom: 1px solid #333; color: #ccc;
+        cursor: pointer; font-size: 12px;
+    }
+    .acsor-player-row:hover { background: #222; }
+    .acsor-player-row.active { color: #2ecc71; font-weight: bold; background: #1a3320; }
 </style>
 
 <script>
-(function() {
-    // 1. АВТО-ВСТАВКА КНОПКИ В ТВОЮ АДМИНКУ
-    function injectAdmin() {
-        if (document.getElementById('auto-admin-ready')) return;
-        
-        // Ищем твой раздел админки по тексту "Состав в матче" или похожим
-        const panels = document.querySelectorAll('div, section, h3, b');
-        let target = null;
-        panels.forEach(el => {
-            if (el.innerText.includes('СОСТАВ В МАТЧЕ') || el.innerText.includes('Состав в матче')) {
-                target = el.parentElement;
-            }
-        });
-
-        if (!target) return; // Ждем появления админки
-
-        const wrap = document.createElement('div');
-        wrap.id = 'auto-admin-ready';
-        wrap.innerHTML = `
-            <button class="my-admin-btn" id="open-roster">ИГРОКИ НА ПОЛЕ ▼</button>
-            <div class="my-admin-panel" id="roster-panel"></div>
-        `;
-        target.appendChild(wrap);
-
-        const btn = document.getElementById('open-roster');
-        const panel = document.getElementById('roster-panel');
-        btn.onclick = (e) => { 
-            e.preventDefault();
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block'; 
-        };
-
-        // 2. СИНХРОНИЗАЦИЯ ИГРОКОВ
-        function sync() {
-            const players = document.querySelectorAll('.player');
-            players.forEach((p, i) => {
-                if (p.dataset.scanned) return;
-                p.dataset.scanned = "true";
-                p.style.display = 'none'; // Скрываем всех сразу
-
-                const name = p.querySelector('.player-name')?.innerText || `Игрок ${i+1}`;
-                const row = document.createElement('div');
-                row.className = 'p-row';
-                row.innerText = name;
-                
-                row.onclick = () => {
-                    const isOn = p.classList.toggle('active-on-field');
-                    row.classList.toggle('on');
-                    if (isOn) { p.style.left = '45%'; p.style.top = '45%'; }
-                };
-                panel.appendChild(row);
-            });
-        }
-        setInterval(sync, 1000);
-        sync();
+// Ждем полной загрузки страницы, чтобы ничего не зависло
+window.addEventListener('load', function() {
+    
+    // 1. РИСУЕМ РАЗМЕТКУ ПОЛЯ (Штрафные, вратарские, круг, ворота)
+    const field = document.querySelector('.field');
+    if (field) {
+        const svgLines = `
+        <svg class="pitch-lines" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <line x1="50%" y1="0" x2="50%" y2="100%" stroke="white" stroke-width="2"/>
+            <circle cx="50%" cy="50%" r="15%" fill="none" stroke="white" stroke-width="2"/>
+            <circle cx="50%" cy="50%" r="2" fill="white"/>
+            
+            <rect x="0" y="20%" width="16%" height="60%" fill="none" stroke="white" stroke-width="2"/>
+            <rect x="0" y="35%" width="5%" height="30%" fill="none" stroke="white" stroke-width="2"/>
+            <rect x="-2%" y="42%" width="2%" height="16%" fill="none" stroke="white" stroke-width="4"/> <circle cx="11%" cy="50%" r="2" fill="white"/> <path d="M 16% 35% A 10% 10% 0 0 1 16% 65%" fill="none" stroke="white" stroke-width="2"/> <rect x="84%" y="20%" width="16%" height="60%" fill="none" stroke="white" stroke-width="2"/>
+            <rect x="95%" y="35%" width="5%" height="30%" fill="none" stroke="white" stroke-width="2"/>
+            <rect x="100%" y="42%" width="2%" height="16%" fill="none" stroke="white" stroke-width="4"/> <circle cx="89%" cy="50%" r="2" fill="white"/> <path d="M 84% 35% A 10% 10% 0 0 0 84% 65%" fill="none" stroke="white" stroke-width="2"/> </svg>`;
+        // Аккуратно добавляем линии, не ломая твоих игроков внутри
+        field.insertAdjacentHTML('beforeend', svgLines);
     }
 
-    // Запускаем поиск твоей админки
-    setInterval(injectAdmin, 1000);
+    // 2. ИЩЕМ АДМИНКУ И СТАВИМ МАЛЕНЬКУЮ КНОПКУ
+    const allTextElements = document.querySelectorAll('div, section, h3, h2, span, b, p');
+    let targetContainer = null;
+    
+    // Ищем текст про состав
+    for (let el of allTextElements) {
+        if (el.innerText && (el.innerText.includes('СОСТАВ В МАТЧЕ') || el.innerText.includes('Состав в матче'))) {
+            targetContainer = el.parentElement;
+            break;
+        }
+    }
 
-    // 3. ПЕРЕМЕЩЕНИЕ И ОЦЕНКИ
-    let drag = null, sx, sy, ox, oy;
+    if (targetContainer) {
+        // Создаем кнопку и список
+        const controlWrap = document.createElement('div');
+        controlWrap.style.position = 'relative';
+        
+        const btn = document.createElement('button');
+        btn.className = 'acsor-admin-btn';
+        btn.innerText = 'УПРАВЛЕНИЕ ПОЛЕМ ▼';
+        
+        const list = document.createElement('div');
+        list.className = 'acsor-roster-box';
+        
+        controlWrap.appendChild(btn);
+        controlWrap.appendChild(list);
+        targetContainer.appendChild(controlWrap);
+
+        // Открытие списка и загрузка игроков (только по клику, чтобы не грузить проц!)
+        btn.onclick = (e) => {
+            e.preventDefault();
+            if (list.style.display === 'block') {
+                list.style.display = 'none';
+            } else {
+                list.innerHTML = ''; // Очищаем и заполняем заново
+                const players = document.querySelectorAll('.player');
+                
+                players.forEach((p, i) => {
+                    const name = p.querySelector('.player-name')?.innerText || `Игрок ${i+1}`;
+                    const row = document.createElement('div');
+                    row.className = 'acsor-player-row';
+                    if (p.classList.contains('on-pitch')) row.classList.add('active');
+                    row.innerText = name;
+                    
+                    // Клик по игроку в списке: добавить/убрать
+                    row.onclick = () => {
+                        const isOn = p.classList.toggle('on-pitch');
+                        row.classList.toggle('active');
+                        // Если добавили - кидаем в центр
+                        if (isOn) {
+                            p.style.left = '50%';
+                            p.style.top = '50%';
+                        }
+                    };
+                    list.appendChild(row);
+                });
+                list.style.display = 'block';
+            }
+        };
+    }
+
+    // 3. ПЕРЕМЕЩЕНИЕ ИГРОКОВ (Зажал - потащил)
+    let draggedPlayer = null;
+    let shiftX = 0, shiftY = 0;
+
     document.addEventListener('mousedown', (e) => {
+        // Проверяем, что нажали на игрока, но не на оценку
         const p = e.target.closest('.player');
         if (p && !e.target.closest('.rating')) {
-            drag = p; sx = e.clientX; sy = e.clientY;
-            ox = p.offsetLeft; oy = p.offsetTop;
-            p.style.zIndex = 1000;
-        }
-        // Смена цвета оценки
-        const r = e.target.closest('.rating');
-        if (r) {
-            const colors = ['#28a745', '#f1c40f', '#e74c3c'];
-            let c = parseInt(r.dataset.c) || 0;
-            c = (c + 1) % colors.length;
-            r.style.backgroundColor = colors[c];
-            r.dataset.c = c;
+            draggedPlayer = p;
+            const rect = p.getBoundingClientRect();
+            shiftX = e.clientX - rect.left;
+            shiftY = e.clientY - rect.top;
+            p.style.zIndex = 5000; // Поднимаем над всеми
         }
     });
 
     document.addEventListener('mousemove', (e) => {
-        if (!drag) return;
-        drag.style.left = (ox + (e.clientX - sx)) + 'px';
-        drag.style.top = (oy + (e.clientY - sy)) + 'px';
+        if (!draggedPlayer) return;
+        const f = document.querySelector('.field');
+        if (!f) return;
+        
+        const fRect = f.getBoundingClientRect();
+        let newX = e.clientX - fRect.left - shiftX;
+        let newY = e.clientY - fRect.top - shiftY;
+        
+        draggedPlayer.style.left = newX + 'px';
+        draggedPlayer.style.top = newY + 'px';
     });
 
-    document.addEventListener('mouseup', () => { if(drag) drag.style.zIndex = 100; drag = null; });
-})();
+    document.addEventListener('mouseup', () => {
+        if (draggedPlayer) {
+            draggedPlayer.style.zIndex = 100;
+            draggedPlayer = null;
+        }
+    });
+
+    // 4. СМЕНА ЦВЕТА ОЦЕНОК (По клику)
+    const ratingColors = ['#28a745', '#f1c40f', '#e74c3c']; // Зеленый, желтый, красный
+    document.addEventListener('click', (e) => {
+        const ratingBtn = e.target.closest('.rating');
+        if (ratingBtn) {
+            let currentColorIndex = parseInt(ratingBtn.getAttribute('data-color-idx')) || 0;
+            currentColorIndex = (currentColorIndex + 1) % ratingColors.length;
+            
+            ratingBtn.style.backgroundColor = ratingColors[currentColorIndex];
+            ratingBtn.getAttribute('data-color-idx', currentColorIndex);
+            ratingBtn.setAttribute('data-color-idx', currentColorIndex);
+        }
+    });
+
+});
 </script>
     
 </body>
