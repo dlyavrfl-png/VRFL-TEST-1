@@ -740,7 +740,113 @@
 
         }
 
-      
+      <style>
+    /* Панель выбора игроков (Админка) */
+    .admin-panel {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 15px;
+        border-radius: 10px;
+        color: white;
+        z-index: 9999;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #444;
+    }
+    .admin-player-btn {
+        display: block;
+        padding: 5px 10px;
+        margin: 5px 0;
+        background: #333;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .admin-player-btn:hover { background: #555; }
+
+    /* Исправление стилей */
+    .field { background-size: 100% 100% !important; position: relative !important; }
+    .player { 
+        position: absolute !important; 
+        cursor: move !important; 
+        touch-action: none;
+        display: none; /* Скрыты по умолчанию, пока не выберем в админке */
+    }
+    .player.on-field { display: block !important; }
+    .rating { cursor: pointer !important; }
+</style>
+
+<div class="admin-panel" id="adminPanel">
+    <strong>Выберите игроков на поле:</strong>
+    <div id="playerList"></div>
+</div>
+
+<script>
+(function() {
+    const players = document.querySelectorAll('.player');
+    const playerList = document.getElementById('playerList');
+    const colors = ['#28a745', '#fd7e14', '#dc3545']; // Зеленый, Оранжевый, Красный
+
+    // 1. ЗАПОЛНЯЕМ АДМИНКУ
+    players.forEach((player, index) => {
+        const name = player.querySelector('.player-name')?.innerText || `Игрок ${index + 1}`;
+        const btn = document.createElement('div');
+        btn.className = 'admin-player-btn';
+        btn.innerText = name;
+        btn.onclick = () => {
+            player.classList.toggle('on-field');
+            btn.style.background = player.classList.contains('on-field') ? '#28a745' : '#333';
+        };
+        playerList.appendChild(btn);
+    });
+
+    // 2. СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ (Игнорируем старые скрипты)
+    let activeItem = null;
+    let offset = { x: 0, y: 0 };
+
+    document.addEventListener('mousedown', (e) => {
+        const player = e.target.closest('.player');
+        if (player && !e.target.closest('.rating')) {
+            activeItem = player;
+            const rect = player.getBoundingClientRect();
+            offset.x = e.clientX - rect.left;
+            offset.y = e.clientY - rect.top;
+            player.style.zIndex = 1000;
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!activeItem) return;
+        const field = document.querySelector('.field').getBoundingClientRect();
+        let x = e.clientX - field.left - offset.x;
+        let y = e.clientY - field.top - offset.y;
+        
+        activeItem.style.left = x + 'px';
+        activeItem.style.top = y + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (activeItem) {
+            activeItem.style.zIndex = '';
+            activeItem = null;
+        }
+    });
+
+    // 3. ЦВЕТ ОЦЕНОК
+    document.addEventListener('click', (e) => {
+        const rating = e.target.closest('.rating');
+        if (rating) {
+            let idx = parseInt(rating.getAttribute('data-c-idx')) || 0;
+            idx = (idx + 1) % colors.length;
+            rating.style.backgroundColor = colors[idx];
+            rating.setAttribute('data-c-idx', idx);
+        }
+    });
+})();
+</script>
+    
         
         // СТАРТ
         nav('matches');
