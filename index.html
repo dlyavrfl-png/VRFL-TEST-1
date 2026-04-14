@@ -740,94 +740,126 @@
             input.click();
         }
 
-// --- 1. СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ ИГРОКОВ ---
-const players = document.querySelectorAll('.player');
-let activePlayer = null;
-let offsetX = 0;
-let offsetY = 0;
-
-// Функция начала перетаскивания (работает и для мыши, и для пальца)
-function startDrag(e) {
-    activePlayer = this;
-    
-    // Определяем координаты в зависимости от устройства
-    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-
-    const rect = activePlayer.getBoundingClientRect();
-    offsetX = clientX - rect.left;
-    offsetY = clientY - rect.top;
-
-    activePlayer.style.position = 'absolute';
-    activePlayer.style.zIndex = 1000; // Выводим игрока на передний план
-    activePlayer.style.cursor = 'grabbing';
+        <style>
+/* 1. ИСПРАВЛЕНИЕ ДИЗАЙНА ПОЛЯ */
+.field {
+    /* Растягиваем фон поля ровно по контейнеру, чтобы оно не было другим */
+    background-size: 100% 100% !important; 
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    position: relative !important; 
 }
 
-// Функция самого перемещения
-function doDrag(e) {
-    if (!activePlayer) return;
-    
-    // Отключаем стандартный скролл страницы при перетаскивании на телефоне
-    if (e.type.includes('touch')) e.preventDefault();
-
-    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-
-    // Просто задаем новые координаты без ограничений
-    activePlayer.style.left = (clientX - offsetX) + 'px';
-    activePlayer.style.top = (clientY - offsetY) + 'px';
+/* 2. СТИЛИ ДЛЯ ИГРОКОВ И ОЦЕНОК */
+.player {
+    position: absolute !important; /* Обязательно для перемещения */
+    cursor: grab;
+    touch-action: none; /* Запрещаем скролл экрана при перетаскивании с телефона */
 }
 
-// Функция завершения перетаскивания
-function endDrag() {
-    if (activePlayer) {
-        activePlayer.style.zIndex = '';
-        activePlayer.style.cursor = 'grab';
-        activePlayer = null;
+.player:active {
+    cursor: grabbing;
+}
+
+.rating {
+    cursor: pointer;
+    user-select: none; /* Чтобы текст оценки не выделялся синим при клике */
+    z-index: 10;
+}
+</style>
+
+<script>
+// Ждем, пока весь HTML точно загрузится
+window.addEventListener('load', () => {
+
+    // --- ЛОГИКА ПЕРЕМЕЩЕНИЯ ИГРОКОВ ---
+    const players = document.querySelectorAll('.player');
+    let activePlayer = null;
+    let initialX, initialY;
+    let playerStartX, playerStartY;
+
+    function startDrag(e) {
+        // Если мы кликнули именно по оценке, то игрока не тащим!
+        if (e.target.closest('.rating')) return;
+
+        activePlayer = this;
+        
+        // Запоминаем, где была мышка/палец в момент клика
+        initialX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        initialY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+        // Запоминаем текущие координаты самого игрока
+        playerStartX = activePlayer.offsetLeft;
+        playerStartY = activePlayer.offsetTop;
+
+        activePlayer.style.zIndex = 1000; // Поднимаем над всеми
     }
-}
 
-// Навешиваем события на каждого игрока
-players.forEach(player => {
-    player.style.cursor = 'grab';
-    player.addEventListener('mousedown', startDrag);
-    player.addEventListener('touchstart', startDrag, { passive: false });
-});
-
-// Слушаем движение и отпускание по всему документу
-document.addEventListener('mousemove', doDrag);
-document.addEventListener('touchmove', doDrag, { passive: false });
-document.addEventListener('mouseup', endDrag);
-document.addEventListener('touchend', endDrag);
-
-
-// --- 2. СМЕНА ЦВЕТА ОЦЕНОК ---
-// Убедитесь, что у элементов с оценками стоит класс "rating"
-const ratings = document.querySelectorAll('.rating');
-const colors = ['#28a745', '#fd7e14', '#dc3545']; // Зеленый, оранжевый, красный
-
-ratings.forEach(rating => {
-    // Устанавливаем базовые параметры
-    rating.dataset.colorIndex = 0;
-    rating.style.backgroundColor = colors[0]; 
-    rating.style.color = '#fff'; // Белый текст для контраста
-    rating.style.cursor = 'pointer';
-
-    // Чтобы при клике на оценку игрок не начинал перетаскиваться
-    rating.addEventListener('mousedown', (e) => e.stopPropagation());
-    rating.addEventListener('touchstart', (e) => e.stopPropagation());
-
-    // Переключение цвета по клику
-    rating.addEventListener('click', (e) => {
-        e.stopPropagation(); // Блокируем лишние срабатывания
+    function doDrag(e) {
+        if (!activePlayer) return;
         
-        let currentIndex = parseInt(rating.dataset.colorIndex);
-        let nextIndex = (currentIndex + 1) % colors.length; // Переход по кругу (0 -> 1 -> 2 -> 0)
-        
-        rating.dataset.colorIndex = nextIndex;
-        rating.style.backgroundColor = colors[nextIndex];
+        // Отключаем скролл на мобилках
+        if (e.type.includes('touch') && e.cancelable) {
+            e.preventDefault();
+        }
+
+        // Где мышка/палец сейчас
+        const currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const currentY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+        // Считаем разницу (на сколько сдвинули курсор)
+        const dx = currentX - initialX;
+        const dy = currentY - initialY;
+
+        // Применяем разницу к начальным координатам игрока
+        activePlayer.style.left = (playerStartX + dx) + 'px';
+        activePlayer.style.top = (playerStartY + dy) + 'px';
+    }
+
+    function endDrag() {
+        if (activePlayer) {
+            activePlayer.style.zIndex = '';
+            activePlayer = null;
+        }
+    }
+
+    // Привязываем события ко всем игрокам
+    players.forEach(player => {
+        player.addEventListener('mousedown', startDrag);
+        player.addEventListener('touchstart', startDrag, { passive: false });
     });
+
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('touchmove', doDrag, { passive: false });
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchend', endDrag);
+
+
+    // --- ЛОГИКА СМЕНЫ ЦВЕТА ОЦЕНОК ---
+    const ratings = document.querySelectorAll('.rating');
+    const colors = ['#28a745', '#fd7e14', '#dc3545']; // [Зеленый, Оранжевый, Красный]
+
+    ratings.forEach(rating => {
+        // Ставим цвет по умолчанию (зеленый)
+        rating.dataset.colorIndex = 0;
+        rating.style.backgroundColor = colors[0]; 
+        rating.style.color = '#fff'; // Белый текст
+
+        // Меняем цвет при клике
+        rating.addEventListener('click', function(e) {
+            e.stopPropagation(); // Блокируем передачу клика фону (чтобы игрок не дергался)
+            
+            let currentIndex = parseInt(this.dataset.colorIndex) || 0;
+            let nextIndex = (currentIndex + 1) % colors.length; // Переключаем 0 -> 1 -> 2 -> 0
+            
+            this.dataset.colorIndex = nextIndex;
+            this.style.backgroundColor = colors[nextIndex];
+        });
+    });
+
 });
+</script>
+    
         
         // СТАРТ
         nav('matches');
