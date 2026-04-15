@@ -303,7 +303,7 @@
             }
         }
 
-        // АДМИН ПАНЕЛЬ (КОД 4774)
+        // АДМИН ПАНЕЛЬ (КОД 5526)
         function requestAdmin() {
             if(state.isAdmin) {
                 state.isAdmin = false;
@@ -743,27 +743,26 @@
         // СТАРТ
         nav('matches');
     </script>
-    <style>
-    /* 1. СТИЛЬ ПОЛЯ */
+<style>
     #pitch-players {
         background-color: #143011 !important;
         background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10%, transparent 10%, transparent 20%) !important;
         position: relative !important;
         border: 2px solid #ffffff33 !important;
-        min-height: 500px !important;
+        min-height: 520px !important;
         overflow: hidden !important;
-        touch-action: none; /* Чтобы страница не дергалась при переносе */
+        touch-action: none;
     }
 
-    /* 2. ИГРОКИ И ОЦЕНКИ */
+    /* ИГРОКИ */
     .player-node { 
         position: absolute !important; 
-        display: none !important; /* Скрыты по умолчанию */
+        display: none !important; 
         z-index: 100 !important; 
-        cursor: grab;
     }
-    .player-node.on-pitch { display: flex !important; } /* Показываем только выбранных */
+    .player-node.on-pitch { display: flex !important; }
 
+    /* ОЦЕНКИ */
     .p-rating { 
         font-weight: bold !important; 
         border-radius: 4px !important; 
@@ -772,50 +771,78 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
 
-    /* 3. КНОПКА И МЕНЮ УПРАВЛЕНИЯ (Миниатюрная) */
-    #acsor-ctrl {
-        position: absolute; top: 10px; right: 10px; z-index: 9999;
-    }
-    #acsor-btn {
-        background: #d90429; color: #fff; border: none; width: 35px; height: 35px; 
-        border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 18px;
-    }
+    /* УПРАВЛЕНИЕ (Видно только если есть доступ) */
+    #acsor-ctrl { position: absolute; top: 10px; right: 10px; z-index: 9999; display: none; }
+    #acsor-btn { background: #d90429; color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; box-shadow: 0 0 10px rgba(217,4,41,0.5); }
     #acsor-menu {
-        display: none; position: absolute; right: 0; top: 40px; background: #111; 
-        border: 1px solid #444; width: 180px; max-height: 250px; overflow-y: auto;
-        border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+        display: none; position: absolute; right: 0; top: 45px; background: #0b0b0b; 
+        border: 1px solid #444; width: 200px; max-height: 300px; overflow-y: auto;
+        border-radius: 10px; padding: 5px;
     }
-    .acsor-opt {
-        padding: 10px; border-bottom: 1px solid #222; color: #ccc; cursor: pointer; font-size: 12px;
-    }
+    .acsor-opt { padding: 12px; border-bottom: 1px solid #222; color: #ccc; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; }
     .acsor-opt.active { color: #2ecc71; background: #1a2a1a; font-weight: bold; }
+    .acsor-reset { background: #444; color: #fff; text-align: center; padding: 10px; margin-top: 5px; border-radius: 5px; font-size: 11px; cursor: pointer; }
 </style>
 
 <script>
 (function() {
-    // РИСУЕМ РАЗМЕТКУ ПОЛЯ
+    const STORAGE_KEY = 'acsor_pitch_formation';
+
+    // ПРОВЕРКА: ТЫ АДМИН ИЛИ НЕТ?
+    // Скрипт ищет твою кнопку или блок админа. Если не находит — управление отключается.
+    function checkAdminAccess() {
+        return !!document.getElementById('acsor-admin-ui') || !!document.querySelector('[onclick*="saveAdminMatch"]');
+    }
+
+    // СОХРАНЕНИЕ В ПАМЯТЬ
+    function saveFormation() {
+        const data = {};
+        document.querySelectorAll('.player-node').forEach((p, i) => {
+            if (p.classList.contains('on-pitch')) {
+                data[i] = { top: p.style.top, left: p.style.left };
+            }
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    // ЗАГРУЗКА ИЗ ПАМЯТИ
+    function loadFormation() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        const data = JSON.parse(saved);
+        const players = document.querySelectorAll('.player-node');
+        
+        Object.keys(data).forEach(index => {
+            const p = players[index];
+            if (p) {
+                p.classList.add('on-pitch');
+                p.style.top = data[index].top;
+                p.style.left = data[index].left;
+            }
+        });
+    }
+
     function drawPitch() {
         const p = document.getElementById('pitch-players');
-        if (p && !p.querySelector('.pitch-lines')) {
-            const svg = `<svg class="pitch-lines" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.5;">
-                <line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/>
-                <circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/>
-                <rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/>
-                <rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/>
-            </svg>`;
-            p.insertAdjacentHTML('afterbegin', svg);
-            
-            // Добавляем кнопку управления прямо в поле
+        if (!p) return;
+
+        // Рисуем линии
+        if (!p.querySelector('.pitch-lines')) {
+            p.insertAdjacentHTML('afterbegin', `<svg class="pitch-lines" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.4;"><line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/><circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/><rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/><rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/></svg>`);
+        }
+
+        // Если ты админ — показываем кнопку управления
+        const ctrl = document.getElementById('acsor-ctrl');
+        if (!ctrl && checkAdminAccess()) {
             p.insertAdjacentHTML('beforeend', `
-                <div id="acsor-ctrl">
-                    <button id="acsor-btn" title="Управление">⚙</button>
+                <div id="acsor-ctrl" style="display:block;">
+                    <button id="acsor-btn">⚙</button>
                     <div id="acsor-menu"></div>
                 </div>
             `);
         }
     }
 
-    // КРАСИМ ОЦЕНКИ
     function updateColors() {
         document.querySelectorAll('.p-rating').forEach(r => {
             const v = parseFloat(r.innerText.replace(',', '.'));
@@ -824,7 +851,7 @@
         });
     }
 
-    // МЕНЮ ВЫБОРА ИГРОКОВ
+    // МЕНЮ
     document.addEventListener('click', (e) => {
         if (e.target.id === 'acsor-btn') {
             const m = document.getElementById('acsor-menu');
@@ -834,21 +861,31 @@
                 document.querySelectorAll('.player-node').forEach((p, i) => {
                     const opt = document.createElement('div');
                     opt.className = 'acsor-opt' + (p.classList.contains('on-pitch') ? ' active' : '');
-                    opt.innerText = 'Игрок ' + (i + 1);
+                    opt.innerHTML = `<span>Игрок ${i+1}</span> <span>${p.querySelector('.p-rating')?.innerText || ''}</span>`;
                     opt.onclick = () => {
-                        const ok = p.classList.toggle('on-pitch');
-                        opt.classList.toggle('active');
-                        if (ok) { p.style.left = '45%'; p.style.top = '45%'; }
+                        p.classList.toggle('on-pitch');
+                        if (p.classList.contains('on-pitch')) { p.style.left='45%'; p.style.top='45%'; }
+                        saveFormation();
+                        updateColors();
                     };
                     m.appendChild(opt);
                 });
+                const reset = document.createElement('div');
+                reset.className = 'acsor-reset';
+                reset.innerText = 'СБРОСИТЬ ВСЁ';
+                reset.onclick = () => {
+                    localStorage.removeItem(STORAGE_KEY);
+                    location.reload();
+                };
+                m.appendChild(reset);
             }
         }
     });
 
-    // ПЕРЕМЕЩЕНИЕ (MOUSE + TOUCH)
+    // ПЕРЕМЕЩЕНИЕ (ТОЛЬКО ДЛЯ АДМИНА)
     let drag = null, sx, sy, ix, iy;
     const start = (e) => {
+        if (!checkAdminAccess()) return;
         const node = e.target.closest('.player-node');
         if (node && !e.target.closest('.p-rating')) {
             drag = node;
@@ -863,9 +900,15 @@
         const c = e.touches ? e.touches[0] : e;
         drag.style.left = (ix + (c.clientX - sx)) + 'px';
         drag.style.top = (iy + (c.clientY - sy)) + 'px';
-        if (e.touches) e.preventDefault(); // Чтоб не скроллило
+        if (e.touches) e.preventDefault();
     };
-    const end = () => { if (drag) drag.style.zIndex = 100; drag = null; };
+    const end = () => { 
+        if (drag) {
+            drag.style.zIndex = 100;
+            saveFormation(); // Сохраняем позицию после того как отпустили
+        }
+        drag = null; 
+    };
 
     document.addEventListener('mousedown', start);
     document.addEventListener('touchstart', start, {passive: false});
@@ -874,12 +917,14 @@
     document.addEventListener('mouseup', end);
     document.addEventListener('touchend', end);
 
-    // Запускаем "слежку" за изменениями (каждые 1.5 сек)
+    // ОСНОВНОЙ ЦИКЛ (каждые 1.2 сек)
     setInterval(() => {
         drawPitch();
         updateColors();
-    }, 1500);
+        loadFormation(); // Принудительно возвращаем игроков, если твой основной код их сбросил
+    }, 1200);
+
 })();
-        </script>
+</script>
 </body>
 </html>
