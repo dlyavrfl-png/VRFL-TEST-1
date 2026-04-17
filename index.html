@@ -743,149 +743,193 @@
         // СТАРТ
         nav('matches');
     </script>
-<style>
+    <style>
+    /* ПОЛЕ И ИГРОКИ */
     #pitch-players {
         background-color: #143011 !important;
         background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10%, transparent 10%, transparent 20%) !important;
         position: relative !important;
         border: 2px solid #ffffff33 !important;
         min-height: 520px !important;
-        overflow: hidden !important;
         touch-action: none;
     }
-
-    /* ИГРОКИ */
-    .player-node { 
-        position: absolute !important; 
-        display: none !important; 
-        z-index: 100 !important; 
-    }
+    .player-node { position: absolute !important; display: none !important; z-index: 100 !important; }
     .player-node.on-pitch { display: flex !important; }
+    .p-rating { font-weight: bold !important; border-radius: 4px !important; padding: 2px 5px !important; color: #000 !important; }
 
-    /* ОЦЕНКИ */
-    .p-rating { 
-        font-weight: bold !important; 
-        border-radius: 4px !important; 
-        padding: 2px 5px !important; 
-        color: #000 !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
-
-    /* УПРАВЛЕНИЕ (Видно только если есть доступ) */
-    #acsor-ctrl { position: absolute; top: 10px; right: 10px; z-index: 9999; display: none; }
-    #acsor-btn { background: #d90429; color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; box-shadow: 0 0 10px rgba(217,4,41,0.5); }
-    #acsor-menu {
+    /* УПРАВЛЕНИЕ АДМИНА (СКРЫТО ПО УМОЛЧАНИЮ) */
+    #acsor-ctrl-panel { position: absolute; top: 10px; right: 10px; z-index: 10000; display: none; }
+    #acsor-gear { background: #d90429; color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+    #acsor-drop-menu {
         display: none; position: absolute; right: 0; top: 45px; background: #0b0b0b; 
-        border: 1px solid #444; width: 200px; max-height: 300px; overflow-y: auto;
-        border-radius: 10px; padding: 5px;
+        border: 1px solid #444; width: 220px; max-height: 300px; overflow-y: auto; border-radius: 8px; padding: 5px;
     }
-    .acsor-opt { padding: 12px; border-bottom: 1px solid #222; color: #ccc; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; }
-    .acsor-opt.active { color: #2ecc71; background: #1a2a1a; font-weight: bold; }
-    .acsor-reset { background: #444; color: #fff; text-align: center; padding: 10px; margin-top: 5px; border-radius: 5px; font-size: 11px; cursor: pointer; }
+    
+    /* СТРОКИ МЕНЮ */
+    .acsor-row { padding: 10px; border-bottom: 1px solid #222; color: #ccc; cursor: pointer; font-size: 13px; display: flex; justify-content: space-between; }
+    .acsor-row.active { color: #2ecc71; background: #1a2a1a; font-weight: bold; }
+    
+    /* КНОПКА РЕДАКТИРОВАНИЯ БОМБАРДИРОВ */
+    .acsor-edit-btn { background: #b71c1c; color: white; text-align: center; padding: 10px; margin-top: 5px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
+    
+    /* ЕСЛИ АДМИН АВТОРИЗОВАН - ПОКАЗЫВАЕМ ПАНЕЛЬ */
+    body.is-acsor-admin #acsor-ctrl-panel { display: block !important; }
+
+    /* ВИЗУАЛ ПРИ РЕДАКТИРОВАНИИ ТАБЛИЦ */
+    body.acsor-editing-tables td, body.acsor-editing-tables th, body.acsor-editing-tables [class*="bomb"] {
+        border: 1px dashed #d90429 !important;
+        background: rgba(217,4,41,0.1) !important;
+        cursor: text !important;
+    }
 </style>
 
 <script>
 (function() {
-    const STORAGE_KEY = 'acsor_pitch_formation';
+    const STORAGE_KEY = 'acsor_pos_v3';
+    // ПАРОЛЬ ОТ АДМИНКИ (МОЖЕШЬ ПОМЕНЯТЬ ТУТ)
+    const ADMIN_PASSWORD = "1234"; 
 
-    // ПРОВЕРКА: ТЫ АДМИН ИЛИ НЕТ?
-    // Скрипт ищет твою кнопку или блок админа. Если не находит — управление отключается.
-    function checkAdminAccess() {
-        return !!document.getElementById('acsor-admin-ui') || !!document.querySelector('[onclick*="saveAdminMatch"]');
-    }
-
-    // СОХРАНЕНИЕ В ПАМЯТЬ
-    function saveFormation() {
-        const data = {};
-        document.querySelectorAll('.player-node').forEach((p, i) => {
-            if (p.classList.contains('on-pitch')) {
-                data[i] = { top: p.style.top, left: p.style.left };
+    // 1. ЖЕСТКИЙ ПЕРЕХВАТ КНОПКИ "!"
+    // Эта штука ловит клик ДО ТОГО, как твое приложение его обработает
+    document.addEventListener('click', (e) => {
+        if (e.target.innerText && e.target.innerText.trim() === '!') {
+            e.preventDefault();       // Отключаем стандартные лаги приложения
+            e.stopPropagation();      // Блокируем запрос старого кода
+            
+            if (document.body.classList.contains('is-acsor-admin')) {
+                alert('Вы уже вошли как Админ!');
+                return;
             }
+
+            const pwd = prompt('Введите пароль для управления составами и таблицами:');
+            if (pwd === ADMIN_PASSWORD) {
+                document.body.classList.add('is-acsor-admin');
+                alert('✅ Доступ разрешен! На поле появилась шестеренка.');
+            } else if (pwd !== null) {
+                alert('❌ Неверный пароль!');
+            }
+        }
+    }, true); // true означает "перехватить самым первым"
+
+    // 2. АВТОЗАГРУЗКА ДЛЯ ОБЫЧНЫХ ПОЛЬЗОВАТЕЛЕЙ
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            // Ищем вкладки матчей/туров и "кликаем" за пользователя
+            const tabs = document.querySelectorAll('button, div, li, span');
+            for(let t of tabs) {
+                const txt = t.innerText ? t.innerText.toLowerCase() : '';
+                if(txt === 'матчи' || txt === 'туры' || txt === 'расписание') {
+                    t.click();
+                    break;
+                }
+            }
+        }, 600); // Через 0.6 сек после загрузки страницы
+    });
+
+    // 3. СОХРАНЕНИЕ И ЗАГРУЗКА ИГРОКОВ
+    function savePos() {
+        if (!document.body.classList.contains('is-acsor-admin')) return;
+        const data = {};
+        document.querySelectorAll('.player-node.on-pitch').forEach((p, i) => {
+            data[i] = { t: p.style.top, l: p.style.left };
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    // ЗАГРУЗКА ИЗ ПАМЯТИ
-    function loadFormation() {
+    function loadPos() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return;
         const data = JSON.parse(saved);
-        const players = document.querySelectorAll('.player-node');
-        
-        Object.keys(data).forEach(index => {
-            const p = players[index];
-            if (p) {
+        document.querySelectorAll('.player-node').forEach((p, i) => {
+            if (data[i]) {
                 p.classList.add('on-pitch');
-                p.style.top = data[index].top;
-                p.style.left = data[index].left;
+                p.style.top = data[i].t;
+                p.style.left = data[i].l;
             }
         });
     }
 
-    function drawPitch() {
-        const p = document.getElementById('pitch-players');
-        if (!p) return;
+    // 4. ОТРИСОВКА ПОЛЯ И МЕНЮ
+    function initPitch() {
+        const pitch = document.getElementById('pitch-players');
+        if (!pitch) return;
 
-        // Рисуем линии
-        if (!p.querySelector('.pitch-lines')) {
-            p.insertAdjacentHTML('afterbegin', `<svg class="pitch-lines" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.4;"><line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/><circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/><rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/><rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/></svg>`);
+        // Рисуем поле
+        if (!pitch.querySelector('.pitch-svg')) {
+            pitch.insertAdjacentHTML('afterbegin', `<svg class="pitch-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.4;"><line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/><circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/><rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/><rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/></svg>`);
         }
 
-        // Если ты админ — показываем кнопку управления
-        const ctrl = document.getElementById('acsor-ctrl');
-        if (!ctrl && checkAdminAccess()) {
-            p.insertAdjacentHTML('beforeend', `
-                <div id="acsor-ctrl" style="display:block;">
-                    <button id="acsor-btn">⚙</button>
-                    <div id="acsor-menu"></div>
-                </div>
-            `);
+        // Вставляем меню шестеренки
+        if (!document.getElementById('acsor-ctrl-panel')) {
+            pitch.insertAdjacentHTML('beforeend', `<div id="acsor-ctrl-panel"><button id="acsor-gear">⚙</button><div id="acsor-drop-menu"></div></div>`);
         }
-    }
 
-    function updateColors() {
+        // Красим оценки
         document.querySelectorAll('.p-rating').forEach(r => {
             const v = parseFloat(r.innerText.replace(',', '.'));
-            if (isNaN(v)) return;
-            r.style.backgroundColor = v >= 7.0 ? '#2ecc71' : (v >= 5.0 ? '#f1c40f' : '#e74c3c');
+            if (!isNaN(v)) r.style.backgroundColor = v >= 7.0 ? '#2ecc71' : (v >= 5.0 ? '#f1c40f' : '#e74c3c');
         });
     }
 
-    // МЕНЮ
+    // 5. ЛОГИКА МЕНЮ (ДОБАВЛЕНИЕ/УДАЛЕНИЕ ИГРОКОВ + БОМБАРДИРЫ)
     document.addEventListener('click', (e) => {
-        if (e.target.id === 'acsor-btn') {
-            const m = document.getElementById('acsor-menu');
+        if (e.target.id === 'acsor-gear') {
+            const m = document.getElementById('acsor-drop-menu');
             m.style.display = m.style.display === 'block' ? 'none' : 'block';
             if (m.style.display === 'block') {
                 m.innerHTML = '';
+                
+                // Игроки
                 document.querySelectorAll('.player-node').forEach((p, i) => {
-                    const opt = document.createElement('div');
-                    opt.className = 'acsor-opt' + (p.classList.contains('on-pitch') ? ' active' : '');
-                    opt.innerHTML = `<span>Игрок ${i+1}</span> <span>${p.querySelector('.p-rating')?.innerText || ''}</span>`;
-                    opt.onclick = () => {
-                        p.classList.toggle('on-pitch');
-                        if (p.classList.contains('on-pitch')) { p.style.left='45%'; p.style.top='45%'; }
-                        saveFormation();
-                        updateColors();
+                    const row = document.createElement('div');
+                    row.className = 'acsor-row' + (p.classList.contains('on-pitch') ? ' active' : '');
+                    row.innerHTML = `<span>Игрок ${i+1}</span><span>${p.querySelector('.p-rating')?.innerText || ''}</span>`;
+                    row.onclick = (ev) => {
+                        ev.stopPropagation();
+                        const show = p.classList.toggle('on-pitch');
+                        row.classList.toggle('active');
+                        if (show) { p.style.left='45%'; p.style.top='45%'; }
+                        savePos();
                     };
-                    m.appendChild(opt);
+                    m.appendChild(row);
                 });
-                const reset = document.createElement('div');
-                reset.className = 'acsor-reset';
-                reset.innerText = 'СБРОСИТЬ ВСЁ';
-                reset.onclick = () => {
-                    localStorage.removeItem(STORAGE_KEY);
-                    location.reload();
+
+                // Кнопка режима Бомбардиров
+                const editBtn = document.createElement('div');
+                editBtn.className = 'acsor-edit-btn';
+                editBtn.innerText = '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ';
+                editBtn.onclick = (ev) => {
+                    ev.stopPropagation();
+                    const isEditing = document.body.classList.toggle('acsor-editing-tables');
+                    
+                    // Делаем все ячейки таблиц редактируемыми
+                    document.querySelectorAll('table, td, th, [class*="bombardier"], [class*="table"]').forEach(el => {
+                        el.contentEditable = isEditing ? "true" : "false";
+                    });
+                    
+                    if (isEditing) {
+                        editBtn.style.background = '#2ecc71';
+                        editBtn.innerText = '✅ ЗАКОНЧИТЬ РЕДАКТИРОВАНИЕ';
+                        alert('Теперь вы можете нажать на любой текст в таблице и изменить его!');
+                    } else {
+                        editBtn.style.background = '#b71c1c';
+                        editBtn.innerText = '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ';
+                    }
                 };
-                m.appendChild(reset);
+                m.appendChild(editBtn);
             }
+        } else if (!e.target.closest('#acsor-ctrl-panel')) {
+            const m = document.getElementById('acsor-drop-menu');
+            if (m) m.style.display = 'none';
         }
     });
 
-    // ПЕРЕМЕЩЕНИЕ (ТОЛЬКО ДЛЯ АДМИНА)
+    // 6. ПЕРЕТАСКИВАНИЕ (ЗАЩИЩЕНО!)
     let drag = null, sx, sy, ix, iy;
     const start = (e) => {
-        if (!checkAdminAccess()) return;
+        // ЕСЛИ ТЫ НЕ ВВЕЛ ПАРОЛЬ - ДВИГАТЬ НЕЛЬЗЯ
+        if (!document.body.classList.contains('is-acsor-admin')) return; 
+        
         const node = e.target.closest('.player-node');
         if (node && !e.target.closest('.p-rating')) {
             drag = node;
@@ -902,26 +946,19 @@
         drag.style.top = (iy + (c.clientY - sy)) + 'px';
         if (e.touches) e.preventDefault();
     };
-    const end = () => { 
-        if (drag) {
-            drag.style.zIndex = 100;
-            saveFormation(); // Сохраняем позицию после того как отпустили
-        }
-        drag = null; 
-    };
+    const stop = () => { if (drag) { savePos(); drag.style.zIndex = 100; } drag = null; };
 
     document.addEventListener('mousedown', start);
     document.addEventListener('touchstart', start, {passive: false});
     document.addEventListener('mousemove', move);
     document.addEventListener('touchmove', move, {passive: false});
-    document.addEventListener('mouseup', end);
-    document.addEventListener('touchend', end);
+    document.addEventListener('mouseup', stop);
+    document.addEventListener('touchend', stop);
 
-    // ОСНОВНОЙ ЦИКЛ (каждые 1.2 сек)
+    // 7. ОСНОВНОЙ ЦИКЛ ПОДДЕРЖАНИЯ РАБОТЫ
     setInterval(() => {
-        drawPitch();
-        updateColors();
-        loadFormation(); // Принудительно возвращаем игроков, если твой основной код их сбросил
+        initPitch();
+        if (document.getElementById('pitch-players')) loadPos();
     }, 1200);
 
 })();
