@@ -743,8 +743,8 @@
         // СТАРТ
         nav('matches');
     </script>
-<style>
-    /* ДИЗАЙН ПОЛЯ */
+    <style>
+    /* ПОЛЕ */
     #pitch-players {
         background-color: #143011 !important;
         background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10%, transparent 10%, transparent 20%) !important;
@@ -753,130 +753,170 @@
         min-height: 520px !important;
         touch-action: none;
     }
-    
     .p-rating { font-weight: bold !important; border-radius: 4px !important; padding: 2px 5px !important; color: #000 !important; }
 
-    /* СЕКРЕТНАЯ КНОПКА (Невидимая, в левом верхнем углу поля) */
-    #acsor-secret-btn { position: absolute; top: 0; left: 0; width: 60px; height: 60px; z-index: 9999; opacity: 0; cursor: pointer; }
-
-    /* МЕНЮ И КНОПКА (Скрыты до ввода пароля) */
-    #acsor-gear { display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; background: #d90429; color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
-    #acsor-drop-menu { display: none; position: absolute; right: 10px; top: 55px; background: #111; border: 1px solid #444; width: 220px; max-height: 350px; overflow-y: auto; border-radius: 8px; z-index: 10001; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.9); }
+    /* АДМИН-ПАНЕЛЬ */
+    #acsor-admin-trigger { position: absolute; top: 0; left: 0; width: 50px; height: 50px; z-index: 10001; cursor: pointer; opacity: 0; }
+    #acsor-gear { display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; background: #d90429; color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
     
-    .acsor-row { padding: 10px; border-bottom: 1px solid #333; color: #fff; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; }
-    .acsor-row.hidden-player { color: #666; text-decoration: line-through; }
-    .acsor-edit-btn { background: #b71c1c; color: white; text-align: center; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px; margin-bottom: 10px; }
+    #acsor-menu { 
+        display: none; position: absolute; right: 10px; top: 60px; background: #0f0f0f; border: 1px solid #444; 
+        width: 240px; max-height: 400px; overflow-y: auto; border-radius: 12px; z-index: 10002; padding: 10px; color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,1);
+    }
 
-    /* ВИЗУАЛ РЕДАКТИРОВАНИЯ ТАБЛИЦ (Показывает, что можно менять) */
-    .acsor-editing-mode table, .acsor-editing-mode td, .acsor-editing-mode th, .acsor-editing-mode [class*="bombardier"], .acsor-editing-mode span {
-        border: 1px dashed red !important;
-        background-color: rgba(217, 4, 41, 0.05) !important;
-        cursor: text !important;
+    /* КНОПКИ В МЕНЮ */
+    .acsor-btn { width: 100%; padding: 12px; margin-bottom: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; text-transform: uppercase; }
+    .btn-save { background: #2ecc71; color: #fff; }
+    .btn-edit { background: #3498db; color: #fff; }
+    .btn-edit.active { background: #e67e22; }
+
+    .acsor-player-row { padding: 8px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; font-size: 13px; cursor: pointer; }
+    .acsor-player-row.off { color: #555; text-decoration: line-through; }
+
+    /* ПОДСВЕТКА РЕДАКТИРОВАНИЯ */
+    body.acsor-edit-mode [contenteditable="true"] {
+        outline: 1px dashed #d90429 !important;
+        background-color: rgba(217, 4, 41, 0.1) !important;
     }
 </style>
 
 <script>
 (function() {
-    const PWD = '1234'; // Твой пароль
+    const PWD = '1234';
     let isAdmin = false;
     let isEditing = false;
+    const STORAGE_KEY = 'acsor_final_save_v5';
 
-    function initElements() {
+    // 1. АВТОЗАГРУЗКА (ПРОБУЖДЕНИЕ ПРИЛОЖЕНИЯ)
+    function autoAwake() {
+        const triggers = document.querySelectorAll('button, div, span, li');
+        triggers.forEach(el => {
+            const text = el.innerText ? el.innerText.trim() : '';
+            // Авто-клик по вкладкам, чтобы данные подтянулись сразу
+            if (['!', 'Матчи', 'Туры', 'Таблица', 'Клубы'].includes(text)) {
+                if (!el.dataset.acsorClicked) {
+                    el.click();
+                    el.dataset.acsorClicked = "true";
+                }
+            }
+        });
+    }
+
+    // 2. СОХРАНЕНИЕ И ЗАГРУЗКА
+    function saveFormation() {
+        const pitchData = [];
+        document.querySelectorAll('.player-node').forEach((p, i) => {
+            pitchData.push({
+                index: i,
+                top: p.style.top,
+                left: p.style.left,
+                visible: p.style.display !== 'none'
+            });
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pitchData));
+        alert('✅ Расстановка сохранена!');
+    }
+
+    function loadFormation() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        const data = JSON.parse(saved);
+        const players = document.querySelectorAll('.player-node');
+        data.forEach(item => {
+            if (players[item.index]) {
+                const p = players[item.index];
+                p.style.top = item.top;
+                p.style.left = item.left;
+                p.style.display = item.visible ? 'flex' : 'none';
+                p.classList.toggle('on-pitch', item.visible);
+            }
+        });
+    }
+
+    // 3. ИНИЦИАЛИЗАЦИЯ ПОЛЯ
+    function init() {
         const pitch = document.getElementById('pitch-players');
         if (!pitch) return;
 
-        // 1. Рисуем разметку поля
         if (!pitch.querySelector('.pitch-svg')) {
-            pitch.insertAdjacentHTML('afterbegin', `<svg class="pitch-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.4;"><line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/><circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/><rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/><rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/></svg>`);
+            pitch.insertAdjacentHTML('afterbegin', `<svg class="pitch-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.3;"><line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/><circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/><rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/><rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/></svg>`);
+            pitch.insertAdjacentHTML('beforeend', `<div id="acsor-admin-trigger"></div><button id="acsor-gear">⚙</button><div id="acsor-menu"></div>`);
             
-            // Вставляем секретную кнопку, шестеренку и меню прямо в поле
-            pitch.insertAdjacentHTML('beforeend', `
-                <div id="acsor-secret-btn"></div>
-                <button id="acsor-gear">⚙</button>
-                <div id="acsor-drop-menu"></div>
-            `);
-
-            // Логика СЕКРЕТНОЙ КНОПКИ
-            document.getElementById('acsor-secret-btn').addEventListener('click', () => {
-                if (isAdmin) { alert('Ты уже в админке!'); return; }
-                const pass = prompt('Введи код доступа ACSOR:');
-                if (pass === PWD) {
+            document.getElementById('acsor-admin-trigger').onclick = () => {
+                if(prompt('Код:') === PWD) {
                     isAdmin = true;
                     document.getElementById('acsor-gear').style.display = 'block';
-                    alert('Доступ открыт! Шестеренка появилась справа.');
                 }
-            });
+            };
         }
 
-        // Красим оценки в реальном времени
+        // Красим оценки
         document.querySelectorAll('.p-rating').forEach(r => {
             const v = parseFloat(r.innerText.replace(',', '.'));
             if (!isNaN(v)) r.style.backgroundColor = v >= 7.0 ? '#2ecc71' : (v >= 5.0 ? '#f1c40f' : '#e74c3c');
         });
-
-        // Если включен режим таблиц - делаем все тексты редактируемыми
-        if (isEditing) {
-            document.querySelectorAll('td, th, span, div, p').forEach(el => {
-                // Исключаем кнопки админки, чтобы их не сломать
-                if (!el.closest('#acsor-drop-menu') && el.id !== 'acsor-gear') {
-                    if (el.contentEditable !== 'true') el.contentEditable = 'true';
-                }
-            });
-        }
+        
+        loadFormation();
     }
 
-    // ЛОГИКА МЕНЮ
+    // 4. УПРАВЛЕНИЕ МЕНЮ
     document.addEventListener('click', (e) => {
+        const menu = document.getElementById('acsor-menu');
         if (e.target.id === 'acsor-gear') {
-            const m = document.getElementById('acsor-drop-menu');
-            m.style.display = m.style.display === 'block' ? 'none' : 'block';
-            
-            if (m.style.display === 'block') {
-                m.innerHTML = `<div id="acsor-table-btn" class="acsor-edit-btn">✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ</div>`;
-                
-                // Рендерим список игроков
-                document.querySelectorAll('.player-node').forEach((p, i) => {
-                    const row = document.createElement('div');
-                    const isHidden = p.style.display === 'none';
-                    row.className = 'acsor-row' + (isHidden ? ' hidden-player' : '');
-                    row.innerHTML = `<span>Игрок ${i+1}</span>`;
-                    
-                    row.onclick = () => {
-                        if (p.style.display === 'none') {
-                            p.style.display = 'flex';
-                            row.classList.remove('hidden-player');
-                        } else {
-                            p.style.display = 'none';
-                            row.classList.add('hidden-player');
-                        }
-                    };
-                    m.appendChild(row);
-                });
-            }
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            if (menu.style.display === 'block') renderMenu();
         }
 
-        // КНОПКА РЕДАКТИРОВАНИЯ ТАБЛИЦ
-        if (e.target.id === 'acsor-table-btn') {
+        if (e.target.classList.contains('btn-save')) saveFormation();
+        
+        if (e.target.classList.contains('btn-edit')) {
             isEditing = !isEditing;
-            if (isEditing) {
-                document.body.classList.add('acsor-editing-mode');
-                e.target.style.background = '#2ecc71';
-                e.target.innerText = '✅ ЗАВЕРШИТЬ РЕДАКТИРОВАНИЕ';
-                alert('Режим редактирования ВКЛЮЧЕН! Все таблицы и тексты обведены красным. Кликай на любой текст и меняй его.');
-            } else {
-                document.body.classList.remove('acsor-editing-mode');
-                e.target.style.background = '#b71c1c';
-                e.target.innerText = '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ';
-                // Отключаем редактирование
-                document.querySelectorAll('[contenteditable="true"]').forEach(el => el.contentEditable = 'false');
-            }
+            document.body.classList.toggle('acsor-edit-mode', isEditing);
+            e.target.classList.toggle('active', isEditing);
+            e.target.innerText = isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ';
+            
+            // Делаем ВСЕ ячейки и тексты редактируемыми
+            document.querySelectorAll('td, th, span, .player-name, [class*="bomb"], [class*="team"]').forEach(el => {
+                if (!el.closest('#acsor-menu')) el.contentEditable = isEditing;
+            });
         }
     });
 
-    // ПЕРЕТАСКИВАНИЕ ИГРОКОВ (Только для Админа)
+    function renderMenu() {
+        const menu = document.getElementById('acsor-menu');
+        let html = `
+            <button class="acsor-btn btn-save">💾 Сохранить расстановку</button>
+            <button class="acsor-btn btn-edit">${isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ'}</button>
+            <hr style="border:0; border-bottom:1px solid #333; margin:10px 0;">
+            <div style="font-size:10px; color:#777; margin-bottom:5px;">СОСТАВ МАТЧА:</div>
+        `;
+        
+        document.querySelectorAll('.player-node').forEach((p, i) => {
+            const name = p.querySelector('.p-rating')?.parentElement?.innerText || `Игрок ${i+1}`;
+            const isOff = p.style.display === 'none';
+            html += `<div class="acsor-player-row ${isOff ? 'off' : ''}" data-idx="${i}">
+                <span>${name}</span>
+                <span>${isOff ? '❌' : '➕'}</span>
+            </div>`;
+        });
+        menu.innerHTML = html;
+
+        menu.querySelectorAll('.acsor-player-row').forEach(row => {
+            row.onclick = () => {
+                const idx = row.dataset.idx;
+                const p = document.querySelectorAll('.player-node')[idx];
+                const isHidden = p.style.display === 'none';
+                p.style.display = isHidden ? 'flex' : 'none';
+                renderMenu();
+            };
+        });
+    }
+
+    // 5. ПЕРЕТАСКИВАНИЕ
     let drag = null, sx, sy, ix, iy;
-    const startDrag = (e) => {
-        if (!isAdmin) return; // Обычным юзерам запрещено
+    const start = (e) => {
+        if (!isAdmin) return;
         const node = e.target.closest('.player-node');
         if (node && !e.target.closest('.p-rating')) {
             drag = node;
@@ -886,26 +926,30 @@
             node.style.zIndex = 5000;
         }
     };
-    const moveDrag = (e) => {
+    const move = (e) => {
         if (!drag) return;
         const c = e.touches ? e.touches[0] : e;
         drag.style.left = (ix + (c.clientX - sx)) + 'px';
         drag.style.top = (iy + (c.clientY - sy)) + 'px';
         if (e.touches) e.preventDefault();
     };
-    const endDrag = () => { if (drag) { drag.style.zIndex = 100; drag = null; } };
+    const end = () => { if (drag) drag.style.zIndex = 100; drag = null; };
 
-    document.addEventListener('mousedown', startDrag);
-    document.addEventListener('touchstart', startDrag, {passive: false});
-    document.addEventListener('mousemove', moveDrag);
-    document.addEventListener('touchmove', moveDrag, {passive: false});
-    document.addEventListener('mouseup', endDrag);
-    document.addEventListener('touchend', endDrag);
+    document.addEventListener('mousedown', start);
+    document.addEventListener('touchstart', start, {passive: false});
+    document.addEventListener('mousemove', move);
+    document.addEventListener('touchmove', move, {passive: false});
+    document.addEventListener('mouseup', end);
+    document.addEventListener('touchend', end);
 
-    // ПОСТОЯННАЯ ПРОВЕРКА (чтобы всё работало плавно)
-    setInterval(initElements, 1500);
+    // ПОСТОЯННЫЕ ПРОВЕРКИ
+    setInterval(() => {
+        autoAwake(); // Пробуждаем приложение
+        init();      // Рисуем интерфейс
+    }, 1500);
 
 })();
 </script>
+    
 </body>
 </html>
