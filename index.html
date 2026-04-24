@@ -742,181 +742,277 @@
 
         // СТАРТ
         nav('matches');
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    </script>
+    <style>
+    /* ПОЛЕ */
+    #pitch-players {
+        background-color: #143011 !important;
+        background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10%, transparent 10%, transparent 20%) !important;
+        position: relative !important;
+        border: 2px solid #ffffff33 !important;
+        min-height: 520px !important;
+        touch-action: none;
+    }
+    .p-rating { font-weight: bold !important; border-radius: 4px !important; padding: 2px 5px !important; color: #000 !important; }
 
-<style>
-/* 1. ЖЕСТКАЯ ФИКСАЦИЯ ДИЗАЙНА ПОЛЯ */
-#pitch-players {
-    background: #143011 !important;
-    background-image: 
-        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px) !important;
-    background-size: 50px 50px !important;
-    position: relative !important;
-    min-height: 550px !important;
-    border: 3px solid #222 !important;
-    display: block !important;
-    visibility: visible !important;
-}
+    /* АДМИН-ПАНЕЛЬ */
+    #acsor-admin-trigger { position: absolute; top: 0; left: 0; width: 50px; height: 50px; z-index: 10001; cursor: pointer; opacity: 0; }
+    #acsor-gear { display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; background: #d90429; color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
+    
+    #acsor-menu { 
+        display: none; position: absolute; right: 10px; top: 60px; background: #0f0f0f; border: 1px solid #444; 
+        width: 240px; max-height: 400px; overflow-y: auto; border-radius: 12px; z-index: 10002; padding: 10px; color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,1);
+    }
 
-/* 2. ПАНЕЛЬ УПРАВЛЕНИЯ (ПОВЕРХ ВСЕГО) */
-#acsor-admin-panel {
-    position: fixed !important;
-    top: 10px !important;
-    right: 10px !important;
-    z-index: 2147483647 !important; /* Максимальный z-index в браузере */
-}
-#acsor-gear {
-    width: 46px; height: 46px;
-    background: #d90429; color: #fff;
-    border: none; border-radius: 50%;
-    font-size: 24px; cursor: pointer;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    display: none;
-}
-#acsor-menu {
-    display: none; background: #111;
-    width: 230px; padding: 15px;
-    border-radius: 12px; border: 1px solid #333;
-    margin-top: 10px; box-shadow: 0 10px 40px #000;
-}
-.acsor-btn {
-    width: 100%; padding: 12px; margin-bottom: 8px;
-    border: none; border-radius: 6px; font-weight: 800;
-    cursor: pointer; text-transform: uppercase; font-size: 10px;
-}
-#btn-save { background: #2ecc71; color: #fff; }
-#btn-edit { background: #3498db; color: #fff; }
-#secret-unlock { position: fixed; top: 0; left: 0; width: 50px; height: 50px; z-index: 2147483647; opacity: 0; }
+    /* КНОПКИ В МЕНЮ */
+    .acsor-btn { width: 100%; padding: 12px; margin-bottom: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; text-transform: uppercase; }
+    .btn-save { background: #2ecc71; color: #fff; }
+    .btn-edit { background: #3498db; color: #fff; }
+    .btn-edit.active { background: #e67e22; }
 
-.editing-now { outline: 2px dashed #d90429 !important; background: rgba(217,4,41,0.05) !important; }
+    .acsor-player-row { padding: 8px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; font-size: 13px; cursor: pointer; }
+    .acsor-player-row.off { color: #555; text-decoration: line-through; }
+
+    /* ПОДСВЕТКА РЕДАКТИРОВАНИЯ */
+    body.acsor-edit-mode [contenteditable="true"] {
+        outline: 1px dashed #d90429 !important;
+        background-color: rgba(217, 4, 41, 0.1) !important;
+    }
 </style>
 
 <script>
+(function() {
+    const PWD = '1234';
+    let isAdmin = false;
+    let isEditing = false;
+    const STORAGE_KEY = 'acsor_final_save_v5';
+
+    // 1. АВТОЗАГРУЗКА (ПРОБУЖДЕНИЕ ПРИЛОЖЕНИЯ)
+    function autoAwake() {
+        const triggers = document.querySelectorAll('button, div, span, li');
+        triggers.forEach(el => {
+            const text = el.innerText ? el.innerText.trim() : '';
+            // Авто-клик по вкладкам, чтобы данные подтянулись сразу
+            if (['!', 'Матчи', 'Туры', 'Таблица', 'Клубы'].includes(text)) {
+                if (!el.dataset.acsorClicked) {
+                    el.click();
+                    el.dataset.acsorClicked = "true";
+                }
+            }
+        });
+    }
+
+    // 2. СОХРАНЕНИЕ И ЗАГРУЗКА
+    function saveFormation() {
+        const pitchData = [];
+        document.querySelectorAll('.player-node').forEach((p, i) => {
+            pitchData.push({
+                index: i,
+                top: p.style.top,
+                left: p.style.left,
+                visible: p.style.display !== 'none'
+            });
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pitchData));
+        alert('✅ Расстановка сохранена!');
+    }
+
+    function loadFormation() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        const data = JSON.parse(saved);
+        const players = document.querySelectorAll('.player-node');
+        data.forEach(item => {
+            if (players[item.index]) {
+                const p = players[item.index];
+                p.style.top = item.top;
+                p.style.left = item.left;
+                p.style.display = item.visible ? 'flex' : 'none';
+                p.classList.toggle('on-pitch', item.visible);
+            }
+        });
+    }
+
+    // 3. ИНИЦИАЛИЗАЦИЯ ПОЛЯ
+    function init() {
+        const pitch = document.getElementById('pitch-players');
+        if (!pitch) return;
+
+        if (!pitch.querySelector('.pitch-svg')) {
+            pitch.insertAdjacentHTML('afterbegin', `<svg class="pitch-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.3;"><line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/><circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/><rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/><rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/></svg>`);
+            pitch.insertAdjacentHTML('beforeend', `<div id="acsor-admin-trigger"></div><button id="acsor-gear">⚙</button><div id="acsor-menu"></div>`);
+            
+            document.getElementById('acsor-admin-trigger').onclick = () => {
+                if(prompt('Код:') === PWD) {
+                    isAdmin = true;
+                    document.getElementById('acsor-gear').style.display = 'block';
+                }
+            };
+        }
+
+        // Красим оценки
+        document.querySelectorAll('.p-rating').forEach(r => {
+            const v = parseFloat(r.innerText.replace(',', '.'));
+            if (!isNaN(v)) r.style.backgroundColor = v >= 7.0 ? '#2ecc71' : (v >= 5.0 ? '#f1c40f' : '#e74c3c');
+        });
+        
+        loadFormation();
+    }
+
+    // 4. УПРАВЛЕНИЕ МЕНЮ
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('acsor-menu');
+        if (e.target.id === 'acsor-gear') {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            if (menu.style.display === 'block') renderMenu();
+        }
+
+        if (e.target.classList.contains('btn-save')) saveFormation();
+        
+        if (e.target.classList.contains('btn-edit')) {
+            isEditing = !isEditing;
+            document.body.classList.toggle('acsor-edit-mode', isEditing);
+            e.target.classList.toggle('active', isEditing);
+            e.target.innerText = isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ';
+            
+            // Делаем ВСЕ ячейки и тексты редактируемыми
+            document.querySelectorAll('td, th, span, .player-name, [class*="bomb"], [class*="team"]').forEach(el => {
+                if (!el.closest('#acsor-menu')) el.contentEditable = isEditing;
+            });
+        }
+    });
+
+    function renderMenu() {
+        const menu = document.getElementById('acsor-menu');
+        let html = `
+            <button class="acsor-btn btn-save">💾 Сохранить расстановку</button>
+            <button class="acsor-btn btn-edit">${isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ'}</button>
+            <hr style="border:0; border-bottom:1px solid #333; margin:10px 0;">
+            <div style="font-size:10px; color:#777; margin-bottom:5px;">СОСТАВ МАТЧА:</div>
+        `;
+        
+        document.querySelectorAll('.player-node').forEach((p, i) => {
+            const name = p.querySelector('.p-rating')?.parentElement?.innerText || `Игрок ${i+1}`;
+            const isOff = p.style.display === 'none';
+            html += `<div class="acsor-player-row ${isOff ? 'off' : ''}" data-idx="${i}">
+                <span>${name}</span>
+                <span>${isOff ? '❌' : '➕'}</span>
+            </div>`;
+        });
+        menu.innerHTML = html;
+
+        menu.querySelectorAll('.acsor-player-row').forEach(row => {
+            row.onclick = () => {
+                const idx = row.dataset.idx;
+                const p = document.querySelectorAll('.player-node')[idx];
+                const isHidden = p.style.display === 'none';
+                p.style.display = isHidden ? 'flex' : 'none';
+                renderMenu();
+            };
+        });
+    }
+
+    // 5. ПЕРЕТАСКИВАНИЕ
+    let drag = null, sx, sy, ix, iy;
+    const start = (e) => {
+        if (!isAdmin) return;
+        const node = e.target.closest('.player-node');
+        if (node && !e.target.closest('.p-rating')) {
+            drag = node;
+            const c = e.touches ? e.touches[0] : e;
+            sx = c.clientX; sy = c.clientY;
+            ix = node.offsetLeft; iy = node.offsetTop;
+            node.style.zIndex = 5000;
+        }
+    };
+    const move = (e) => {
+        if (!drag) return;
+        const c = e.touches ? e.touches[0] : e;
+        drag.style.left = (ix + (c.clientX - sx)) + 'px';
+        drag.style.top = (iy + (c.clientY - sy)) + 'px';
+        if (e.touches) e.preventDefault();
+    };
+    const end = () => { if (drag) drag.style.zIndex = 100; drag = null; };
+
+    document.addEventListener('mousedown', start);
+    document.addEventListener('touchstart', start, {passive: false});
+    document.addEventListener('mousemove', move);
+    document.addEventListener('touchmove', move, {passive: false});
+    document.addEventListener('mouseup', end);
+    document.addEventListener('touchend', end);
+
+    // ПОСТОЯННЫЕ ПРОВЕРКИ
+    setInterval(() => {
+        autoAwake(); // Пробуждаем приложение
+        init();      // Рисуем интерфейс
+    }, 1500);
+
+})();
+</script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+<script>
+// ТВОЙ КОНФИГ ИЗ СООБЩЕНИЯ
 const firebaseConfig = {
-  apiKey: "AIzaSyDT3iQ37PlrtHkD2dQwFYf8",
+  apiKey: "AIzaSyDT3iQ37PlrtHkD2dQwFYf8MEq7yVKNiIY",
   authDomain: "ifclscore.firebaseapp.com",
-  databaseURL: "https://ifclscore-default-rtdb.firebaseio.com",
   projectId: "ifclscore",
   storageBucket: "ifclscore.firebasestorage.app",
   messagingSenderId: "451303174661",
-  appId: "1:451303174661:web:d9e26b38977"
+  appId: "1:451303174661:web:d9e26b389765c3cc7b226c",
+  measurementId: "G-LFWG1YMZDN",
+  databaseURL: "https://ifclscore-default-rtdb.firebaseio.com" // Добавил путь к базе
 };
 
 // Инициализация
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const database = firebase.database();
 
-let isAcsorAdmin = false;
-let isEditMode = false;
-
-// --- ФУНКЦИЯ 1: ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ---
-function syncFromCloud() {
-    db.ref('vfl_v8/global_state').on('value', (snap) => {
-        const data = snap.val();
-        // Если ты не админ, база будет жестко обновлять твой контент
-        if (data && data.html && !isAcsorAdmin) {
-            const mainContent = document.querySelector('main');
-            if (mainContent) {
-                mainContent.innerHTML = data.html;
-                console.log("Данные лиги синхронизированы");
+// 1. ЗАГРУЗКА ДАННЫХ ДЛЯ ВСЕХ
+// Скрипт ждет 3 секунды (чтобы сайт точно прогрузился) и ставит сохраненную инфу
+setTimeout(() => {
+    database.ref('vfl_cloud_data/main_save').once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.html) {
+            const mainArea = document.querySelector('main');
+            if (mainArea) {
+                mainArea.innerHTML = data.html;
+                console.log("Данные лиги успешно подтянуты из облака!");
             }
         }
     });
-}
+}, 3000);
 
-// --- ФУНКЦИЯ 2: СОХРАНЕНИЕ ---
-function saveToCloud() {
-    const main = document.querySelector('main');
-    if (!main || main.innerHTML.length < 100) {
-        alert("Ошибка: Контент не прогрузился. Подождите пару секунд.");
-        return;
+// 2. КНОПКА СОХРАНЕНИЯ (Для тебя)
+// Создаем кнопку, которая не мешает твоему основному дизайну
+const saveBtn = document.createElement('button');
+saveBtn.innerHTML = '📂 ОТПРАВИТЬ В ОБЛАКО';
+saveBtn.style.cssText = 'position:fixed; bottom:10px; left:10px; z-index:100000; background:#27ae60; color:white; border:none; padding:10px; border-radius:5px; font-size:10px; cursor:pointer; opacity:0.3;';
+// Кнопка почти прозрачная, чтобы не бесила, но ты её увидишь в углу
+saveBtn.onmouseover = function() { this.style.opacity = '1'; };
+saveBtn.onmouseout = function() { this.style.opacity = '0.3'; };
+
+document.body.appendChild(saveBtn);
+
+saveBtn.onclick = function() {
+    const adminPass = prompt("Введите пароль для синхронизации (123):");
+    if (adminPass === "123") {
+        const currentContent = document.querySelector('main').innerHTML;
+        
+        database.ref('vfl_cloud_data/main_save').set({
+            html: currentContent,
+            time: Date.now()
+        }).then(() => {
+            alert("✅ ГОТОВО! Теперь на всех устройствах будет эта версия таблиц и поля.");
+        }).catch((err) => {
+            alert("Ошибка базы: " + err.message + "\nПроверь Rules в Firebase!");
+        });
     }
-    
-    // Временно выключаем режим редактора для чистого сохранения
-    if (isEditMode) toggleEditMode();
-
-    db.ref('vfl_v8/global_state').set({
-        html: main.innerHTML,
-        timestamp: Date.now()
-    }).then(() => alert("✅ ОПУБЛИКОВАНО! Данные обновлены на всех устройствах."));
-}
-
-// --- ФУНКЦИЯ 3: РЕДАКТОР ТЕКСТА ---
-function toggleEditMode() {
-    isEditMode = !isEditMode;
-    const btn = document.getElementById('btn-edit');
-    btn.innerText = isEditMode ? "✅ ЗАКОНЧИТЬ" : "✏️ ПРАВИТЬ ТЕКСТ";
-    btn.style.background = isEditMode ? "#e67e22" : "#3498db";
-
-    document.querySelectorAll('td, th, span, p, .player-name').forEach(el => {
-        if (!el.closest('#acsor-admin-panel')) {
-            el.contentEditable = isEditMode;
-            el.classList.toggle('editing-now', isEditMode);
-        }
-    });
-}
-
-// --- ФУНКЦИЯ 4: ИНЪЕКЦИЯ ИНТЕРФЕЙСА ---
-function injectAdminUI() {
-    if (document.getElementById('acsor-admin-panel')) return;
-
-    const panel = document.createElement('div');
-    panel.id = 'acsor-admin-panel';
-    panel.innerHTML = `
-        <div id="secret-unlock"></div>
-        <button id="acsor-gear">⚙</button>
-        <div id="acsor-menu">
-            <button id="btn-save" class="acsor-btn">🌍 ОПУБЛИКОВАТЬ ДЛЯ ВСЕХ</button>
-            <button id="btn-edit" class="acsor-btn">✏️ ПРАВИТЬ ТЕКСТ</button>
-            <div style="font-size:8px; color:#555; text-align:center;">IFCL CLOUD SYNC ACTIVE</div>
-        </div>
-    `;
-    document.body.appendChild(panel);
-
-    document.getElementById('secret-unlock').onclick = () => {
-        if (prompt("ADMIN CODE:") === "123") {
-            isAcsorAdmin = true;
-            document.getElementById('acsor-gear').style.display = 'block';
-            alert("Режим администратора активирован");
-        }
-    };
-
-    document.getElementById('acsor-gear').onclick = () => {
-        const m = document.getElementById('acsor-menu');
-        m.style.display = m.style.display === 'block' ? 'none' : 'block';
-    };
-
-    document.getElementById('btn-save').onclick = saveToCloud;
-    document.getElementById('btn-edit').onclick = toggleEditMode;
-}
-
-// --- ФУНКЦИЯ 5: АВТО-ПРОБУЖДЕНИЕ ПРИЛОЖЕНИЯ ---
-function wakeUp() {
-    const infoBtn = document.querySelector('.header__info') || document.querySelector('[class*="info"]');
-    if (infoBtn && !window.appIsActive) {
-        infoBtn.click();
-        window.appIsActive = true;
-    }
-}
-
-// ЗАПУСК ЦИКЛА ПРОВЕРОК (Каждую секунду восстанавливаем интерфейс если он пропал)
-setInterval(() => {
-    injectAdminUI();
-    wakeUp();
-    // Красим оценки
-    document.querySelectorAll('.p-rating:not([data-v8])').forEach(r => {
-        const val = parseFloat(r.innerText.replace(',', '.'));
-        if (!isNaN(val)) {
-            r.style.background = val >= 7 ? '#2ecc71' : (val >= 5 ? '#f1c40f' : '#e74c3c');
-            r.dataset.v8 = "1";
-        }
-    });
-}, 1000);
-
-// Инициализация синхронизации
-syncFromCloud();
+};
 </script>
     
 </body>
