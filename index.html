@@ -942,19 +942,10 @@
     document.addEventListener('mouseup', end);
     document.addEventListener('touchend', end);
 
-    // ПОСТОЯННЫЕ ПРОВЕРКИ
-    setInterval(() => {
-        autoAwake(); // Пробуждаем приложение
-        init();      // Рисуем интерфейс
-    }, 1500);
-
-})();
-</script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
 <script>
-// ТВОЙ КОНФИГ ИЗ СООБЩЕНИЯ
 const firebaseConfig = {
   apiKey: "AIzaSyDT3iQ37PlrtHkD2dQwFYf8MEq7yVKNiIY",
   authDomain: "ifclscore.firebaseapp.com",
@@ -962,55 +953,62 @@ const firebaseConfig = {
   storageBucket: "ifclscore.firebasestorage.app",
   messagingSenderId: "451303174661",
   appId: "1:451303174661:web:d9e26b389765c3cc7b226c",
-  measurementId: "G-LFWG1YMZDN",
-  databaseURL: "https://ifclscore-default-rtdb.firebaseio.com" // Добавил путь к базе
+  databaseURL: "https://ifclscore-default-rtdb.firebaseio.com"
 };
 
-// Инициализация
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const database = firebase.database();
 
-// 1. ЗАГРУЗКА ДАННЫХ ДЛЯ ВСЕХ
-// Скрипт ждет 3 секунды (чтобы сайт точно прогрузился) и ставит сохраненную инфу
-setTimeout(() => {
-    database.ref('vfl_cloud_data/main_save').once('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data && data.html) {
-            const mainArea = document.querySelector('main');
-            if (mainArea) {
+// 1. УМНАЯ ЗАГРУЗКА (Ищет контент, пока не найдет)
+let loadAttempts = 0;
+const tryLoad = setInterval(() => {
+    const mainArea = document.querySelector('main');
+    // Если сайт прогрузил основную часть
+    if (mainArea) {
+        database.ref('vfl_cloud_data/main_save').once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.html && data.html.length > 100) {
                 mainArea.innerHTML = data.html;
-                console.log("Данные лиги успешно подтянуты из облака!");
             }
-        }
-    });
-}, 3000);
+        });
+        clearInterval(tryLoad); // Останавливаем проверки
+    }
+    loadAttempts++;
+    if (loadAttempts > 10) clearInterval(tryLoad); // Если за 20 секунд не прогрузилось - сдаемся
+}, 2000);
 
-// 2. КНОПКА СОХРАНЕНИЯ (Для тебя)
-// Создаем кнопку, которая не мешает твоему основному дизайну
+// 2. КНОПКА СОХРАНЕНИЯ (Не мешает, пароль скрыт)
 const saveBtn = document.createElement('button');
-saveBtn.innerHTML = '📂 ОТПРАВИТЬ В ОБЛАКО';
-saveBtn.style.cssText = 'position:fixed; bottom:10px; left:10px; z-index:100000; background:#27ae60; color:white; border:none; padding:10px; border-radius:5px; font-size:10px; cursor:pointer; opacity:0.3;';
-// Кнопка почти прозрачная, чтобы не бесила, но ты её увидишь в углу
+saveBtn.innerHTML = '☁️'; // Просто иконка облака
+// Поднял на 120px от низа и сделал круглой
+saveBtn.style.cssText = 'position:fixed; bottom:120px; right:15px; z-index:100000; background:#27ae60; color:white; border:none; border-radius:50%; width:50px; height:50px; font-size:20px; cursor:pointer; opacity:0.4; box-shadow: 0 4px 8px rgba(0,0,0,0.4);';
+
 saveBtn.onmouseover = function() { this.style.opacity = '1'; };
-saveBtn.onmouseout = function() { this.style.opacity = '0.3'; };
+saveBtn.onmouseout = function() { this.style.opacity = '0.4'; };
 
 document.body.appendChild(saveBtn);
 
 saveBtn.onclick = function() {
-    const adminPass = prompt("Введите пароль для синхронизации (123):");
+    const adminPass = prompt("Пароль администратора:");
     if (adminPass === "123") {
-        const currentContent = document.querySelector('main').innerHTML;
+        const currentContent = document.querySelector('main');
+        if (!currentContent) {
+            alert("Ошибка: Контент не найден. Подожди пока страница загрузится.");
+            return;
+        }
         
         database.ref('vfl_cloud_data/main_save').set({
-            html: currentContent,
+            html: currentContent.innerHTML,
             time: Date.now()
         }).then(() => {
-            alert("✅ ГОТОВО! Теперь на всех устройствах будет эта версия таблиц и поля.");
+            alert("✅ БАЗА ОБНОВЛЕНА! Зайди с другого устройства.");
         }).catch((err) => {
-            alert("Ошибка базы: " + err.message + "\nПроверь Rules в Firebase!");
+            alert("Ошибка: " + err.message);
         });
+    } else if (adminPass !== null) {
+        alert("❌ Отказано в доступе.");
     }
 };
 </script>
