@@ -941,11 +941,6 @@
     document.addEventListener('touchmove', move, {passive: false});
     document.addEventListener('mouseup', end);
     document.addEventListener('touchend', end);
-
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 try {
@@ -954,7 +949,7 @@ try {
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 1. СОЗДАНИЕ КНОПКИ СОХРАНЕНИЯ (Изначально скрыта: display:none)
+    // 1. СОЗДАНИЕ КНОПКИ СОХРАНЕНИЯ (Скрыта по умолчанию)
     const saveBtn = document.createElement('button');
     saveBtn.id = 'supabase-save-btn';
     saveBtn.innerHTML = '☁️';
@@ -963,18 +958,17 @@ try {
     saveBtn.onmouseover = function() { this.style.opacity = '1'; this.style.transform = 'scale(1.1)'; };
     saveBtn.onmouseout = function() { this.style.opacity = '0.6'; this.style.transform = 'scale(1)'; };
 
-    // 2. СОЗДАНИЕ СЕКРЕТНОГО НЕВИДИМОГО СЕНСОРА (В левом верхнем углу)
+    // 2. СЕКРЕТНЫЙ СЕНСОР (В левом верхнем углу)
     const adminSensor = document.createElement('div');
     adminSensor.id = 'supabase-admin-sensor';
-    adminSensor.style.cssText = 'position:fixed; top:0; left:0; width:50px; height:50px; z-index:9999999; background:transparent; cursor:default;';
+    adminSensor.style.cssText = 'position:fixed; top:0; left:0; width:50px; height:50px; z-index:9999999; background:transparent;';
 
-    // Функция вживления элементов в экран
     function injectAdminTools() {
         if (!document.getElementById('supabase-save-btn')) document.body.appendChild(saveBtn);
         if (!document.getElementById('supabase-admin-sensor')) document.body.appendChild(adminSensor);
     }
 
-    // 3. УМНАЯ ЗАГРУЗКА ДАННЫХ ДЛЯ ВСЕХ ИГРОКОВ
+    // 3. УМНАЯ ЗАГРУЗКА (Теперь ищет id: 1)
     let supabaseAttempts = 0;
     const loadFromSupabase = setInterval(async () => {
         if (document.body) {
@@ -983,26 +977,24 @@ try {
                 const { data, error } = await supabase
                     .from('ifcl_data')
                     .select('html_content')
-                    .eq('id', 'main_save')
+                    .eq('id', 1) // Передаем число 1
                     .maybeSingle();
                 
                 if (data && data.html_content) {
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = data.html_content;
                     
-                    // Защита от дублей элементов при перезаписи HTML
                     const oldBtn = tempDiv.querySelector('#supabase-save-btn');
                     if (oldBtn) oldBtn.remove();
                     const oldSensor = tempDiv.querySelector('#supabase-admin-sensor');
                     if (oldSensor) oldSensor.remove();
 
                     document.body.innerHTML = tempDiv.innerHTML;
-                    console.log("✅ Данные лиги успешно подтянуты из облака!");
+                    console.log("✅ Данные успешно загружены из Supabase!");
                 }
             } catch (err) {
-                console.error("Ошибка загрузки базы:", err);
+                console.error("Ошибка загрузки:", err);
             }
-            // В любом случае выводим элементы управления на страницу
             injectAdminTools();
         }
         supabaseAttempts++;
@@ -1012,33 +1004,31 @@ try {
         }
     }, 1500);
 
-    // 4. ЛОГИКА СЕКРЕТНОГО СЕНСОРА (Вызов админки)
+    // 4. ВЫЗОВ АДМИНКИ ПО ТАПУ В УГОЛ
     adminSensor.onclick = function() {
         const adminPass = prompt("Режим разработчика IFCL. Введите код админа:");
         if (adminPass === "123") {
-            saveBtn.style.display = 'flex'; // Показываем кнопку сохранения
+            saveBtn.style.display = 'flex';
             alert("🔓 Доступ разрешен! Кнопка сохранения появилась справа внизу.");
         } else if (adminPass !== null) {
             alert("❌ Неверный код доступа.");
         }
     };
 
-    // 5. ЛОГИКА КНОПКИ СОХРАНЕНИЯ (Прямое сохранение)
+    // 5. СОХРАНЕНИЕ ДАННЫХ (Записывает в id: 1)
     saveBtn.onclick = async function() {
         saveBtn.innerHTML = '⏳';
         
-        // Временно убираем элементы, чтобы они не засейвились в чистый код страницы
         saveBtn.remove();
         adminSensor.remove();
         const cleanHTML = document.body.innerHTML;
         
-        // Возвращаем обратно на экран
         document.body.appendChild(saveBtn);
         document.body.appendChild(adminSensor);
 
         const { error } = await supabase
             .from('ifcl_data')
-            .upsert({ id: 'main_save', html_content: cleanHTML });
+            .upsert({ id: 1, html_content: cleanHTML }); // Сохраняем под числовым id 1
 
         saveBtn.innerHTML = '☁️';
 
@@ -1050,7 +1040,7 @@ try {
     };
 
 } catch (globalError) {
-    console.error("Критический сбой скрипта базы:", globalError);
+    console.error("Критический сбой скрипта:", globalError);
 }
 </script>
     
