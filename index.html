@@ -950,17 +950,18 @@ try {
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 1. СОЗДАНИЕ КНОПКИ (Видна всегда, чтобы удобно тестить)
+    // 1. СОЗДАНИЕ КНОПКИ (ПОДНЯЛИ ВЫШЕ И ВЫВЕЛИ НА САМЫЙ ПЕРЕДНИЙ ПЛАН)
     const saveBtn = document.createElement('button');
     saveBtn.id = 'supabase-save-btn';
     saveBtn.innerHTML = '☁️';
-    saveBtn.style.cssText = 'position:fixed; bottom:140px; right:15px; z-index:9999999; background:#3ecf8e; color:white; border:none; border-radius:50%; width:55px; height:55px; font-size:24px; cursor:pointer; opacity:0.8; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; display:flex; justify-content:center; align-items:center;';
+    // bottom: 250px (было 140px) — теперь она поднялась выше нижнего меню бота
+    saveBtn.style.cssText = 'position:fixed; bottom:250px; right:20px; z-index:999999999; background:#3ecf8e; color:white; border:none; border-radius:50%; width:60px; height:60px; font-size:28px; cursor:pointer; opacity:0.9; box-shadow: 0 6px 15px rgba(0,0,0,0.4); transition: all 0.3s ease; display:flex; justify-content:center; align-items:center;';
 
     function injectSaveButton() {
         if (!document.getElementById('supabase-save-btn')) document.body.appendChild(saveBtn);
     }
 
-    // 2. АВТО-ЗАГРУЗКА ИЗ БАЗЫ ПО ТВОЕМУ ТЕКСТОВОМУ ID
+    // 2. АВТО-ЗАГРУЗКА ИЗ БАЗЫ
     let supabaseAttempts = 0;
     const loadFromSupabase = setInterval(async () => {
         if (document.body) {
@@ -969,7 +970,7 @@ try {
                 const { data, error } = await supabase
                     .from('ifcl_data')
                     .select('html_content')
-                    .eq('id', 'main_save') // Твой текстовый ID, который ты создал
+                    .eq('id', 'main_save')
                     .maybeSingle();
                 
                 if (data && data.html_content) {
@@ -980,7 +981,7 @@ try {
                     if (oldBtn) oldBtn.remove();
 
                     document.body.innerHTML = tempDiv.innerHTML;
-                    console.log("✅ Данные лиги успешно загружены из облака!");
+                    console.log("✅ Данные лиги загружены!");
                 }
             } catch (err) {
                 console.error("Ошибка загрузки:", err);
@@ -994,7 +995,7 @@ try {
         }
     }, 1500);
 
-    // 3. СОХРАНЕНИЕ ПО КЛИКУ НА ОБЛАКО (С ПАРОЛЕМ)
+    // 3. СОХРАНЕНИЕ ПО КЛИКУ С ПАРОЛЕМ
     saveBtn.onclick = async function(e) {
         e.preventDefault();
         
@@ -1007,7 +1008,6 @@ try {
             const cleanHTML = document.body.innerHTML;
             document.body.appendChild(saveBtn);
 
-            // Отправляем данные в твой новый текстовый столбец id
             const { error } = await supabase
                 .from('ifcl_data')
                 .upsert({ id: 'main_save', html_content: cleanHTML });
@@ -1015,9 +1015,9 @@ try {
             saveBtn.innerHTML = '☁️';
 
             if (error) {
-                alert("❌ Ошибка сохранения: " + error.message + "\nПроверь, что RLS точно отключен!");
+                alert("❌ Ошибка сохранения: " + error.message);
             } else {
-                alert("✅ ПОБЕДА! Всё идеально сохранено в Supabase.");
+                alert("✅ ВСЁ ИДЕАЛЬНО СОХРАНЕНО В ОБЛАКО!");
             }
         } else if (adminPass !== null) {
             alert("❌ Неверный код.");
