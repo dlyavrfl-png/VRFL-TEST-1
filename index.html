@@ -740,7 +740,7 @@
             input.click();
         }
 
-        // СТАРТ
+            // СТАРТ
         nav('matches');
     </script>
     <style>
@@ -893,7 +893,7 @@
         `;
         
         document.querySelectorAll('.player-node').forEach((p, i) => {
-            const name = p.querySelector('.p-rating')?.parentElement?.innerText || `Игрок ${i+1}`;
+    const name = p.querySelector('.p-rating')?.parentElement?.innerText || `Игрок ${i+1}`;
             const isOff = p.style.display === 'none';
             html += `<div class="acsor-player-row ${isOff ? 'off' : ''}" data-idx="${i}">
                 <span>${name}</span>
@@ -941,6 +941,7 @@
     document.addEventListener('touchmove', move, {passive: false});
     document.addEventListener('mouseup', end);
     document.addEventListener('touchend', end);
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 try {
@@ -949,26 +950,20 @@ try {
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 1. СОЗДАНИЕ КНОПКИ СОХРАНЕНИЯ (Скрыта по умолчанию)
+    // 1. КНОПКА СОХРАНЕНИЯ (Скрыта по умолчанию)
     const saveBtn = document.createElement('button');
     saveBtn.id = 'supabase-save-btn';
     saveBtn.innerHTML = '☁️';
-    saveBtn.style.cssText = 'position:fixed; bottom:140px; right:15px; z-index:999999; background:#3ecf8e; color:white; border:none; border-radius:50%; width:55px; height:55px; font-size:24px; cursor:pointer; opacity:0.6; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; display:none; justify-content:center; align-items:center;';
+    saveBtn.style.cssText = 'position:fixed; bottom:140px; right:15px; z-index:9999999; background:#3ecf8e; color:white; border:none; border-radius:50%; width:55px; height:55px; font-size:24px; cursor:pointer; opacity:0.6; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; display:none; justify-content:center; align-items:center;';
     
     saveBtn.onmouseover = function() { this.style.opacity = '1'; this.style.transform = 'scale(1.1)'; };
     saveBtn.onmouseout = function() { this.style.opacity = '0.6'; this.style.transform = 'scale(1)'; };
 
-    // 2. СЕКРЕТНЫЙ СЕНСОР (В левом верхнем углу)
-    const adminSensor = document.createElement('div');
-    adminSensor.id = 'supabase-admin-sensor';
-    adminSensor.style.cssText = 'position:fixed; top:0; left:0; width:50px; height:50px; z-index:9999999; background:transparent;';
-
-    function injectAdminTools() {
+    function injectSaveButton() {
         if (!document.getElementById('supabase-save-btn')) document.body.appendChild(saveBtn);
-        if (!document.getElementById('supabase-admin-sensor')) document.body.appendChild(adminSensor);
     }
 
-    // 3. УМНАЯ ЗАГРУЗКА (Теперь ищет id: 1)
+    // 2. ЗАГРУЗКА ДАННЫХ ИЗ ОБЛАКА
     let supabaseAttempts = 0;
     const loadFromSupabase = setInterval(async () => {
         if (document.body) {
@@ -977,7 +972,7 @@ try {
                 const { data, error } = await supabase
                     .from('ifcl_data')
                     .select('html_content')
-                    .eq('id', 1) // Передаем число 1
+                    .eq('id', 1)
                     .maybeSingle();
                 
                 if (data && data.html_content) {
@@ -986,8 +981,6 @@ try {
                     
                     const oldBtn = tempDiv.querySelector('#supabase-save-btn');
                     if (oldBtn) oldBtn.remove();
-                    const oldSensor = tempDiv.querySelector('#supabase-admin-sensor');
-                    if (oldSensor) oldSensor.remove();
 
                     document.body.innerHTML = tempDiv.innerHTML;
                     console.log("✅ Данные успешно загружены из Supabase!");
@@ -995,46 +988,62 @@ try {
             } catch (err) {
                 console.error("Ошибка загрузки:", err);
             }
-            injectAdminTools();
+            injectSaveButton();
         }
         supabaseAttempts++;
         if (supabaseAttempts > 15) {
             clearInterval(loadFromSupabase);
-            injectAdminTools();
+            injectSaveButton();
         }
     }, 1500);
 
-    // 4. ВЫЗОВ АДМИНКИ ПО ТАПУ В УГОЛ
-    adminSensor.onclick = function() {
-        const adminPass = prompt("Режим разработчика IFCL. Введите код админа:");
-        if (adminPass === "123") {
-            saveBtn.style.display = 'flex';
-            alert("🔓 Доступ разрешен! Кнопка сохранения появилась справа внизу.");
-        } else if (adminPass !== null) {
-            alert("❌ Неверный код доступа.");
-        }
-    };
+    // 3. ОТСЛЕЖИВАНИЕ ТРОЙНОГО КЛИКА В ЛЮБОМ МЕСТЕ ЭКРАНА
+    let clickCount = 0;
+    let clickTimer;
 
-    // 5. СОХРАНЕНИЕ ДАННЫХ (Записывает в id: 1)
-    saveBtn.onclick = async function() {
+    document.addEventListener('click', function() {
+        clickCount++;
+        
+        if (clickCount === 1) {
+            // Если за 600 миллисекунд не кликнули еще дважды — сбрасываем счетчик
+            clickTimer = setTimeout(function() {
+                clickCount = 0;
+            }, 600);
+        } else if (clickCount === 3) {
+            clearTimeout(clickTimer);
+            clickCount = 0;
+            
+            // Вызываем окно админа
+            const adminPass = prompt("Режим разработчика IFCL. Введите код админа:");
+            if (adminPass === "123") {
+                if (navigator.vibrate) navigator.vibrate(100);
+                saveBtn.style.display = 'flex'; // Показываем зеленую кнопку сохранения
+                alert("🔓 Доступ разрешен! Кнопка сохранения появилась справа внизу.");
+            } else if (adminPass !== null) {
+                alert("❌ Неверный код доступа.");
+            }
+        }
+    });
+
+    // 4. КЛИК ПО КНОПКЕ СОХРАНЕНИЯ
+    saveBtn.onclick = async function(e) {
+        e.stopPropagation(); // Чтобы клик по кнопке не считался за клик для админки
         saveBtn.innerHTML = '⏳';
         
         saveBtn.remove();
-        adminSensor.remove();
         const cleanHTML = document.body.innerHTML;
-        
         document.body.appendChild(saveBtn);
-        document.body.appendChild(adminSensor);
 
         const { error } = await supabase
             .from('ifcl_data')
-            .upsert({ id: 1, html_content: cleanHTML }); // Сохраняем под числовым id 1
+            .upsert({ id: 1, html_content: cleanHTML });
 
         saveBtn.innerHTML = '☁️';
 
         if (error) {
             alert("❌ Ошибка сохранения: " + error.message);
         } else {
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
             alert("✅ ВСЁ ИДЕАЛЬНО СОХРАНЕНО! Изменения отправлены в облако.");
         }
     };
