@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IFCLSCORE - ADMIN PANEL</title>
+    <title>RTPLSCORE - ADMIN PANEL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -741,264 +741,95 @@
         }
 <style>
     /* ПОЛЕ */
-    #pitch-players {
-        background-color: #143011 !important;
-        background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10%, transparent 10%, transparent 20%) !important;
-        position: relative !important;
-        border: 2px solid #ffffff33 !important;
-        min-height: 520px !important;
-        touch-action: none;
-    }
+    #pitch-players { background-color: #143011 !important; background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10%, transparent 10%, transparent 20%) !important; position: relative !important; border: 2px solid #ffffff33 !important; min-height: 520px !important; touch-action: none; }
     .p-rating { font-weight: bold !important; border-radius: 4px !important; padding: 2px 5px !important; color: #000 !important; }
-
-    /* АДМИН-ПАНЕЛЬ И ШЕСТЕРЕНКА */
-    #acsor-admin-trigger { position: absolute; top: 0; left: 0; width: 50px; height: 50px; z-index: 10001; cursor: pointer; opacity: 0; background: transparent; }
-    #acsor-gear { display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; background: #d90429; color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.7); justify-content: center; align-items: center; }
     
-    #acsor-menu { 
-        display: none; position: absolute; right: 10px; top: 60px; background: #0f0f0f; border: 1px solid #444; 
-        width: 240px; max-height: 400px; overflow-y: auto; border-radius: 12px; z-index: 10002; padding: 10px; color: white;
-        box-shadow: 0 10px 30px rgba(0,0,0,1);
-    }
-
+    /* АДМИН-ПАНЕЛЬ И ШЕСТЕРЕНКА */
+    #acsor-admin-trigger { position: absolute; top: 0; left: 0; width: 50px; height: 50px; z-index: 10001; cursor: pointer; opacity: 0; }
+    #acsor-gear { display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; background: #d90429; color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center;}
+    #acsor-menu { display: none; position: absolute; right: 10px; top: 60px; background: #0f0f0f; border: 1px solid #444; width: 240px; max-height: 400px; overflow-y: auto; border-radius: 12px; z-index: 10002; padding: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,1); }
+    
     /* КНОПКИ В МЕНЮ */
-    .acsor-btn { width: 100%; padding: 12px; margin-bottom: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; text-transform: uppercase; display: block; text-align: center; }
-    .btn-save { background: #3498db; color: #fff; }
-    .btn-cloud { background: #3ecf8e; color: #fff; margin-bottom: 12px; }
-    .btn-edit { background: #222; color: #fff; border: 1px solid #444; }
-    .btn-edit.active { background: #e67e22; border: none; }
-
+    .acsor-btn { width: 100%; padding: 12px; margin-bottom: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; text-transform: uppercase; }
+    .btn-save { background: #2ecc71; color: #fff; }
+    .btn-edit { background: #3498db; color: #fff; }
+    .btn-edit.active { background: #e67e22; }
     .acsor-player-row { padding: 8px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; font-size: 13px; cursor: pointer; }
     .acsor-player-row.off { color: #555; text-decoration: line-through; }
+    body.acsor-edit-mode [contenteditable="true"] { outline: 1px dashed #d90429 !important; background-color: rgba(217, 4, 41, 0.1) !important; }
 
-    /* ПОДСВЕТКА РЕДАКТИРОВАНИЯ ТАБЛИЦ */
-    body.acsor-edit-mode [contenteditable="true"] {
-        outline: 1px dashed #d90429 !important;
-        background-color: rgba(217, 4, 41, 0.1) !important;
-    }
+    /* КНОПКА ОБЛАКА (ОТДЕЛЬНАЯ И ВИДИМАЯ) */
+    #supabase-cloud-btn { position:fixed; bottom:30px; right:20px; z-index:9999999; background:#3ecf8e; color:white; border:none; border-radius:50%; width:60px; height:60px; font-size:28px; cursor:pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); display:flex; justify-content:center; align-items:center; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 (function() {
-    const PWD = '123'; // Единый пароль для всего
+    const PWD = '123';
     let isAdmin = false;
     let isEditing = false;
     const STORAGE_KEY = 'acsor_final_save_v5';
-
-    // Конфиг твоей базы данных Supabase
+    
     const SUPABASE_URL = "https://hyfmuqyymtixuwppbstd.supabase.co";
     const SUPABASE_KEY = "sb_publishable_k95RyDRPAgi-sEgDbeMYFQ_UH36c4UY";
-    let supabaseClient = null;
+    const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-    if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
-
-    // 1. АВТОЗАГРУЗКА ВКЛАДОК ДЛЯ ПОДТЯГИВАНИЯ ДАННЫХ
-    function autoAwake() {
-        const triggers = document.querySelectorAll('button, div, span, li');
-        triggers.forEach(el => {
-            const text = el.innerText ? el.innerText.trim() : '';
-            if (['!', 'Матчи', 'Туры', 'Таблица', 'Клубы'].includes(text)) {
-                if (!el.dataset.acsorClicked) {
-                    el.click();
-                    el.dataset.acsorClicked = "true";
-                }
+    // --- ФУНКЦИЯ ДОБАВЛЕНИЯ КНОПОК ---
+    function injectTools() {
+        const pitch = document.getElementById('pitch-players');
+        if (pitch) {
+            if (!pitch.querySelector('.pitch-svg')) {
+                pitch.insertAdjacentHTML('afterbegin', `<svg class="pitch-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.3;"><line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/><circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/><rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/><rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/></svg>`);
             }
-        });
-    }
-
-    // 2. ЛОКАЛЬНОЕ СОХРАНЕНИЕ И ЗАГРУЗКА РАССТАНОВКИ
-    function saveFormation() {
-        const pitchData = [];
-        document.querySelectorAll('.player-node').forEach((p, i) => {
-            pitchData.push({
-                index: i,
-                top: p.style.top,
-                left: p.style.left,
-                visible: p.style.display !== 'none'
-            });
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(pitchData));
-        alert('✅ Расстановка сохранена локально!');
-    }
-
-    function loadFormation() {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) return;
-        const data = JSON.parse(saved);
-        const players = document.querySelectorAll('.player-node');
-        data.forEach(item => {
-            if (players[item.index]) {
-                const p = players[item.index];
-                p.style.top = item.top;
-                p.style.left = item.left;
-                p.style.display = item.visible ? 'flex' : 'none';
-                p.classList.toggle('on-pitch', item.visible);
+            if (!document.getElementById('acsor-admin-trigger')) {
+                pitch.insertAdjacentHTML('beforeend', `<div id="acsor-admin-trigger"></div><button id="acsor-gear">⚙</button><div id="acsor-menu"></div>`);
             }
-        });
+        }
+        if (!document.getElementById('supabase-cloud-btn')) {
+            document.body.insertAdjacentHTML('beforeend', `<button id="supabase-cloud-btn">☁️</button>`);
+        }
     }
 
-    // 3. СИНХРОНИЗАЦИЯ С ОБЛАКОМ SUPABASE
-    async function loadFromSupabase() {
-        if (!supabaseClient) return;
+    // --- ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE ---
+    async function loadData() {
+        if (!supabase) return;
         try {
-            const { data, error } = await supabaseClient
-                .from('ifcl_data')
-                .select('html_content')
-                .eq('id', 'main_save')
-                .maybeSingle();
-            
+            const { data, error } = await supabase.from('ifcl_data').select('html_content').eq('id', 'main_save').maybeSingle();
             if (data && data.html_content) {
-                // Извлекаем чистый контент страницы, отсекая наши админские кнопки
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = data.html_content;
-                
-                const oldTrigger = tempDiv.querySelector('#acsor-admin-trigger');
-                if (oldTrigger) oldTrigger.remove();
-                const oldGear = tempDiv.querySelector('#acsor-gear');
-                if (oldGear) oldGear.remove();
-                const oldMenu = tempDiv.querySelector('#acsor-menu');
-                if (oldMenu) oldMenu.remove();
-
-                document.body.innerHTML = tempDiv.innerHTML;
-                console.log("✅ Актуальные данные лиги загружены из Supabase!");
-                
-                // Переинициализируем интерфейс поверх новых данных
-                reInjectAdminTools();
+                // Удаляем старые кнопки перед вставкой чистого HTML, чтобы они не дублировались
+                document.querySelectorAll('#supabase-cloud-btn, #acsor-admin-trigger, #acsor-gear, #acsor-menu').forEach(e => e.remove());
+                document.body.innerHTML = data.html_content;
+                console.log("✅ Данные лиги загружены из Supabase");
             }
-        } catch (err) {
-            console.error("Ошибка загрузки облака:", err);
-        }
-    }
-
-    async function saveToSupabase(btnElement) {
-        if (!supabaseClient) return;
-        btnElement.innerHTML = '⏳ Синхронизация...';
-        btnElement.style.opacity = '0.5';
-
-        // Чистим HTML от админки перед отправкой в облако
-        const trigger = document.getElementById('acsor-admin-trigger');
-        const gear = document.getElementById('acsor-gear');
-        const menu = document.getElementById('acsor-menu');
+        } catch(e) { console.error("Ошибка Supabase:", e); }
         
-        if (trigger) trigger.remove();
-        if (gear) gear.remove();
-        if (menu) menu.remove();
-
-        const cleanHTML = document.body.innerHTML;
-
-        // Возвращаем элементы обратно на экран управления
-        reInjectAdminTools();
-
-        const { error } = await supabaseClient
-            .from('ifcl_data')
-            .upsert({ id: 'main_save', html_content: cleanHTML });
-
-        btnElement.innerHTML = '☁️ Отправить в облако';
-        btnElement.style.opacity = '1';
-
-        if (error) {
-            alert("❌ Ошибка облака: " + error.message);
-        } else {
-            alert("🔥 ПОБЕДА! Все таблицы и расстановки сохранены в облаке Supabase!");
-        }
-    }
-
-    function reInjectAdminTools() {
-        const pitch = document.getElementById('pitch-players');
-        if (!pitch) return;
+        injectTools();
         
-        if (!document.getElementById('acsor-admin-trigger')) {
-            pitch.insertAdjacentHTML('beforeend', `<div id="acsor-admin-trigger"></div><button id="acsor-gear">⚙</button><div id="acsor-menu"></div>`);
-            
-            document.getElementById('acsor-admin-trigger').onclick = () => {
-                if(prompt('Введите код администратора IFCL:') === PWD) {
-                    isAdmin = true;
-                    document.getElementById('acsor-gear').style.style.display = 'flex';
-                    alert('🔓 Режим администратора активирован!');
-                }
-            };
-        }
-        
-        if (isAdmin) {
-            const gear = document.getElementById('acsor-gear');
-            if (gear) gear.style.display = 'flex';
-        }
-    }
-
-    // 4. ГЛАВНАЯ ИНИЦИАЛИЗАЦИЯ ПРИ СТАРТЕ
-    async function init() {
-        const pitch = document.getElementById('pitch-players');
-        if (!pitch) return;
-
-        // Рисуем разметку футбольного поля, если её нет
-        if (!pitch.querySelector('.pitch-svg')) {
-            pitch.insertAdjacentHTML('afterbegin', `<svg class="pitch-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.3;"><line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/><circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/><rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/><rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/></svg>`);
-        }
-
-        // Вживляем скрытую панель админа
-        reInjectAdminTools();
-
-        // Красим оценки игроков
+        // Красим оценки
         document.querySelectorAll('.p-rating').forEach(r => {
             const v = parseFloat(r.innerText.replace(',', '.'));
             if (!isNaN(v)) r.style.backgroundColor = v >= 7.0 ? '#2ecc71' : (v >= 5.0 ? '#f1c40f' : '#e74c3c');
         });
-        
-        // Сначала грузим всё из глобального облака, если не вышло — берем локальный бэкап
-        await loadFromSupabase();
-        loadFormation();
         autoAwake();
     }
 
-    // Умный цикл ожидания загрузки поля в WebApp
-    const checkPitchExist = setInterval(() => {
-        if (document.getElementById('pitch-players')) {
-            clearInterval(checkPitchExist);
-            init();
-        }
-    }, 1000);
-
-    // 5. ОБРАБОТКА КЛИКОВ ПО МЕНЮ УПРАВЛЕНИЯ
-    document.addEventListener('click', (e) => {
-        const menu = document.getElementById('acsor-menu');
-        if (!menu) return;
-
-        if (e.target.id === 'acsor-gear') {
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-            if (menu.style.display === 'block') renderMenu();
-        }
-
-        if (e.target.classList.contains('btn-save')) saveFormation();
-        if (e.target.classList.contains('btn-cloud')) saveToSupabase(e.target);
-        
-        if (e.target.classList.contains('btn-edit')) {
-            isEditing = !isEditing;
-            document.body.classList.toggle('acsor-edit-mode', isEditing);
-            e.target.classList.toggle('active', isEditing);
-            e.target.innerText = isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ';
-            
-            document.querySelectorAll('td, th, span, .player-name, [class*="bomb"], [class*="team"]').forEach(el => {
-                if (!el.closest('#acsor-menu')) el.contentEditable = isEditing;
-            });
-        }
-    });
+    function autoAwake() {
+        document.querySelectorAll('button, div, span, li').forEach(el => {
+            const text = el.innerText ? el.innerText.trim() : '';
+            if (['!', 'Матчи', 'Туры', 'Таблица', 'Клубы'].includes(text)) {
+                if (!el.dataset.acsorClicked) { el.click(); el.dataset.acsorClicked = "true"; }
+            }
+        });
+    }
 
     function renderMenu() {
         const menu = document.getElementById('acsor-menu');
-        if (!menu) return;
-        
         let html = `
-            <button class="acsor-btn btn-save">💾 Сохранить расстановку</button>
-            <button class="acsor-btn btn-cloud">☁️ Отправить в Облако</button>
+            <button class="acsor-btn btn-save">💾 Сохранить локально (Бэкап)</button>
             <button class="acsor-btn btn-edit">${isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ'}</button>
             <hr style="border:0; border-bottom:1px solid #333; margin:10px 0;">
             <div style="font-size:10px; color:#777; margin-bottom:5px;">СОСТАВ МАТЧА:</div>
         `;
-        
         document.querySelectorAll('.player-node').forEach((p, i) => {
             const name = p.querySelector('.p-rating')?.parentElement?.innerText || `Игрок ${i+1}`;
             const isOff = p.style.display === 'none';
@@ -1008,21 +839,89 @@
             </div>`;
         });
         menu.innerHTML = html;
-
-        menu.querySelectorAll('.acsor-player-row').forEach(row => {
-            row.onclick = () => {
-                const idx = row.dataset.idx;
-                const p = document.querySelectorAll('.player-node')[idx];
-                if (p) {
-                    const isHidden = p.style.display === 'none';
-                    p.style.display = isHidden ? 'flex' : 'none';
-                    renderMenu();
-                }
-            };
-        });
     }
 
-    // 6. ПЕРЕТАСКИВАНИЕ ИГРОКОВ ПО ПОЛЮ (DRAG & DROP)
+    // --- ОБРАБОТКА ВСЕХ КЛИКОВ (ДЕЛЕГИРОВАНИЕ) ---
+    document.addEventListener('click', async (e) => {
+        // Триггер админки в левом верхнем углу поля
+        if (e.target.id === 'acsor-admin-trigger') {
+            if(prompt('Код доступа к полю:') === PWD) {
+                isAdmin = true;
+                const gear = document.getElementById('acsor-gear');
+                if(gear) gear.style.display = 'flex';
+            }
+        }
+        
+        // Клик по шестеренке
+        if (e.target.id === 'acsor-gear') {
+            const menu = document.getElementById('acsor-menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            if (menu.style.display === 'block') renderMenu();
+        }
+        
+        // Включение/выключение игроков в меню
+        const playerRow = e.target.closest('.acsor-player-row');
+        if (playerRow) {
+            const idx = playerRow.dataset.idx;
+            const p = document.querySelectorAll('.player-node')[idx];
+            if (p) {
+                p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+                renderMenu();
+            }
+        }
+        
+        // Режим редактирования таблиц
+        if (e.target.classList.contains('btn-edit')) {
+            isEditing = !isEditing;
+            document.body.classList.toggle('acsor-edit-mode', isEditing);
+            e.target.classList.toggle('active', isEditing);
+            e.target.innerText = isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ';
+            document.querySelectorAll('td, th, span, .player-name, [class*="bomb"], [class*="team"]').forEach(el => {
+                if (!el.closest('#acsor-menu')) el.contentEditable = isEditing;
+            });
+        }
+        
+        // ==========================================
+        // КНОПКА ОБЛАКА (СОХРАНЕНИЕ В SUPABASE)
+        // ==========================================
+        if (e.target.id === 'supabase-cloud-btn') {
+            const pass = prompt("Введите код для сохранения в облако:");
+            if (pass === PWD) {
+                const btn = document.getElementById('supabase-cloud-btn');
+                btn.innerText = '⏳';
+                
+                // Вырезаем кнопки перед сохранением, чтобы они не засоряли базу
+                document.querySelectorAll('#supabase-cloud-btn, #acsor-admin-trigger, #acsor-gear, #acsor-menu').forEach(el => el.remove());
+                
+                const cleanHTML = document.body.innerHTML;
+                
+                injectTools(); // Сразу возвращаем кнопки на место
+                if(isAdmin) document.getElementById('acsor-gear').style.display = 'flex'; // Возвращаем шестеренку, если админ
+
+                // Отправляем в базу
+                const { error } = await supabase.from('ifcl_data').upsert({ id: 'main_save', html_content: cleanHTML });
+                
+                document.getElementById('supabase-cloud-btn').innerText = '☁️';
+                
+                if (error) alert("❌ Ошибка сохранения: " + error.message);
+                else alert("✅ ВСЕ ДАННЫЕ УСПЕШНО СОХРАНЕНЫ В ОБЛАКО!");
+            } else if (pass !== null) {
+                alert("❌ Неверный код!");
+            }
+        }
+        
+        // Локальное сохранение (на всякий случай)
+        if (e.target.classList.contains('btn-save')) {
+            const pitchData = [];
+            document.querySelectorAll('.player-node').forEach((p, i) => {
+                pitchData.push({ index: i, top: p.style.top, left: p.style.left, visible: p.style.display !== 'none' });
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(pitchData));
+            alert('✅ Расстановка сохранена локально (бэкап)!');
+        }
+    });
+
+    // --- ПЕРЕТАСКИВАНИЕ ИГРОКОВ (DRAG & DROP) ---
     let drag = null, sx, sy, ix, iy;
     const start = (e) => {
         if (!isAdmin) return;
@@ -1050,7 +949,11 @@
     document.addEventListener('touchmove', move, {passive: false});
     document.addEventListener('mouseup', end);
     document.addEventListener('touchend', end);
-})(); // Безопасное закрытие скрипта, которое спасает твою верстку!
+
+    // --- ЗАПУСК ЧЕРЕЗ 1 СЕКУНДУ (Без зависаний) ---
+    setTimeout(() => { loadData(); }, 1000);
+
+})();
 </script>
     
                             
