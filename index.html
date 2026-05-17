@@ -779,7 +779,7 @@
         background-color: rgba(217, 4, 41, 0.1) !important;
     }
 
-    /* ОТДЕЛЬНАЯ КНОПКА ОБЛАКА */
+    /* КНОПКА ОБЛАКА */
     #supabase-cloud-btn {
         position: fixed; bottom: 20px; right: 20px; z-index: 999999; 
         background: #3ecf8e; color: white; border: none; border-radius: 50%; 
@@ -797,76 +797,12 @@
     let isEditing = false;
     const STORAGE_KEY = 'acsor_final_save_v5';
 
-    // НАСТРОЙКИ ОБЛАКА (ТВОИ ДАННЫЕ)
+    // ПОДКЛЮЧЕНИЕ К ТВОЕЙ БАЗЕ
     const SUPABASE_URL = "https://hyfmuqyymtixuwppbstd.supabase.co";
     const SUPABASE_KEY = "sb_publishable_k95RyDRPAgi-sEgDbeMYFQ_UH36c4UY";
     const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-    // --- БЕЗОПАСНАЯ ОБЁРТКА (ЧТОБЫ ТЕЛЕГРАМ НЕ ЛОМАЛСЯ) ---
-    function createSafeContainer() {
-        if (document.getElementById('ifcl-safe-container')) return;
-        const container = document.createElement('div');
-        container.id = 'ifcl-safe-container';
-        const nodesToMove = [];
-        document.body.childNodes.forEach(node => {
-            if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE' && node.id !== 'supabase-cloud-btn') {
-                nodesToMove.push(node);
-            }
-        });
-        nodesToMove.forEach(node => container.appendChild(node));
-        document.body.insertBefore(container, document.body.firstChild);
-    }
-
-    // --- ЗАГРУЗКА ИЗ ОБЛАКА ПО ТЕКСТОВОМУ ID ---
-    async function loadFromCloud() {
-        if (!supabase) return;
-        try {
-            const { data, error } = await supabase
-                .from('ifcl_data')
-                .select('html')
-                .eq('id', 'main_save') // ТОТ САМЫЙ ТЕКСТОВЫЙ ID
-                .maybeSingle();
-
-            if (data && data.html) {
-                const container = document.getElementById('ifcl-safe-container');
-                if (container) {
-                    container.innerHTML = data.html;
-                }
-            }
-        } catch (err) {
-            console.error("Ошибка загрузки:", err);
-        }
-    }
-
-    // --- КНОПКА СОХРАНЕНИЯ В ОБЛАКО ---
-    function injectCloudButton() {
-        if (document.getElementById('supabase-cloud-btn')) return;
-        const btn = document.createElement('button');
-        btn.id = 'supabase-cloud-btn';
-        btn.innerHTML = '☁️';
-        document.body.appendChild(btn);
-
-        btn.onclick = async () => {
-            const pass = prompt("Код для сохранения в ОБЛАКО:");
-            if (pass === PWD) {
-                const container = document.getElementById('ifcl-safe-container');
-                if (!container) return alert("❌ Ошибка: безопасный контейнер не найден!");
-
-                btn.innerHTML = '⏳';
-                const { error } = await supabase
-                    .from('ifcl_data')
-                    .upsert({ id: 'main_save', html: container.innerHTML }); // ТЕКСТОВЫЙ ID
-                
-                btn.innerHTML = '☁️';
-                if (error) alert("❌ Ошибка Supabase: " + error.message);
-                else alert("✅ ОНЛАЙН-СОХРАНЕНИЕ ПРОШЛО УСПЕШНО!");
-            } else if (pass !== null) {
-                alert("❌ Неверный код!");
-            }
-        };
-    }
-
-    // 1. АВТОЗАГРУЗКА (ПРОБУЖДЕНИЕ ПРИЛОЖЕНИЯ) - ТВОЙ КОД
+    // 1. АВТОЗАГРУЗКА (ПРОБУЖДЕНИЕ ПРИЛОЖЕНИЯ)
     function autoAwake() {
         const triggers = document.querySelectorAll('button, div, span, li');
         triggers.forEach(el => {
@@ -881,7 +817,7 @@
         });
     }
 
-    // 2. СОХРАНЕНИЕ И ЗАГРУЗКА - ТВОЙ КОД
+    // 2. СОХРАНЕНИЕ И ЗАГРУЗКА
     function saveFormation() {
         const pitchData = [];
         document.querySelectorAll('.player-node').forEach((p, i) => {
@@ -912,7 +848,48 @@
         });
     }
 
-    // 3. ИНИЦИАЛИЗАЦИЯ ПОЛЯ - ТВОЙ КОД
+    // КНОПКА ОНЛАЙН-СОХРАНЕНИЯ (БЕЗ ВСЯКИХ ЗАГРУЗОК)
+    function injectCloudButton() {
+        if (document.getElementById('supabase-cloud-btn')) return;
+        const btn = document.createElement('button');
+        btn.id = 'supabase-cloud-btn';
+        btn.innerHTML = '☁️';
+        document.body.appendChild(btn);
+
+        btn.onclick = async () => {
+            const pass = prompt("Код для сохранения в ОБЛАКО:");
+            if (pass === PWD) {
+                btn.innerHTML = '⏳';
+                
+                // Временно тушим кнопки админа перед слепком HTML
+                btn.style.display = 'none';
+                const gear = document.getElementById('acsor-gear');
+                const menu = document.getElementById('acsor-menu');
+                if (gear) gear.style.display = 'none';
+                if (menu) menu.style.display = 'none';
+
+                // Хватаем чистый HTML страницы
+                const currentHtml = document.body.innerHTML;
+
+                // Возвращаем кнопку и шестеренку назад
+                btn.style.display = 'flex';
+                if (gear && isAdmin) gear.style.display = 'block';
+
+                // Отправляем в базу на текстовый id: 'main_save'
+                const { error } = await supabase
+                    .from('ifcl_data')
+                    .upsert({ id: 'main_save', html: currentHtml });
+                
+                btn.innerHTML = '☁️';
+                if (error) alert("❌ Ошибка Supabase: " + error.message);
+                else alert("✅ ДАННЫЕ УСПЕШНО ОТПРАВЛЕНЫ В ОБЛАКО!");
+            } else if (pass !== null) {
+                alert("❌ Неверный код!");
+            }
+        };
+    }
+
+    // 3. ИНИЦИАЛИЗАЦИЯ ПОЛЯ
     function init() {
         const pitch = document.getElementById('pitch-players');
         if (!pitch) return;
@@ -938,7 +915,7 @@
         loadFormation();
     }
 
-    // 4. УПРАВЛЕНИЕ МЕНЮ - ТВОЙ КОД
+    // 4. УПРАВЛЕНИЕ МЕНЮ
     document.addEventListener('click', (e) => {
         const menu = document.getElementById('acsor-menu');
         if (e.target.id === 'acsor-gear') {
@@ -991,7 +968,7 @@
         });
     }
 
-    // 5. ПЕРЕТАСКИВАНИЕ - ТВОЙ КОД
+    // 5. ПЕРЕТАСКИВАНИЕ
     let drag = null, sx, sy, ix, iy;
     const start = (e) => {
         if (!isAdmin) return;
@@ -1020,18 +997,10 @@
     document.addEventListener('mouseup', end);
     document.addEventListener('touchend', end);
 
-    // --- ФИНАЛЬНЫЙ ЗАПУСК ---
-    function bootApp() {
-        createSafeContainer(); // Пакуем код, чтобы не было конфликтов
-        injectCloudButton();   // Показываем кнопку
-        loadFromCloud().then(() => {
-            init(); // ИСПРАВЛЕНИЕ: запускаем инициализацию поля
-            autoAwake(); // Пробуждаем вкладки
-        });
-    }
-
-    // Ждём чуть-чуть и стартуем
-    setTimeout(bootApp, 100);
+    // ИСПРАВЛЕНИЕ ОШИБКИ: Запускаем функции, чтобы они не висели мертвым грузом
+    init();
+    autoAwake();
+    injectCloudButton();
 
 })();
 </script>
