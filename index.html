@@ -739,10 +739,12 @@
             };
             input.click();
         }
-        <script>
-        nav('matches');
-    </script>
-    <style>
+<script>
+    // Защищаем вызов функции nav от ошибки "not defined" при раннем старте
+    try { if (typeof nav === 'function') nav('matches'); } catch(e) { console.log('Ожидание nav...'); }
+</script>
+
+<style>
     /* ПОЛЕ */
     #pitch-players {
         background-color: #143011 !important;
@@ -756,7 +758,7 @@
 
     /* АДМИН-ПАНЕЛЬ */
     #acsor-admin-trigger { position: absolute; top: 0; left: 0; width: 50px; height: 50px; z-index: 10001; cursor: pointer; opacity: 0; }
-    #acsor-gear { display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; background: #d90429; color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
+    #acsor-gear { display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; background: #d90429; color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.7); justify-content: center; align-items: center; }
     
     #acsor-menu { 
         display: none; position: absolute; right: 10px; top: 60px; background: #0f0f0f; border: 1px solid #444; 
@@ -788,8 +790,6 @@
     }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 (function() {
     const PWD = '1234';
@@ -797,17 +797,11 @@
     let isEditing = false;
     const STORAGE_KEY = 'acsor_final_save_v5';
 
-    // ПОДКЛЮЧЕНИЕ К ТВОЕЙ БАЗЕ
-    const SUPABASE_URL = "https://hyfmuqyymtixuwppbstd.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_k95RyDRPAgi-sEgDbeMYFQ_UH36c4UY";
-    const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-
-    // 1. АВТОЗАГРУЗКА (ПРОБУЖДЕНИЕ ПРИЛОЖЕНИЯ)
+    // 1. АВТОЗАГРУЗКА
     function autoAwake() {
         const triggers = document.querySelectorAll('button, div, span, li');
         triggers.forEach(el => {
             const text = el.innerText ? el.innerText.trim() : '';
-            // Авто-клик по вкладкам, чтобы данные подтянулись сразу
             if (['!', 'Матчи', 'Туры', 'Таблица', 'Клубы'].includes(text)) {
                 if (!el.dataset.acsorClicked) {
                     el.click();
@@ -817,7 +811,7 @@
         });
     }
 
-    // 2. СОХРАНЕНИЕ И ЗАГРУЗКА
+    // 2. СОХРАНЕНИЕ И ЗАГРУЗКА (ЛОКАЛЬНО)
     function saveFormation() {
         const pitchData = [];
         document.querySelectorAll('.player-node').forEach((p, i) => {
@@ -829,70 +823,40 @@
             });
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(pitchData));
-        alert('✅ Расстановка сохранена!');
+        alert('✅ Расстановка сохранена локально!');
     }
 
     function loadFormation() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return;
-        const data = JSON.parse(saved);
-        const players = document.querySelectorAll('.player-node');
-        data.forEach(item => {
-            if (players[item.index]) {
-                const p = players[item.index];
-                p.style.top = item.top;
-                p.style.left = item.left;
-                p.style.display = item.visible ? 'flex' : 'none';
-                p.classList.toggle('on-pitch', item.visible);
-            }
-        });
+        try {
+            const data = JSON.parse(saved);
+            const players = document.querySelectorAll('.player-node');
+            data.forEach(item => {
+                if (players[item.index]) {
+                    const p = players[item.index];
+                    p.style.top = item.top;
+                    p.style.left = item.left;
+                    p.style.display = item.visible ? 'flex' : 'none';
+                    p.classList.toggle('on-pitch', item.visible);
+                }
+            });
+        } catch(e) {}
     }
 
-    // КНОПКА ОНЛАЙН-СОХРАНЕНИЯ (БЕЗ ВСЯКИХ ЗАГРУЗОК)
-    function injectCloudButton() {
-        if (document.getElementById('supabase-cloud-btn')) return;
-        const btn = document.createElement('button');
-        btn.id = 'supabase-cloud-btn';
-        btn.innerHTML = '☁️';
-        document.body.appendChild(btn);
-
-        btn.onclick = async () => {
-            const pass = prompt("Код для сохранения в ОБЛАКО:");
-            if (pass === PWD) {
-                btn.innerHTML = '⏳';
-                
-                // Временно тушим кнопки админа перед слепком HTML
-                btn.style.display = 'none';
-                const gear = document.getElementById('acsor-gear');
-                const menu = document.getElementById('acsor-menu');
-                if (gear) gear.style.display = 'none';
-                if (menu) menu.style.display = 'none';
-
-                // Хватаем чистый HTML страницы
-                const currentHtml = document.body.innerHTML;
-
-                // Возвращаем кнопку и шестеренку назад
-                btn.style.display = 'flex';
-                if (gear && isAdmin) gear.style.display = 'block';
-
-                // Отправляем в базу на текстовый id: 'main_save'
-                const { error } = await supabase
-                    .from('ifcl_data')
-                    .upsert({ id: 'main_save', html: currentHtml });
-                
-                btn.innerHTML = '☁️';
-                if (error) alert("❌ Ошибка Supabase: " + error.message);
-                else alert("✅ ДАННЫЕ УСПЕШНО ОТПРАВЛЕНЫ В ОБЛАКО!");
-            } else if (pass !== null) {
-                alert("❌ Неверный код!");
-            }
-        };
-    }
-
-    // 3. ИНИЦИАЛИЗАЦИЯ ПОЛЯ
+    // 3. БРОНЕБОЙНАЯ ИНИЦИАЛИЗАЦИЯ (Ждет появления поля)
     function init() {
         const pitch = document.getElementById('pitch-players');
-        if (!pitch) return;
+        
+        // ЕСЛИ ПОЛЯ ЕЩЕ НЕТ - ЖДЕМ 0.5 СЕКУНДЫ И ПРОБУЕМ СНОВА
+        if (!pitch) {
+            setTimeout(init, 500);
+            return;
+        }
+
+        // Защита от дублирования
+        if (pitch.dataset.ready === "true") return;
+        pitch.dataset.ready = "true";
 
         if (!pitch.querySelector('.pitch-svg')) {
             pitch.insertAdjacentHTML('afterbegin', `<svg class="pitch-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.3;"><line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="0.5"/><circle cx="50" cy="50" r="10" fill="none" stroke="white" stroke-width="0.5"/><rect x="0" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/><rect x="85" y="25" width="15" height="50" fill="none" stroke="white" stroke-width="0.5"/></svg>`);
@@ -901,23 +865,25 @@
             document.getElementById('acsor-admin-trigger').onclick = () => {
                 if(prompt('Код:') === PWD) {
                     isAdmin = true;
-                    document.getElementById('acsor-gear').style.display = 'block';
+                    document.getElementById('acsor-gear').style.display = 'flex';
                 }
             };
         }
 
-        // Красим оценки
         document.querySelectorAll('.p-rating').forEach(r => {
             const v = parseFloat(r.innerText.replace(',', '.'));
             if (!isNaN(v)) r.style.backgroundColor = v >= 7.0 ? '#2ecc71' : (v >= 5.0 ? '#f1c40f' : '#e74c3c');
         });
         
         loadFormation();
+        autoAwake(); // Будим вкладки только когда поле готово
     }
 
     // 4. УПРАВЛЕНИЕ МЕНЮ
     document.addEventListener('click', (e) => {
         const menu = document.getElementById('acsor-menu');
+        if (!menu) return;
+
         if (e.target.id === 'acsor-gear') {
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
             if (menu.style.display === 'block') renderMenu();
@@ -931,7 +897,6 @@
             e.target.classList.toggle('active', isEditing);
             e.target.innerText = isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ';
             
-            // Делаем ВСЕ ячейки и тексты редактируемыми
             document.querySelectorAll('td, th, span, .player-name, [class*="bomb"], [class*="team"]').forEach(el => {
                 if (!el.closest('#acsor-menu')) el.contentEditable = isEditing;
             });
@@ -940,6 +905,8 @@
 
     function renderMenu() {
         const menu = document.getElementById('acsor-menu');
+        if (!menu) return;
+        
         let html = `
             <button class="acsor-btn btn-save">💾 Сохранить расстановку</button>
             <button class="acsor-btn btn-edit">${isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ'}</button>
@@ -997,10 +964,74 @@
     document.addEventListener('mouseup', end);
     document.addEventListener('touchend', end);
 
-    // ИСПРАВЛЕНИЕ ОШИБКИ: Запускаем функции, чтобы они не висели мертвым грузом
-    init();
-    autoAwake();
-    injectCloudButton();
+    // 6. ФОНОВАЯ И БЕЗОПАСНАЯ ЗАГРУЗКА ОБЛАКА (СУПАБЕЙС)
+    function loadCloudAsync() {
+        const script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+        
+        script.onload = () => {
+            try {
+                const SUPABASE_URL = "https://hyfmuqyymtixuwppbstd.supabase.co";
+                const SUPABASE_KEY = "sb_publishable_k95RyDRPAgi-sEgDbeMYFQ_UH36c4UY";
+                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+                if (!document.getElementById('supabase-cloud-btn')) {
+                    const btn = document.createElement('button');
+                    btn.id = 'supabase-cloud-btn';
+                    btn.innerHTML = '☁️';
+                    document.body.appendChild(btn);
+
+                    btn.onclick = async () => {
+                        const pass = prompt("Код для сохранения в ОБЛАКО:");
+                        if (pass === PWD) {
+                            btn.innerHTML = '⏳';
+                            
+                            // Прячем админ-кнопки
+                            btn.style.display = 'none';
+                            const gear = document.getElementById('acsor-gear');
+                            const menu = document.getElementById('acsor-menu');
+                            if (gear) gear.style.display = 'none';
+                            if (menu) menu.style.display = 'none';
+
+                            // Делаем слепок чистого HTML
+                            const currentHtml = document.body.innerHTML;
+
+                            // Возвращаем интерфейс
+                            btn.style.display = 'flex';
+                            if (gear && isAdmin) gear.style.display = 'flex';
+
+                            try {
+                                const { error } = await supabase
+                                    .from('ifcl_data')
+                                    .upsert({ id: 'main_save', html: currentHtml });
+                                
+                                btn.innerHTML = '☁️';
+                                if (error) alert("❌ Ошибка Supabase: " + error.message);
+                                else alert("✅ ДАННЫЕ УСПЕШНО ОТПРАВЛЕНЫ В ОБЛАКО!");
+                            } catch (err) {
+                                alert("❌ Ошибка сети: " + err.message);
+                                btn.innerHTML = '☁️';
+                            }
+                        }
+                    };
+                }
+            } catch (err) {
+                console.log("Ошибка инициализации облака:", err);
+            }
+        };
+        
+        script.onerror = () => console.log("Скрипт Supabase заблокирован, работаем только локально.");
+        document.head.appendChild(script);
+    }
+
+    // --- ФИНАЛЬНЫЙ СТАРТ ---
+    
+    // Запускаем инициализацию поля
+    init(); 
+    
+    // Подгружаем скрипт базы данных через 1.5 секунды, 
+    // чтобы он ВООБЩЕ никак не мешал приложению загружаться
+    setTimeout(loadCloudAsync, 1500); 
 
 })();
 </script>
