@@ -942,91 +942,106 @@
     document.addEventListener('mouseup', end);
     document.addEventListener('touchend', end);
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-try {
-    const SUPABASE_URL = "https://hyfmuqyymtixuwppbstd.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_k95RyDRPAgi-sEgDbeMYFQ_UH36c4UY";
+(function() { // Оборачиваем в функцию, чтобы переменные не конфликтовали с твоим сайтом
+    try {
+        const SUPABASE_URL = "https://hyfmuqyymtixuwppbstd.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_k95RyDRPAgi-sEgDbeMYFQ_UH36c4UY";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        if (!window.supabase) {
+            console.error("Supabase SDK не загрузился!");
+            return;
+        }
 
-    // 1. СОЗДАНИЕ КНОПКИ (ПОДНЯЛИ ВЫШЕ И ВЫВЕЛИ НА САМЫЙ ПЕРЕДНИЙ ПЛАН)
-    const saveBtn = document.createElement('button');
-    saveBtn.id = 'supabase-save-btn';
-    saveBtn.innerHTML = '☁️';
-    // bottom: 250px (было 140px) — теперь она поднялась выше нижнего меню бота
-    saveBtn.style.cssText = 'position:fixed; bottom:250px; right:20px; z-index:999999999; background:#3ecf8e; color:white; border:none; border-radius:50%; width:60px; height:60px; font-size:28px; cursor:pointer; opacity:0.9; box-shadow: 0 6px 15px rgba(0,0,0,0.4); transition: all 0.3s ease; display:flex; justify-content:center; align-items:center;';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    function injectSaveButton() {
-        if (!document.getElementById('supabase-save-btn')) document.body.appendChild(saveBtn);
-    }
+        // 1. СОЗДАНИЕ КНОПКИ (Крупная, сверху по центру, z-index на максимум)
+        const saveBtn = document.createElement('button');
+        saveBtn.id = 'supabase-save-btn';
+        saveBtn.innerHTML = '☁️ Сохранить в облако';
+        saveBtn.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999999999 !important; background:#3ecf8e; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:16px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center;';
 
-    // 2. АВТО-ЗАГРУЗКА ИЗ БАЗЫ
-    let supabaseAttempts = 0;
-    const loadFromSupabase = setInterval(async () => {
-        if (document.body) {
-            clearInterval(loadFromSupabase);
-            try {
-                const { data, error } = await supabase
-                    .from('ifcl_data')
-                    .select('html_content')
-                    .eq('id', 'main_save')
-                    .maybeSingle();
-                
-                if (data && data.html_content) {
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = data.html_content;
+        function injectSaveButton() {
+            if (!document.getElementById('supabase-save-btn') && document.body) {
+                document.body.appendChild(saveBtn);
+            }
+        }
+
+        // 2. БЕЗОПАСНАЯ АВТО-ЗАГРУЗКА
+        let supabaseAttempts = 0;
+        const loadFromSupabase = setInterval(async () => {
+            if (document.body) {
+                clearInterval(loadFromSupabase);
+                try {
+                    const { data, error } = await supabase
+                        .from('ifcl_data')
+                        .select('html_content')
+                        .eq('id', 'main_save')
+                        .maybeSingle();
                     
-                    const oldBtn = tempDiv.querySelector('#supabase-save-btn');
-                    if (oldBtn) oldBtn.remove();
+                    if (data && data.html_content) {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = data.html_content;
+                        
+                        const oldBtn = tempDiv.querySelector('#supabase-save-btn');
+                        if (oldBtn) oldBtn.remove();
 
-                    document.body.innerHTML = tempDiv.innerHTML;
-                    console.log("✅ Данные лиги загружены!");
+                        // Мягко обновляем body, чтобы ничего не сбить
+                        document.body.innerHTML = tempDiv.innerHTML;
+                        console.log("✅ Данные лиги успешно загружены!");
+                    }
+                } catch (err) {
+                    console.error("Ошибка загрузки данных:", err);
                 }
-            } catch (err) {
-                console.error("Ошибка загрузки:", err);
+                injectSaveButton();
             }
-            injectSaveButton();
-        }
-        supabaseAttempts++;
-        if (supabaseAttempts > 15) {
-            clearInterval(loadFromSupabase);
-            injectSaveButton();
-        }
-    }, 1500);
+            supabaseAttempts++;
+            if (supabaseAttempts > 15) {
+                clearInterval(loadFromSupabase);
+                injectSaveButton();
+            }
+        }, 2000);
 
-    // 3. СОХРАНЕНИЕ ПО КЛИКУ С ПАРОЛЕМ
-    saveBtn.onclick = async function(e) {
-        e.preventDefault();
-        
-        const adminPass = prompt("Введите код администратора для сохранения:");
-        
-        if (adminPass === "123") {
-            saveBtn.innerHTML = '⏳';
+        // 3. ЛОГИКА КЛИКА ПО КНОПКЕ
+        saveBtn.onclick = async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             
-            saveBtn.remove();
-            const cleanHTML = document.body.innerHTML;
-            document.body.appendChild(saveBtn);
+            const adminPass = prompt("Введите код администратора для сохранения:");
+            
+            if (adminPass === "123") {
+                saveBtn.innerHTML = '⏳ Сохранение...';
+                saveBtn.disabled = true;
+                
+                saveBtn.remove();
+                const cleanHTML = document.body.innerHTML;
+                document.body.appendChild(saveBtn);
 
-            const { error } = await supabase
-                .from('ifcl_data')
-                .upsert({ id: 'main_save', html_content: cleanHTML });
+                const { error } = await supabase
+                    .from('ifcl_data')
+                    .upsert({ id: 'main_save', html_content: cleanHTML });
 
-            saveBtn.innerHTML = '☁️';
+                saveBtn.innerHTML = '☁️ Сохранить в облако';
+                saveBtn.disabled = false;
 
-            if (error) {
-                alert("❌ Ошибка сохранения: " + error.message);
-            } else {
-                alert("✅ ВСЁ ИДЕАЛЬНО СОХРАНЕНО В ОБЛАКО!");
+                if (error) {
+                    alert("❌ Ошибка сохранения: " + error.message);
+                } else {
+                    alert("✅ УСПЕШНО СОХРАНЕНО В ОБЛАКО!");
+                }
+            } else if (adminPass !== null) {
+                alert("❌ Неверный код.");
             }
-        } else if (adminPass !== null) {
-            alert("❌ Неверный код.");
-        }
-    };
+        };
 
-} catch (globalError) {
-    console.error("Критический сбой скрипта:", globalError);
-}
+        // На всякий случай дублируем вызов кнопки, если DOM готов
+        window.addEventListener('DOMContentLoaded', injectSaveButton);
+
+    } catch (globalError) {
+        console.error("Изолированная ошибка Supabase:", globalError);
+    }
+})();
 </script>
     
 </body>
