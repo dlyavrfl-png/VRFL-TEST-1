@@ -739,7 +739,10 @@
             };
             input.click();
         }
-        <style>
+        <script>
+        nav('matches');
+    </script>
+    <style>
     /* ПОЛЕ */
     #pitch-players {
         background-color: #143011 !important;
@@ -753,7 +756,7 @@
 
     /* АДМИН-ПАНЕЛЬ */
     #acsor-admin-trigger { position: absolute; top: 0; left: 0; width: 50px; height: 50px; z-index: 10001; cursor: pointer; opacity: 0; }
-    #acsor-gear { display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; background: #d90429; color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+    #acsor-gear { display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; background: #d90429; color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
     
     #acsor-menu { 
         display: none; position: absolute; right: 10px; top: 60px; background: #0f0f0f; border: 1px solid #444; 
@@ -786,6 +789,7 @@
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 (function() {
     const PWD = '1234';
@@ -793,45 +797,40 @@
     let isEditing = false;
     const STORAGE_KEY = 'acsor_final_save_v5';
 
-    // SUPABASE НАСТРОЙКИ
+    // НАСТРОЙКИ ОБЛАКА (ТВОИ ДАННЫЕ)
     const SUPABASE_URL = "https://hyfmuqyymtixuwppbstd.supabase.co";
     const SUPABASE_KEY = "sb_publishable_k95RyDRPAgi-sEgDbeMYFQ_UH36c4UY";
     const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-    // --- БЕЗОПАСНАЯ ОБЁРТКА (СПАСАЕТ ОТ БЕСКОНЕЧНОЙ ЗАГРУЗКИ) ---
+    // --- БЕЗОПАСНАЯ ОБЁРТКА (ЧТОБЫ ТЕЛЕГРАМ НЕ ЛОМАЛСЯ) ---
     function createSafeContainer() {
         if (document.getElementById('ifcl-safe-container')) return;
-        
         const container = document.createElement('div');
         container.id = 'ifcl-safe-container';
-        
-        // Засовываем в контейнер только визуал (таблицы, поле), не трогая скрипты ТГ
         const nodesToMove = [];
         document.body.childNodes.forEach(node => {
             if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE' && node.id !== 'supabase-cloud-btn') {
                 nodesToMove.push(node);
             }
         });
-        
         nodesToMove.forEach(node => container.appendChild(node));
         document.body.insertBefore(container, document.body.firstChild);
     }
 
-    // --- ЗАГРУЗКА ИЗ ОБЛАКА ---
+    // --- ЗАГРУЗКА ИЗ ОБЛАКА ПО ТЕКСТОВОМУ ID ---
     async function loadFromCloud() {
         if (!supabase) return;
         try {
             const { data, error } = await supabase
                 .from('ifcl_data')
                 .select('html')
-                .eq('id', 'main_save')
+                .eq('id', 'main_save') // ТОТ САМЫЙ ТЕКСТОВЫЙ ID
                 .maybeSingle();
 
             if (data && data.html) {
                 const container = document.getElementById('ifcl-safe-container');
                 if (container) {
                     container.innerHTML = data.html;
-                    console.log("✅ Данные лиги скачаны из облака");
                 }
             }
         } catch (err) {
@@ -839,7 +838,7 @@
         }
     }
 
-    // --- КНОПКА ОБЛАКА (СОХРАНЕНИЕ) ---
+    // --- КНОПКА СОХРАНЕНИЯ В ОБЛАКО ---
     function injectCloudButton() {
         if (document.getElementById('supabase-cloud-btn')) return;
         const btn = document.createElement('button');
@@ -856,7 +855,7 @@
                 btn.innerHTML = '⏳';
                 const { error } = await supabase
                     .from('ifcl_data')
-                    .upsert({ id: 'main_save', html: container.innerHTML });
+                    .upsert({ id: 'main_save', html: container.innerHTML }); // ТЕКСТОВЫЙ ID
                 
                 btn.innerHTML = '☁️';
                 if (error) alert("❌ Ошибка Supabase: " + error.message);
@@ -867,11 +866,12 @@
         };
     }
 
-    // 1. АВТОЗАГРУЗКА (ПРОБУЖДЕНИЕ ПРИЛОЖЕНИЯ)
+    // 1. АВТОЗАГРУЗКА (ПРОБУЖДЕНИЕ ПРИЛОЖЕНИЯ) - ТВОЙ КОД
     function autoAwake() {
         const triggers = document.querySelectorAll('button, div, span, li');
         triggers.forEach(el => {
             const text = el.innerText ? el.innerText.trim() : '';
+            // Авто-клик по вкладкам, чтобы данные подтянулись сразу
             if (['!', 'Матчи', 'Туры', 'Таблица', 'Клубы'].includes(text)) {
                 if (!el.dataset.acsorClicked) {
                     el.click();
@@ -881,7 +881,7 @@
         });
     }
 
-    // 2. СОХРАНЕНИЕ И ЗАГРУЗКА (ЛОКАЛЬНО)
+    // 2. СОХРАНЕНИЕ И ЗАГРУЗКА - ТВОЙ КОД
     function saveFormation() {
         const pitchData = [];
         document.querySelectorAll('.player-node').forEach((p, i) => {
@@ -893,7 +893,7 @@
             });
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(pitchData));
-        alert('✅ Расстановка сохранена локально!');
+        alert('✅ Расстановка сохранена!');
     }
 
     function loadFormation() {
@@ -912,7 +912,7 @@
         });
     }
 
-    // 3. ИНИЦИАЛИЗАЦИЯ ПОЛЯ
+    // 3. ИНИЦИАЛИЗАЦИЯ ПОЛЯ - ТВОЙ КОД
     function init() {
         const pitch = document.getElementById('pitch-players');
         if (!pitch) return;
@@ -924,11 +924,12 @@
             document.getElementById('acsor-admin-trigger').onclick = () => {
                 if(prompt('Код:') === PWD) {
                     isAdmin = true;
-                    document.getElementById('acsor-gear').style.display = 'flex';
+                    document.getElementById('acsor-gear').style.display = 'block';
                 }
             };
         }
 
+        // Красим оценки
         document.querySelectorAll('.p-rating').forEach(r => {
             const v = parseFloat(r.innerText.replace(',', '.'));
             if (!isNaN(v)) r.style.backgroundColor = v >= 7.0 ? '#2ecc71' : (v >= 5.0 ? '#f1c40f' : '#e74c3c');
@@ -937,11 +938,9 @@
         loadFormation();
     }
 
-    // 4. УПРАВЛЕНИЕ МЕНЮ
+    // 4. УПРАВЛЕНИЕ МЕНЮ - ТВОЙ КОД
     document.addEventListener('click', (e) => {
         const menu = document.getElementById('acsor-menu');
-        if (!menu) return;
-
         if (e.target.id === 'acsor-gear') {
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
             if (menu.style.display === 'block') renderMenu();
@@ -955,6 +954,7 @@
             e.target.classList.toggle('active', isEditing);
             e.target.innerText = isEditing ? '✅ ВЫКЛЮЧИТЬ РЕДАКТОР' : '✏️ РЕДАКТИРОВАТЬ ТАБЛИЦЫ';
             
+            // Делаем ВСЕ ячейки и тексты редактируемыми
             document.querySelectorAll('td, th, span, .player-name, [class*="bomb"], [class*="team"]').forEach(el => {
                 if (!el.closest('#acsor-menu')) el.contentEditable = isEditing;
             });
@@ -991,7 +991,7 @@
         });
     }
 
-    // 5. ПЕРЕТАСКИВАНИЕ
+    // 5. ПЕРЕТАСКИВАНИЕ - ТВОЙ КОД
     let drag = null, sx, sy, ix, iy;
     const start = (e) => {
         if (!isAdmin) return;
@@ -1020,17 +1020,17 @@
     document.addEventListener('mouseup', end);
     document.addEventListener('touchend', end);
 
-    // --- ФИНАЛЬНЫЙ ЗАПУСК ВСЕГО ---
+    // --- ФИНАЛЬНЫЙ ЗАПУСК ---
     function bootApp() {
-        createSafeContainer();
-        injectCloudButton();
+        createSafeContainer(); // Пакуем код, чтобы не было конфликтов
+        injectCloudButton();   // Показываем кнопку
         loadFromCloud().then(() => {
-            init(); // Вот тут твоё поле наконец-то инициализируется!
-            autoAwake();
+            init(); // ИСПРАВЛЕНИЕ: запускаем инициализацию поля
+            autoAwake(); // Пробуждаем вкладки
         });
     }
 
-    // Ждём миллисекунду, чтобы Телеграм успел прогрузить свои базовые элементы
+    // Ждём чуть-чуть и стартуем
     setTimeout(bootApp, 100);
 
 })();
